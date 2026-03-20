@@ -11,7 +11,7 @@ def init_db():
     conn = get_connection()
     cursor = conn.cursor()
     
-    # Таблица точек (без изменений)
+    # Таблица точек
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS points (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,7 +20,7 @@ def init_db():
     )
     ''')
     
-    # Таблица маршрутов БЕЗ optimization_method
+    # Таблица маршрутов
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS routes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -104,7 +104,7 @@ def get_all_routes() -> List[Dict]:
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('''
-    SELECT id, points, coordinates, distance_km, duration_minutes, optimization_method 
+    SELECT id, points, coordinates, distance_km, duration_minutes 
     FROM routes
     ''')
     rows = cursor.fetchall()
@@ -117,7 +117,6 @@ def get_all_routes() -> List[Dict]:
             "points": json.loads(row[1]),
             "coordinates": json.loads(row[2]),
             "distance_km": row[3],
-            "duration_minutes": row[4],
-            "optimization_method": row[5]
+            "duration_minutes": row[4]
         })
     return routes

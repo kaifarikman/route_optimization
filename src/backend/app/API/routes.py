@@ -8,7 +8,7 @@ router = APIRouter()
 @router.post("/routes/base", response_model=RouteResponse)
 async def build_base_route_endpoint(request: RouteRequest):
     """
-    Построить базовый неоптимизированный маршрут
+    Построить базовый маршрут
     
     Пример запроса:
     {

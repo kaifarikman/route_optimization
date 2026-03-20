@@ -35,11 +35,15 @@ route_optimization/
 
 ## Инструкция по запуску:
 1. Перейти в директорию src/backend и запустить его:
-'''cd src/backend'''
-'''python main.py'''
+```shell
+cd src/backend
+python main.py
+```
 
-2. В новом терминале(в VS Code Terminal -> New Terminal) перейти в директорию src/frontend И запустить его на порте 8001:
-'''cd src/frontend'''
-'''python -m http.server 8001'''
+2. В новом терминале (в VS Code сделать Terminal -> New Terminal) перейти в директорию src/frontend И запустить его на порте 8001:
+```shell
+cd src/frontend
+python -m http.server 8001
+```
 
 3. Открыть http://localhost:8001 у себя в браузере и наслаждаться результатом

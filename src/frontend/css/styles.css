@@ -1,1 +1,134 @@
-/* Стилечек
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #e9e9e9;
+}
+
+.container {
+    position: absolute;
+    right: 40px;
+    top: 40px;
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.card {
+    background: #E2E4FF;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.card.small {
+    text-align: center;
+}
+
+.card.green {
+    background: #E2E4FF;
+}
+
+h3 {
+    margin-top: 0;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+input {
+    width: 100%;
+    padding: 5px;
+    margin-top: 5px;
+    border: none;
+    border-radius: 5px;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.row input {
+    flex: 1;
+}
+
+.toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.switch {
+    width: 40px;
+    height: 20px;
+    background: #d66;
+    border-radius: 20px;
+}
+
+button {
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #b3a8f5;
+    cursor: pointer;
+}
+
+.card.green button {
+    background: #8fd19e;
+}
+
+p {
+    margin: 10px 0 0;
+}
+
+.improve {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    color: green;
+}
+
+.field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    gap: 10px;
+}
+
+.field label {
+    margin: 0;
+    font-size: 14px;
+}
+
+.field input {
+    width: 80px;
+}
+
+.field.multi {
+    align-items: flex-start;
+}
+
+.coords {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.coord-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.coord-row input {
+    width: 80px;
+}

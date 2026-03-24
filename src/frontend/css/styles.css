@@ -7,7 +7,7 @@ body {
 .container {
     position: absolute;
     right: 40px;
-    top: 40px;
+    top: 35px;
     width: 260px;
     display: flex;
     flex-direction: column;
@@ -131,4 +131,10 @@ p {
 
 .coord-row input {
     width: 80px;
+}
+
+.map-wrapper {
+    position: absolute;
+    top: 35px;
+    left: 15px;
 }

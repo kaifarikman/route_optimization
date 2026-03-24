@@ -4,65 +4,76 @@
     <meta charset="UTF-8">
     <title>Маршрут</title>
     <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { height: 586px; width: 1375px;}
+    </style>
 </head>
 <body>
+    <div class="map-wrapper">
+        <div id="map"></div>
 
-<div class="container">
-    <div class="card">
-        <h3>Генерация точек</h3>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-        <div class="field">
-            <label>Число точек</label>
-            <input type="text" value="5">
+        <script src="./js/map.js"></script>    
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h3>Генерация точек</h3>
+
+            <div class="field">
+                <label>Число точек</label>
+                <input type="text" value="5">
+            </div>
+
+            <div class="field multi">
+                <label>Центр доставки</label>
+
+                <div class="coords">
+                    <div class="coord-row">
+                        <span>W</span>
+                        <input type="text" value="20.22">
+                        <span>°</span>
+                    </div>
+
+                    <div class="coord-row">
+                        <span>N</span>
+                        <input type="text" value="20.22">
+                        <span>°</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Радиус поиска (км)</label>
+                <input type="text" value="50">
+            </div>
+
+            <div class="toggle">
+                <span>Обратный путь</span>
+                <div class="switch"></div>
+            </div>
+
+            <button>Сгенерировать точки</button>
         </div>
 
-        <div class="field multi">
-            <label>Центр доставки</label>
+        <div class="card small">
+            <button>Построить маршрут</button>
+            <p>40 км &nbsp;&nbsp; 50 мин</p>
+        </div>
 
-            <div class="coords">
-                <div class="coord-row">
-                    <span>W</span>
-                    <input type="text" value="20.22">
-                    <span>°</span>
-                </div>
+        <div class="card small green">
+            <button>Оптимизировать маршрут</button>
+            <p>40 км &nbsp;&nbsp; 50 мин</p>
 
-                <div class="coord-row">
-                    <span>N</span>
-                    <input type="text" value="20.22">
-                    <span>°</span>
-                </div>
+            <div class="improve">
+                <span>-15 км</span>
+                <span>-15 мин</span>
             </div>
         </div>
 
-        <div class="field">
-            <label>Радиус поиска (км)</label>
-            <input type="text" value="50">
-        </div>
-
-        <div class="toggle">
-            <span>Обратный путь</span>
-            <div class="switch"></div>
-        </div>
-
-        <button>Сгенерировать точки</button>
     </div>
-
-    <div class="card small">
-        <button>Построить маршрут</button>
-        <p>40 км &nbsp;&nbsp; 50 мин</p>
-    </div>
-
-    <div class="card small green">
-        <button>Оптимизировать маршрут</button>
-        <p>40 км &nbsp;&nbsp; 50 мин</p>
-
-        <div class="improve">
-            <span>-15 км</span>
-            <span>-15 мин</span>
-        </div>
-    </div>
-
-</div>
 
 </body>
 </html>

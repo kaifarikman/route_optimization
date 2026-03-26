@@ -3,7 +3,8 @@ import os
 backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src', 'backend'))
 sys.path.insert(0, backend_path)
 src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))
-sys.path.insert(0, src_path)import unittest
+sys.path.insert(0, src_path)
+import unittest
 from unittest.mock import patch
 import numpy as np
 from src.backend.app.generation import generate_points, get_points, clear_all_points

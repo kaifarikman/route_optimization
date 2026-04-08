@@ -1,0 +1,22 @@
+from sqlalchemy.orm import Session
+
+from backend.db.models import PointModel
+from backend.domain.point import Point
+
+
+class PointRepository:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def add(self, lat: float, lon: float) -> Point:
+        model = PointModel(lat=lat, lon=lon)
+        self.session.add(model)
+        self.session.flush()
+        return Point(id=model.id, lat=model.lat, lon=model.lon)
+
+    def list(self) -> list[Point]:
+        rows = self.session.query(PointModel).all()
+        return [Point(id=row.id, lat=row.lat, lon=row.lon) for row in rows]
+
+    def clear_all(self) -> None:
+        self.session.query(PointModel).delete()

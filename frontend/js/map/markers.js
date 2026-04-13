@@ -1,17 +1,16 @@
-import { store } from "../state/store.js";
+let currentMarkers = [];
 
 export function clearMarkers(mapInstance) {
-    store.markers.forEach((marker) => mapInstance.removeLayer(marker));
-    store.markers = [];
+    currentMarkers.forEach((marker) => mapInstance.removeLayer(marker));
+    currentMarkers = [];
 }
 
 export function renderPoints(mapInstance, points) {
     clearMarkers(mapInstance);
-    store.generatedPoints = points;
 
     points.forEach((point) => {
         const marker = L.marker([point.lat, point.lon]).addTo(mapInstance);
-        marker.bindPopup(`<b>Точка ${point.id}</b><br>lat: ${point.lat}<br>lon: ${point.lon}`);
-        store.markers.push(marker);
+        marker.bindPopup(`<b>Точка ${point.id}</b>`);
+        currentMarkers.push(marker);
     });
 }

@@ -42,7 +42,7 @@ class RouteRepository:
         return [
             Route(
                 id=row.id,
-                points=list(row.points),
+                points=row.points,
                 coordinates=[tuple(item) for item in row.coordinates],
                 distance_km=row.distance_km,
                 duration_minutes=row.duration_minutes,

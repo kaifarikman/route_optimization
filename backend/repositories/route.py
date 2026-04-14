@@ -19,7 +19,7 @@ class RouteRepository:
         self.session.flush()
         return Route(
             id=model.id,
-            points=list(model.points),
+            points=model.points,
             coordinates=[tuple(item) for item in model.coordinates],
             distance_km=model.distance_km,
             duration_minutes=model.duration_minutes,
@@ -31,7 +31,7 @@ class RouteRepository:
             return None
         return Route(
             id=row.id,
-            points=list(row.points),
+            points=row.points,
             coordinates=[tuple(item) for item in row.coordinates],
             distance_km=row.distance_km,
             duration_minutes=row.duration_minutes,

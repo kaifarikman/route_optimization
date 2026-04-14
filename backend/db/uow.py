@@ -5,7 +5,6 @@ from typing import Callable
 from sqlalchemy.orm import Session
 
 from backend.db.session import SessionLocal
-from backend.repositories.distance import DistanceRepository
 from backend.repositories.point import PointRepository
 from backend.repositories.route import RouteRepository
 
@@ -13,7 +12,6 @@ from backend.repositories.route import RouteRepository
 class AbstractUnitOfWork(ABC):
     points: PointRepository
     routes: RouteRepository
-    distances: DistanceRepository
 
     def __enter__(self):
         return self
@@ -39,7 +37,6 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         self.session = self.session_factory()
         self.points = PointRepository(self.session)
         self.routes = RouteRepository(self.session)
-        self.distances = DistanceRepository(self.session)
         return super().__enter__()
 
     def __exit__(self, exc_type, exc, tb):

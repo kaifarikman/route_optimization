@@ -1,5 +1,6 @@
 import api from "../api/client.js";
 import { store } from "../state/store.js";
+import { updateMetrics } from "../ui/metrics.js";
 
 export async function buildRoute() {
     const { points } = store.getState();
@@ -14,21 +15,22 @@ export async function buildRoute() {
         const pointIds = points.map(p => p.id);
         const result = await api.buildBaseRoute(pointIds);
 
-        //Сохраняем данные в store
         store.setState({
             baseRoute: result.route,
             selectedRouteMode: 'base',
             status: 'idle'
         });
 
-        const metrics = document.getElementById('baseMetrics');
-        if (metrics) {
-            metrics.textContent = `${result.route.distance_km} км | ${result.route.duration_minutes} мин`;
-        }
+        updateMetrics();
     } catch (error) {
         store.setState({ status: 'error' });
-        alert("Ошибка построения: " + error.message);
+        //Обработка случая, когда бэкенд вернул "not implemented"
+        const errorMsg = error.message.includes("not implemented")
+            ? "Бэкенд: Логика построения маршрута еще не готова."
+            : error.message;
+        alert(errorMsg);
     }
 }
+
 
 

@@ -2,6 +2,34 @@ from typing import Dict, List
 
 from backend.db.uow import AbstractUnitOfWork
 from backend.domain.route import Route
+from backend.domain.point import Point
+from backend.utils.geo import calculate_distance
+
+
+def calculate_route_distance(points: list[Point]) -> float:
+    """
+    Рассчитывает длину пути через заданные точки 
+    """
+    path_length = 0
+    for i in range(len(points) - 1):
+        point1, point2 = points[i], points[i + 1]
+        lat1, lon1 = point1.lat, point1.lon
+        lat2, lon2 = point2.lat, point2.lon
+
+        path_length += calculate_distance(lat1, lon1, lat2, lon2)
+
+    return path_length
+
+
+def calculate_route_duration(distance_km: float) -> float:
+    """
+    Рассчитывает время пути в минутах
+    """
+    speed_km_h = 40
+    time_hours = distance_km / speed_km_h
+    time_minutes = time_hours * 60
+
+    return time_minutes
 
 
 def _route_to_dict(route: Route) -> Dict:

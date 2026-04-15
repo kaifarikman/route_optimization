@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from typing import List
 
 from backend.db.models import PointModel
 from backend.domain.point import Point
@@ -23,8 +24,12 @@ class PointRepository:
             lat=row.lat,
             lon=row.lon,
         )
+    
+    def get_by_ids(self, point_ids: List[int]) -> List[Point]:
+        rows = self.session.query(PointModel).filter(PointModel.id.in_(point_ids)).all()
+        return [Point(id=row.id, lat=row.lat, lon=row.lon) for row in rows]
 
-    def list(self) -> list[Point]:
+    def list(self) -> List[Point]:
         rows = self.session.query(PointModel).all()
         return [Point(id=row.id, lat=row.lat, lon=row.lon) for row in rows]
 

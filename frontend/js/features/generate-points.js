@@ -1,5 +1,6 @@
 import api from "../api/client.js";
 import { store } from "../state/store.js";
+import { notify } from "../ui/notifications.js";
 
 export async function extractText() {
     const pointsValue = parseInt(document.getElementById("pointsInput").value, 10) || 5;
@@ -12,7 +13,6 @@ export async function extractText() {
     try {
         const result = await api.generatePoints(northValue, westValue, radValue, pointsValue);
 
-        // Обновляем единое состояние приложения
         store.setState({
             points: result.points,
             status: 'idle',
@@ -20,11 +20,11 @@ export async function extractText() {
             optimizedRoute: null
         });
 
-        alert(`Сгенерировано ${result.points.length} точек`);
+        notify(`Сгенерировано ${result.points.length} точек`, 'info'); // Замена alert
     } catch (error) {
         console.error("Ошибка при генерации точек:", error);
         store.setState({ status: 'error' });
-        alert("Ошибка при генерации точек: " + error.message);
+        notify("Ошибка при генерации точек: " + error.message, 'error'); // Замена alert
     }
 }
 

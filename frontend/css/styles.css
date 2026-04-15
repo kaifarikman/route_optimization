@@ -147,3 +147,14 @@ button {
     width: 82%;
     height: 90%;
 }
+
+.container {
+    position: absolute;
+    right: 40px;
+    top: 35px;
+    width: 15%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 1000;
+}

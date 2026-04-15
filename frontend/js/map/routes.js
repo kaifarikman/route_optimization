@@ -1,12 +1,17 @@
 let currentRouteLayer = null;
 
-export function renderRoute(mapInstance, routeData, options = { color: 'blue' }) {
-    //Удаляем предыдущий маршрут с карты
+export function clearRoute(mapInstance) {
     if (currentRouteLayer) {
         mapInstance.removeLayer(currentRouteLayer);
+        currentRouteLayer = null;
     }
+}
 
-    //Проверяем наличие координат из контракта API
+export function drawRoute(mapInstance, routeData, options = { color: 'blue' }) {
+    //Сначала очищаем старый маршрут
+    clearRoute(mapInstance);
+
+    // Проверяем наличие координат из контракта API
     if (routeData && routeData.coordinates && routeData.coordinates.length > 0) {
         currentRouteLayer = L.polyline(routeData.coordinates, {
             color: options.color,
@@ -15,6 +20,7 @@ export function renderRoute(mapInstance, routeData, options = { color: 'blue' })
             lineJoin: 'round'
         }).addTo(mapInstance);
 
+        //Центрируем карту по маршруту
         mapInstance.fitBounds(currentRouteLayer.getBounds(), { padding: [50, 50] });
     }
 }

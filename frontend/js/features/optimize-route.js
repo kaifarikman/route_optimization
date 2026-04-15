@@ -1,17 +1,24 @@
 import api from "../api/client.js";
 import { store } from "../state/store.js";
+import { updateMetrics } from "../ui/metrics.js"; // Обязательно импортируем метрики
 
 export async function optimizeRoute() {
-    const { points } = store.getState();
-    if (!points || points.length === 0) {
+    const state = store.getState();
+
+    if (!state.points || state.points.length === 0) {
         alert("Сначала сгенерируйте точки!");
+        return;
+    }
+
+    if (state.optimizedRoute) {
+        store.setState({ selectedRouteMode: 'optimized' });
         return;
     }
 
     store.setState({ status: 'loading' });
 
     try {
-        const pointIds = points.map(p => p.id);
+        const pointIds = state.points.map(p => p.id);
         const result = await api.optimizeRoute(pointIds);
 
         store.setState({
@@ -20,16 +27,12 @@ export async function optimizeRoute() {
             status: 'idle'
         });
 
-        const metrics = document.getElementById('optimizedMetrics');
-        if (metrics) {
-            metrics.textContent = `${result.route.distance_km} км | ${result.route.duration_minutes} мин`;
-        }
+        updateMetrics(); //Обновляем UI после получения маршрута
+
     } catch (error) {
         store.setState({ status: 'error' });
         alert("Ошибка оптимизации: " + error.message);
     }
 }
-
-
 
 

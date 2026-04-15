@@ -13,8 +13,12 @@ async function initApp() {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     initMapSubscription(map);
 
-    //Инициализация кликов по карточкам
     initControls();
+
+    //обработчики на кнопки
+    document.getElementById('generateBtn').addEventListener('click', extractText);
+    document.getElementById('buildRouteBtn').addEventListener('click', buildRoute);
+    document.getElementById('optimizeRouteBtn').addEventListener('click', optimizeRoute);
 
     //Подписка уведомлений на изменение статуса в Store
     store.subscribe((state) => {
@@ -33,10 +37,6 @@ async function initApp() {
     }
 }
 
-document.getElementById('generateBtn')?.addEventListener('click', extractText);
-document.getElementById('buildRouteBtn')?.addEventListener('click', buildRoute);
-document.getElementById('optimizeRouteBtn')?.addEventListener('click', optimizeRoute);
-
-window.onload = initApp;
+document.addEventListener('DOMContentLoaded', initApp);
 
 

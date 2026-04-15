@@ -3,16 +3,22 @@ import { store } from "../state/store.js";
 import { updateMetrics } from "../ui/metrics.js";
 
 export async function buildRoute() {
-    const { points } = store.getState();
-    if (!points || points.length === 0) {
+    const state = store.getState();
+
+    if (!state.points || state.points.length === 0) {
         alert("Сначала сгенерируйте точки!");
+        return;
+    }
+
+    if (state.baseRoute) {
+        store.setState({ selectedRouteMode: 'base' });
         return;
     }
 
     store.setState({ status: 'loading' });
 
     try {
-        const pointIds = points.map(p => p.id);
+        const pointIds = state.points.map(p => p.id);
         const result = await api.buildBaseRoute(pointIds);
 
         store.setState({
@@ -24,13 +30,11 @@ export async function buildRoute() {
         updateMetrics();
     } catch (error) {
         store.setState({ status: 'error' });
-        //Обработка случая, когда бэкенд вернул "not implemented"
         const errorMsg = error.message.includes("not implemented")
             ? "Бэкенд: Логика построения маршрута еще не готова."
             : error.message;
         alert(errorMsg);
     }
 }
-
 
 

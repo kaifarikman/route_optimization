@@ -13,6 +13,16 @@ class PointRepository:
         self.session.add(model)
         self.session.flush()
         return Point(id=model.id, lat=model.lat, lon=model.lon)
+    
+    def get(self, point_id: int) -> Point | None:
+        row = self.session.get(PointModel, point_id)
+        if row is None:
+            return None
+        return Point(
+            id=row.id,
+            lat=row.lat,
+            lon=row.lon,
+        )
 
     def list(self) -> list[Point]:
         rows = self.session.query(PointModel).all()

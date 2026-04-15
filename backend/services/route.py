@@ -3,6 +3,8 @@ from typing import Dict, List
 from backend.db.uow import AbstractUnitOfWork
 from backend.domain.route import Route
 from backend.domain.point import Point
+from backend.repositories.point import PointRepository
+from backend.repositories.route import RouteRepository
 from backend.utils.geo import calculate_distance
 
 
@@ -32,6 +34,25 @@ def calculate_route_duration(distance_km: float) -> float:
     return time_minutes
 
 
+def build_base_route(point_ids: list[int], uow: AbstractUnitOfWork) -> Route:
+    """
+    Строит базовый маршрут и записывает его в БД
+    """
+    points = [PointRepository.get(point_id) for point_id in point_ids]
+
+    distance_km = calculate_route_distance(points)
+    duration_minutes = calculate_route_duration(distance_km)
+
+    coordinates = [list(point.lat, point.lon) for point in points]
+
+    return uow.routes.add(
+        points=point_ids,
+        distance_km=distance_km,
+        duration_minutes=duration_minutes,
+        coordinates=coordinates
+    )
+
+
 def _route_to_dict(route: Route) -> Dict:
     return {
         "id": route.id,
@@ -40,10 +61,6 @@ def _route_to_dict(route: Route) -> Dict:
         "duration_minutes": route.duration_minutes,
         "coordinates": route.coordinates,
     }
-
-
-def build_base_route(point_ids: List[int], uow: AbstractUnitOfWork) -> Dict:
-    raise NotImplementedError()
 
 
 def optimize_route(point_ids: List[int], uow: AbstractUnitOfWork) -> Dict:

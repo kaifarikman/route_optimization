@@ -54,3 +54,22 @@ def test_sqlite_repositories_roundtrip(tmp_path: Path):
     assert stored_route.coordinates == [(55.75, 37.61), (55.76, 37.62)]
 
     session.close()
+
+
+def test_point_repository_get_by_ids_preserves_requested_order(tmp_path: Path):
+    db_path = tmp_path / "ordered.db"
+    engine = create_engine(f"sqlite:///{db_path}", future=True)
+    Base.metadata.create_all(bind=engine)
+    session = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)()
+
+    points = PointRepository(session)
+    first = points.add(55.75, 37.61)
+    second = points.add(55.76, 37.62)
+    third = points.add(55.77, 37.63)
+    session.commit()
+
+    ordered = points.get_by_ids([third.id, first.id, second.id])
+
+    assert [point.id for point in ordered] == [third.id, first.id, second.id]
+
+    session.close()

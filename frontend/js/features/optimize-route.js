@@ -1,17 +1,13 @@
 import api from "../api/client.js";
 import { store } from "../state/store.js";
-import { updateMetrics } from "../ui/metrics.js"; // Обязательно импортируем метрики
+import { updateMetrics } from "../ui/metrics.js";
+import { notify } from "../ui/notifications.js";
 
 export async function optimizeRoute() {
     const state = store.getState();
 
-    if (!state.points || state.points.length === 0) {
-        alert("Сначала сгенерируйте точки!");
-        return;
-    }
-
-    if (state.optimizedRoute) {
-        store.setState({ selectedRouteMode: 'optimized' });
+    if (!state.points || state.points.length < 2) {
+        notify("Недостаточное количество точек", "error");
         return;
     }
 
@@ -27,12 +23,10 @@ export async function optimizeRoute() {
             status: 'idle'
         });
 
-        updateMetrics(); //Обновляем UI после получения маршрута
-
+        updateMetrics(result.route, 'optimized');
+        notify("Оптимизированный маршрут построен", "info");
     } catch (error) {
         store.setState({ status: 'error' });
-        alert("Ошибка оптимизации: " + error.message);
+        notify("Ошибка оптимизации: " + error.message, "error");
     }
 }
-
-

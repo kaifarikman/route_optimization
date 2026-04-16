@@ -1,7 +1,37 @@
 import { store } from '../state/store.js';
+import { buildRoute } from '../features/build-route.js';
+import { optimizeRoute } from '../features/optimize-route.js';
 
 export function initControls() {
-    //Подписываемся на store, чтобы визуально подсвечивать активный режим
+    const buildRouteBtn = document.getElementById('buildRouteBtn');
+    const optimizeRouteBtn = document.getElementById('optimizeRouteBtn');
+
+    if (buildRouteBtn && !buildRouteBtn.dataset.bound) {
+        buildRouteBtn.addEventListener('click', async () => {
+            const { baseRoute } = store.getState();
+            if (baseRoute) {
+                store.setState({ selectedRouteMode: 'base' });
+                return;
+            }
+
+            await buildRoute();
+        });
+        buildRouteBtn.dataset.bound = 'true';
+    }
+
+    if (optimizeRouteBtn && !optimizeRouteBtn.dataset.bound) {
+        optimizeRouteBtn.addEventListener('click', async () => {
+            const { optimizedRoute } = store.getState();
+            if (optimizedRoute) {
+                store.setState({ selectedRouteMode: 'optimized' });
+                return;
+            }
+
+            await optimizeRoute();
+        });
+        optimizeRouteBtn.dataset.bound = 'true';
+    }
+
     store.subscribe((state) => {
         const baseCard = document.getElementById('buildRouteBtn')?.closest('.card');
         const optCard = document.getElementById('optimizeRouteBtn')?.closest('.card');

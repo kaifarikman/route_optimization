@@ -73,6 +73,17 @@ class TestPoints(unittest.TestCase):
         self.assertEqual(len(points), 0)
         self.assertEqual(self.points_repo.add.call_count, 0)
 
+    def test_generate_points_replaces_previous_points_and_routes(self):
+        self.points_repo.add.side_effect = [
+            Point(id=1, lat=58.0, lon=62.0),
+            Point(id=2, lat=58.1, lon=62.1),
+        ]
+
+        generate_points(58.5, 62.73, 10.1, 2, uow=self.uow)
+
+        self.uow.routes.clear_all.assert_called_once()
+        self.points_repo.clear_all.assert_called_once()
+
     def test_generate_points_points_are_within_radius(self):
         count = 20
         self.points_repo.add.side_effect = [

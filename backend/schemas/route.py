@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Tuple
 
 class RouteRequest(BaseModel):
@@ -12,9 +12,8 @@ class Route(BaseModel):
     distance_km: float
     duration_minutes: float
     coordinates: List[Tuple[float, float]]  # [[lat,lon], ...]
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 class RouteResponse(BaseModel):
     """Ответ с одним маршрутом"""

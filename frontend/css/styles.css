@@ -24,20 +24,6 @@ body {
     text-align: center;
 }
 
-.improvement {
-    position: absolute;
-    right: 65px;
-    top: 606px;
-    width: 180px;
-    display: flex;
-    flex-direction: column;
-    text-align: center;
-    background: #E2E4FF;
-    padding: 15px;
-    border-radius: 12px;
-    color: #7bca8d
-}
-
 h3 {
     margin-top: 0;
 }
@@ -91,12 +77,27 @@ button {
     cursor: pointer;
 }
 
+button.secondary {
+    background: #d8dcef;
+}
+
 .card.green button {
     background: #8fd19e;
 }
 
 .card.green p {
     margin: 10px 0 0;
+}
+
+.card.improvement {
+    display: none;
+    text-align: left;
+    color: #2f6b3d;
+}
+
+.card.improvement p {
+    margin: 0;
+    line-height: 1.4;
 }
 
 .field {

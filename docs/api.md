@@ -123,7 +123,7 @@ Error response:
 
 ### `POST /routes/base`
 
-Контракт endpoint уже существует, но бизнес-логика построения базового маршрута пока не реализована.
+Строит базовый маршрут в порядке переданных `point_ids`, рассчитывает метрики и сохраняет маршрут в БД.
 
 Request body:
 
@@ -133,7 +133,7 @@ Request body:
 }
 ```
 
-Целевой success response `200 OK`:
+Success response `200 OK`:
 
 ```json
 {
@@ -151,14 +151,13 @@ Request body:
 }
 ```
 
-Текущее фактическое поведение:
+Error responses:
 
-- `400 Bad Request`
-- `detail = "Base route generation is not implemented yet"`
+- `400 Bad Request` если одна или несколько точек не найдены или запрос некорректен
 
 ### `POST /routes/optimize`
 
-Контракт endpoint уже существует, но бизнес-логика оптимизации маршрута пока не реализована.
+Строит оптимизированный маршрут по алгоритму nearest neighbor, рассчитывает метрики и сохраняет маршрут в БД.
 
 Request body:
 
@@ -168,7 +167,7 @@ Request body:
 }
 ```
 
-Целевой success response `200 OK`:
+Success response `200 OK`:
 
 ```json
 {
@@ -186,10 +185,9 @@ Request body:
 }
 ```
 
-Текущее фактическое поведение:
+Error responses:
 
-- `400 Bad Request`
-- `detail = "Route optimization is not implemented yet"`
+- `400 Bad Request` если одна или несколько точек не найдены или запрос некорректен
 
 ### `GET /routes/{route_id}`
 

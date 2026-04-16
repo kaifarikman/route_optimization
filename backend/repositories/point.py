@@ -27,7 +27,11 @@ class PointRepository:
     
     def get_by_ids(self, point_ids: List[int]) -> List[Point]:
         rows = self.session.query(PointModel).filter(PointModel.id.in_(point_ids)).all()
-        return [Point(id=row.id, lat=row.lat, lon=row.lon) for row in rows]
+        rows_by_id = {
+            row.id: Point(id=row.id, lat=row.lat, lon=row.lon)
+            for row in rows
+        }
+        return [rows_by_id[point_id] for point_id in point_ids if point_id in rows_by_id]
 
     def list(self) -> List[Point]:
         rows = self.session.query(PointModel).all()

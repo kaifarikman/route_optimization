@@ -17,6 +17,10 @@ def generate_points(
     count: int,
     uow: AbstractUnitOfWork,
 ) -> List[Dict]:
+    # Generation replaces the current working set of points and routes.
+    uow.routes.clear_all()
+    uow.points.clear_all()
+
     lat_deg_per_km = 1 / 111.0
     lon_deg_per_km = 1 / (111.0 * np.cos(np.radians(center_lat)))
 

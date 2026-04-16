@@ -1,17 +1,13 @@
 import api from "../api/client.js";
 import { store } from "../state/store.js";
 import { updateMetrics } from "../ui/metrics.js";
+import { notify } from "../ui/notifications.js";
 
 export async function buildRoute() {
     const state = store.getState();
 
-    if (!state.points || state.points.length === 0) {
-        alert("Сначала сгенерируйте точки!");
-        return;
-    }
-
-    if (state.baseRoute) {
-        store.setState({ selectedRouteMode: 'base' });
+    if (!state.points || state.points.length < 2) {
+        notify("Недостаточное количество точек", "error");
         return;
     }
 
@@ -27,14 +23,10 @@ export async function buildRoute() {
             status: 'idle'
         });
 
-        updateMetrics();
+        updateMetrics(result.route, 'base');
+        notify("Базовый маршрут построен", "info");
     } catch (error) {
         store.setState({ status: 'error' });
-        const errorMsg = error.message.includes("not implemented")
-            ? "Бэкенд: Логика построения маршрута еще не готова."
-            : error.message;
-        alert(errorMsg);
+        notify("Ошибка построения маршрута: " + error.message, "error");
     }
 }
-
-

@@ -1,34 +1,55 @@
 import { store } from '../state/store.js';
 import { compareMetrics } from '../features/compare-metrics.js';
 
-export function updateMetrics() {
-    const { baseRoute, optimizedRoute } = store.getState();
+function formatRouteMetrics(route) {
+    return `${route.distance_km.toFixed(2)} км | ${route.duration_minutes.toFixed(0)} мин`;
+}
 
+export function resetMetrics() {
     const baseEl = document.getElementById('baseMetrics');
     const optEl = document.getElementById('optimizedMetrics');
-    const savingEl = document.querySelector('.improvement');
+    const comparisonCard = document.getElementById('comparisonCard');
+    const comparisonText = document.getElementById('comparisonText');
 
-    //Обновляем метрики базового маршрута
-    if (baseRoute && baseEl) {
-        baseEl.textContent = `${baseRoute.distance_km.toFixed(2)} км | ${baseRoute.duration_minutes.toFixed(0)} мин`;
+    if (baseEl) {
+        baseEl.textContent = '0 км | 0 мин';
     }
 
-    //Обновляем метрики оптимизированного маршрута
-    if (optimizedRoute && optEl) {
-        optEl.textContent = `${optimizedRoute.distance_km.toFixed(2)} км | ${optimizedRoute.duration_minutes.toFixed(0)} мин`;
+    if (optEl) {
+        optEl.textContent = '0 км | 0 мин';
     }
 
-    if (baseRoute && optimizedRoute && savingEl) {
-        const result = compareMetrics(baseRoute, optimizedRoute);
-        if (result) {
-            savingEl.textContent = result;
-            savingEl.style.display = 'flex';
-        } else {
-            savingEl.style.display = 'none';
-        }
-    } else if (savingEl) {
-        savingEl.style.display = 'none';
+    if (comparisonCard) {
+        comparisonCard.style.display = 'none';
+    }
+
+    if (comparisonText) {
+        comparisonText.textContent = '';
     }
 }
 
+export function updateMetrics(route, mode) {
+    const baseEl = document.getElementById('baseMetrics');
+    const optEl = document.getElementById('optimizedMetrics');
+    const comparisonCard = document.getElementById('comparisonCard');
+    const comparisonText = document.getElementById('comparisonText');
 
+    if (route && mode === 'base' && baseEl) {
+        baseEl.textContent = formatRouteMetrics(route);
+    }
+
+    if (route && mode === 'optimized' && optEl) {
+        optEl.textContent = formatRouteMetrics(route);
+    }
+
+    const comparison = compareMetrics();
+    if (!comparison || !comparisonCard || !comparisonText) {
+        if (comparisonCard) {
+            comparisonCard.style.display = 'none';
+        }
+        return;
+    }
+
+    comparisonText.textContent = `Расстояние: было ${comparison.distanceBefore.toFixed(2)} км, стало ${comparison.distanceAfter.toFixed(2)} км. Время: было ${comparison.timeBefore.toFixed(0)} мин, стало ${comparison.timeAfter.toFixed(0)} мин. Экономия: ${comparison.distanceSaved.toFixed(2)} км и ${comparison.timeSaved.toFixed(0)} мин.`;
+    comparisonCard.style.display = 'block';
+}

@@ -12,4 +12,7 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, futu
 
 
 def init_db():
-    Base.metadata.create_all(bind=engine)
+    with engine.begin() as connection:
+        connection.exec_driver_sql("DROP TABLE IF EXISTS route_points")
+        connection.exec_driver_sql("DROP TABLE IF EXISTS distances")
+        Base.metadata.create_all(bind=connection)

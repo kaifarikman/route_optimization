@@ -21,4 +21,9 @@ export function renderPoints(mapInstance, points) {
         marker.bindPopup(`<b>Точка ${point.id}</b>`);
         currentMarkers.push(marker);
     });
+
+    if (currentMarkers.length > 0) {
+        const featureGroup = L.featureGroup(currentMarkers);
+        mapInstance.fitBounds(featureGroup.getBounds(), { padding: [50, 50] });
+    }
 }

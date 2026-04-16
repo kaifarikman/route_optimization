@@ -1,6 +1,20 @@
 import { store } from '../state/store.js';
-import { renderPoints } from './markers.js';
+import { clearMarkers, renderPoints } from './markers.js';
 import { drawRoute, clearRoute } from './routes.js';
+
+let mapInstance = null;
+
+export function initMap() {
+    if (mapInstance) {
+        return mapInstance;
+    }
+
+    mapInstance = L.map('map').setView([20.22, 20.22], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance);
+    initMapSubscription(mapInstance);
+
+    return mapInstance;
+}
 
 export function initMapSubscription(mapInstance) {
     const fixMapLayout = () => {
@@ -14,9 +28,10 @@ export function initMapSubscription(mapInstance) {
     }
 
     store.subscribe((state) => {
-        //Отрисовка точек
         if (state.points && state.points.length > 0) {
             renderPoints(mapInstance, state.points);
+        } else {
+            clearMarkers(mapInstance);
         }
 
         const routeToShow = state.selectedRouteMode === 'optimized'
@@ -31,6 +46,4 @@ export function initMapSubscription(mapInstance) {
         }
     });
 }
-
-
 

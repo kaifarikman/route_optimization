@@ -5,20 +5,42 @@ export function clearMarkers(mapInstance) {
     currentMarkers = [];
 }
 
-export function renderPoints(mapInstance, points) {
+export function renderPoints(mapInstance, points, currentRoute = null, pointColor = "#3388ff") {
     clearMarkers(mapInstance);
 
+    let orderedIds = points.map(p => p.id);
+    if (currentRoute) {
+        if (currentRoute.point_ids) {
+            orderedIds = currentRoute.point_ids;
+        } else if (currentRoute.points) {
+            orderedIds = currentRoute.points.map(p => p.id || p);
+        }
+    }
+
     points.forEach((point) => {
+        const orderIndex = orderedIds.indexOf(point.id);
+        const orderText = (currentRoute && orderIndex !== -1) ? String(orderIndex + 1) : '';
+
         const marker = L.circleMarker([point.lat, point.lon], {
             radius: 8,
-            fillColor: "#3388ff",
+            fillColor: pointColor,
             color: "#000",
             weight: 1,
             opacity: 1,
             fillOpacity: 0.8
         }).addTo(mapInstance);
 
-        marker.bindPopup(`<b>Точка ${point.id}</b>`);
+        if (orderText) {
+            marker.bindTooltip(orderText, {
+                permanent: true,
+                className: 'point-order-tooltip'
+            });
+        }
+
+        const popupContent = `<b>Точка ${point.id}</b>` +
+            (orderText ? `Порядок посещения: ${orderText}` : '');
+
+        marker.bindPopup(popupContent);
         currentMarkers.push(marker);
     });
 

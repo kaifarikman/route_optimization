@@ -5,13 +5,14 @@ import { notify } from "../ui/notifications.js";
 
 export async function buildRoute() {
     const state = store.getState();
+    if (state.isLoading) return; // Блокировка повторного вызова
 
     if (!state.points || state.points.length < 2) {
         notify("Недостаточное количество точек", "error");
         return;
     }
 
-    store.setState({ status: 'loading' });
+    store.setState({ status: 'loading', isLoading: true, loadingAction: 'build' });
 
     try {
         const pointIds = state.points.map(p => p.id);
@@ -20,13 +21,18 @@ export async function buildRoute() {
         store.setState({
             baseRoute: result.route,
             selectedRouteMode: 'base',
-            status: 'idle'
+            status: 'idle',
+            isLoading: false,
+            loadingAction: null
         });
 
         updateMetrics(result.route, 'base');
         notify("Базовый маршрут построен", "info");
     } catch (error) {
-        store.setState({ status: 'error' });
+        store.setState({ status: 'error', isLoading: false, loadingAction: null });
         notify("Ошибка построения маршрута: " + error.message, "error");
     }
 }
+
+
+

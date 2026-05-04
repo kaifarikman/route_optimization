@@ -36,10 +36,21 @@ button {
     border-radius: 8px;
     background: #b3a8f5;
     cursor: pointer;
+    transition: background-color 0.2s, opacity 0.2s;
 }
 
 button.secondary { background: #d8dcef; }
 .card.green button { background: #8fd19e; }
+
+/* Disabled states (Добавлено для FE-06) */
+button:disabled,
+button.secondary:disabled,
+.card.green button:disabled {
+    background: #d1d5db !important;
+    color: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
 
 .card.improvement {
     display: none;

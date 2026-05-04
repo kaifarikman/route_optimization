@@ -31,6 +31,9 @@ function validateGenerationForm(countStr, latStr, lonStr, radiusStr) {
 }
 
 export async function extractText() {
+    const state = store.getState();
+    if (state.isLoading) return; // Блокировка повторного вызова
+
     const countRaw = document.getElementById("pointsInput").value;
     const northRaw = document.getElementById("northInput").value;
     const westRaw = document.getElementById("westInput").value;
@@ -47,7 +50,7 @@ export async function extractText() {
     const westValue = parseFloat(westRaw);
     const radValue = parseFloat(radRaw);
 
-    store.setState({ status: 'loading' });
+    store.setState({ status: 'loading', isLoading: true, loadingAction: 'generate' });
 
     try {
         const result = await api.generatePoints(northValue, westValue, radValue, pointsValue);
@@ -55,6 +58,8 @@ export async function extractText() {
         store.setState({
             points: result.points,
             status: 'idle',
+            isLoading: false,
+            loadingAction: null,
             baseRoute: null,
             optimizedRoute: null,
             selectedRouteMode: 'base',
@@ -64,7 +69,7 @@ export async function extractText() {
         notify(`Сгенерировано ${result.points.length} точек`, 'info');
     } catch (error) {
         console.error("Ошибка при генерации точек:", error);
-        store.setState({ status: 'error' });
+        store.setState({ status: 'error', isLoading: false, loadingAction: null });
         notify("Ошибка при генерации точек: " + error.message, 'error');
     }
 }

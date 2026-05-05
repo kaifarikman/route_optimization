@@ -8,19 +8,23 @@ export function clearRoute(mapInstance) {
 }
 
 export function drawRoute(mapInstance, routeData, options = { color: 'blue' }) {
-    //Сначала очищаем старый маршрут
+    //очищаем старый маршрут
     clearRoute(mapInstance);
 
-    // Проверяем наличие координат из контракта API
-    if (routeData && routeData.coordinates && routeData.coordinates.length > 0) {
-        currentRouteLayer = L.polyline(routeData.coordinates, {
+    if (!routeData) return;
+    const routeLine = routeData.geometry && routeData.geometry.length >= 2
+        ? routeData.geometry
+        : routeData.coordinates;
+    if (routeLine && routeLine.length > 0) {
+        currentRouteLayer = L.polyline(routeLine, {
             color: options.color,
             weight: 6,
             opacity: 0.6,
             lineJoin: 'round'
         }).addTo(mapInstance);
 
-        //Центрируем карту по маршруту
         mapInstance.fitBounds(currentRouteLayer.getBounds(), { padding: [50, 50] });
+    } else {
+        console.warn("Внимание: маршрут не содержит валидных geometry или coordinates для отрисовки.");
     }
 }

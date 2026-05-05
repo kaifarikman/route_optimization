@@ -7,6 +7,14 @@ export function clearMarkers(mapInstance) {
 
 export function renderPoints(mapInstance, points, currentRoute = null, pointColor = "#3388ff") {
     clearMarkers(mapInstance);
+    let orderedIds = [];
+    if (currentRoute) {
+        if (currentRoute.point_ids) {
+            orderedIds = currentRoute.point_ids;
+        } else if (currentRoute.points) {
+            orderedIds = currentRoute.points.map(p => p.id || p);
+        }
+    }
 
     let orderedIds = points.map(p => p.id);
     if (currentRoute) {
@@ -29,6 +37,14 @@ export function renderPoints(mapInstance, points, currentRoute = null, pointColo
             opacity: 1,
             fillOpacity: 0.8
         }).addTo(mapInstance);
+        if (orderText) {
+            marker.bindTooltip(orderText, {
+                permanent: true,
+                direction: 'top',
+                className: 'point-order-tooltip',
+                offset: [0, -5]
+            });
+        }
 
         if (orderText) {
             marker.bindTooltip(orderText, {
@@ -49,3 +65,5 @@ export function renderPoints(mapInstance, points, currentRoute = null, pointColo
         mapInstance.fitBounds(featureGroup.getBounds(), { padding: [50, 50] });
     }
 }
+
+

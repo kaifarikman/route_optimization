@@ -25,48 +25,8 @@ body {
     text-align: center;
 }
 
-h3 {
-    margin-top: 0;
-}
-
-label {
-    display: block;
-    margin-top: 10px;
-    font-size: 14px;
-}
-
-input {
-    width: 100%;
-    padding: 5px;
-    margin-top: 5px;
-    border: none;
-    border-radius: 5px;
-}
-
-.row {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: 5px;
-}
-
-.row input {
-    flex: 1;
-}
-
-.toggle {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 15px;
-}
-
-.switch {
-    width: 40px;
-    height: 20px;
-    background: #d66;
-    border-radius: 20px;
-}
+h3, h4 { margin-top: 0; }
+h4 { margin-bottom: 10px; font-size: 16px; }
 
 button {
     width: 100%;
@@ -78,64 +38,49 @@ button {
     cursor: pointer;
 }
 
-button.secondary {
-    background: #d8dcef;
-}
-
-.card.green button {
-    background: #8fd19e;
-}
-
-.card.green p {
-    margin: 10px 0 0;
-}
+button.secondary { background: #d8dcef; }
+.card.green button { background: #8fd19e; }
 
 .card.improvement {
     display: none;
     text-align: left;
     color: #2f6b3d;
-}
-
-.card.improvement p {
-    margin: 0;
-    line-height: 1.4;
-}
-
-.field {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-    gap: 10px;
-}
-
-.field label {
-    margin: 0;
     font-size: 14px;
 }
 
-.field input {
-    width: 80px;
+.card.route-order {
+    display: none;
+    max-height: 250px;
+    overflow-y: auto;
+    background: #f0f2ff;
 }
 
-.field.multi {
-    align-items: flex-start;
+#routeOrderList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-.coords {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+#routeOrderList li {
+    font-size: 13px;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #d0d4f5;
 }
 
-.coord-row {
+.point-order-tooltip {
+    background: white !important;
+    color: black !important;
+    border: 2px solid #3388ff !important;
+    border-radius: 50% !important;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
-    gap: 5px;
-}
-
-.coord-row input {
-    width: 80px;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 
 .map-wrapper {

@@ -28,22 +28,23 @@ export function initMapSubscription(mapInstance) {
     }
 
     store.subscribe((state) => {
+        const isOptimizedMode = state.selectedRouteMode === 'optimized';
+        const routeToShow = isOptimizedMode ? state.optimizedRoute : state.baseRoute;
+
+        const color = isOptimizedMode ? '#4CAF50' : '#3388ff';
+
         if (state.points && state.points.length > 0) {
-            renderPoints(mapInstance, state.points);
+            renderPoints(mapInstance, state.points, routeToShow, color);
         } else {
             clearMarkers(mapInstance);
         }
 
-        const routeToShow = state.selectedRouteMode === 'optimized'
-            ? state.optimizedRoute
-            : state.baseRoute;
-
         if (routeToShow) {
-            const color = state.selectedRouteMode === 'optimized' ? '#4CAF50' : '#3388ff';
             drawRoute(mapInstance, routeToShow, { color });
         } else {
             clearRoute(mapInstance);
         }
     });
 }
+
 

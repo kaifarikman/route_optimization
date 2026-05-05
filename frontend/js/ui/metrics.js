@@ -47,7 +47,16 @@ export function updateMetrics(route, mode) {
     const comparison = compareMetrics();
     if (comparison) {
         const compText = document.getElementById('comparisonText');
-        compText.textContent = `Экономия: ${comparison.distanceSaved.toFixed(2)} км и ${comparison.timeSaved.toFixed(0)} мин.`;
+
+        if (comparison.distanceSaved > 0) {
+            compText.innerHTML = `Экономия: ${comparison.distanceSaved.toFixed(2)} км и ${comparison.timeSaved.toFixed(0)} мин.
+Улучшение: ${comparison.distancePercent.toFixed(1)}%`;
+        } else if (comparison.distanceSaved < 0) {
+            compText.innerHTML = `Оптимизированный маршрут оказался длиннее на ${Math.abs(comparison.distanceSaved).toFixed(2)} км`;
+        } else {
+            compText.innerHTML = `Длина маршрутов совпадает`;
+        }
+
         document.getElementById('comparisonCard').style.display = 'block';
     }
 }
@@ -71,5 +80,6 @@ function renderOrderList(route) {
 
     card.style.display = 'block';
 }
+
 
 

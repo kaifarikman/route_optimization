@@ -33,7 +33,6 @@ export class ApiClient {
         }
     }
 
-    // Points endpoints
     async generatePoints(centerLat, centerLon, radius, count) {
         return this.request('POST', '/points/generate', {
             center_lat: centerLat,
@@ -51,7 +50,6 @@ export class ApiClient {
         return this.request('DELETE', '/points');
     }
 
-    // Routes endpoints
     async buildBaseRoute(pointIds) {
         return this.request('POST', '/routes/base', {
             point_ids: pointIds
@@ -82,6 +80,5 @@ export class ApiClient {
     }
 }
 
-// Глобальный экземпляр клиента
 const api = new ApiClient();
 export default api;

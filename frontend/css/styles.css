@@ -42,7 +42,6 @@ button {
 button.secondary { background: #d8dcef; }
 .card.green button { background: #8fd19e; }
 
-/* Disabled states (Добавлено для FE-06) */
 button:disabled,
 button.secondary:disabled,
 .card.green button:disabled {

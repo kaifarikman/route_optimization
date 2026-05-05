@@ -11,21 +11,24 @@ export function initMap() {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance);
 
     store.subscribe((state) => {
-        const isOptimized = state.selectedRouteMode === 'optimized';
-        const route = isOptimized ? state.optimizedRoute : state.baseRoute;
-        const color = isOptimized ? '#4CAF50' : '#3388ff';
+        const isOptimizedMode = state.selectedRouteMode === 'optimized';
+        const routeToShow = isOptimizedMode ? state.optimizedRoute : state.baseRoute;
+
+        const color = isOptimizedMode ? '#4CAF50' : '#3388ff';
 
         if (state.points && state.points.length > 0) {
-            renderPoints(mapInstance, state.points, route, color);
+            renderPoints(mapInstance, state.points, routeToShow, color);
         } else {
             clearMarkers(mapInstance);
         }
 
-        if (route) {
-            drawRoute(mapInstance, route, { color });
+        if (routeToShow) {
+            drawRoute(mapInstance, routeToShow, { color });
         } else {
             clearRoute(mapInstance);
         }
     });
     return mapInstance;
 }
+
+

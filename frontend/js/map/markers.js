@@ -16,18 +16,9 @@ export function renderPoints(mapInstance, points, currentRoute = null, pointColo
         }
     }
 
-    let orderedIds = points.map(p => p.id);
-    if (currentRoute) {
-        if (currentRoute.point_ids) {
-            orderedIds = currentRoute.point_ids;
-        } else if (currentRoute.points) {
-            orderedIds = currentRoute.points.map(p => p.id || p);
-        }
-    }
-
     points.forEach((point) => {
         const orderIndex = orderedIds.indexOf(point.id);
-        const orderText = (currentRoute && orderIndex !== -1) ? String(orderIndex + 1) : '';
+        const orderText = (orderIndex !== -1) ? String(orderIndex + 1) : '';
 
         const marker = L.circleMarker([point.lat, point.lon], {
             radius: 8,
@@ -46,17 +37,7 @@ export function renderPoints(mapInstance, points, currentRoute = null, pointColo
             });
         }
 
-        if (orderText) {
-            marker.bindTooltip(orderText, {
-                permanent: true,
-                className: 'point-order-tooltip'
-            });
-        }
-
-        const popupContent = `<b>Точка ${point.id}</b>` +
-            (orderText ? `Порядок посещения: ${orderText}` : '');
-
-        marker.bindPopup(popupContent);
+        marker.bindPopup(`<b>Точка ${point.id}</b>${orderText ? `Порядок: ${orderText}` : ''}`);
         currentMarkers.push(marker);
     });
 

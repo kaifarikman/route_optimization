@@ -17,6 +17,10 @@ BACKEND_PORT = int(os.getenv("BACKEND_PORT", "8000"))
 BACKEND_RELOAD = os.getenv("BACKEND_RELOAD", "false").lower() == "true"
 FRONTEND_PORT = int(os.getenv("FRONTEND_PORT", "8001"))
 FRONTEND_API_BASE_URL = os.getenv("FRONTEND_API_BASE_URL", f"http://localhost:{BACKEND_PORT}")
+ROUTING_PROVIDER = os.getenv("ROUTING_PROVIDER", "haversine")
+OSRM_BASE_URL = os.getenv("OSRM_BASE_URL", "https://router.project-osrm.org")
+ROUTING_TIMEOUT_SECONDS = int(os.getenv("ROUTING_TIMEOUT_SECONDS", "5"))
+DEFAULT_TRANSPORT_TYPE = os.getenv("DEFAULT_TRANSPORT_TYPE", "driving")
 CORS_ALLOW_ORIGINS = [
     origin.strip()
     for origin in os.getenv("CORS_ALLOW_ORIGINS", f"http://localhost:{FRONTEND_PORT}").split(",")

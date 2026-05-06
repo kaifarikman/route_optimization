@@ -61,6 +61,12 @@ function renderOrderList(route) {
         card.style.display = 'none';
         return;
     }
+    const orderedIds = route.point_ids || route.points?.map(p => p.id || p) || [];
+
+    list.innerHTML = orderedIds.map((id, index) => {
+        const p = points.find(point => point.id === id);
+        return p ? `<li><b>${index + 1}.</b> Точка ${p.id} — ${p.lat.toFixed(3)}, ${p.lon.toFixed(3)}</li>` : '';
+    }).join('');
 
     const orderedIds = route.point_ids || route.points?.map(p => p.id || p) || [];
 

@@ -12,6 +12,11 @@ class Route(BaseModel):
     distance_km: float
     duration_minutes: float
     coordinates: List[Tuple[float, float]]  # [[lat,lon], ...]
+    geometry: List[Tuple[float, float]]
+    provider: str
+    is_fallback:bool
+    geometry_type:str
+    transport_type: str
 
     model_config = ConfigDict(from_attributes=True)
 

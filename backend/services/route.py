@@ -5,7 +5,6 @@ from backend.domain.route import Route
 from backend.domain.point import Point
 from backend.services.routing_providers.factory import get_routing_provider
 from backend.services.routing_service import build_nearest_neighbor_route
-from backend.utils.geo import calculate_distance
 
 
 def _get_points_in_requested_order(point_ids: list[int], uow: AbstractUnitOfWork) -> list[Point]:
@@ -34,6 +33,11 @@ def build_base_route(point_ids: list[int], uow: AbstractUnitOfWork) -> Route:
         distance_km=routing_result.distance_km,
         duration_minutes=routing_result.duration_minutes,
         coordinates=coordinates,
+        geometry=routing_result.geometry,
+        provider=routing_result.provider,
+        is_fallback=routing_result.is_fallback,
+        geometry_type=routing_result.geometry_type,
+        transport_type=routing_result.transport_type,
     )
     uow.commit()
     return route
@@ -63,6 +67,11 @@ def optimize_route(point_ids: List[int], uow: AbstractUnitOfWork) -> Route:
         distance_km=routing_result.distance_km,
         duration_minutes=routing_result.duration_mins,
         coordinates=coords,
+        geometry=routing_result.geometry,
+        provider=routing_result.provider,
+        is_fallback=routing_result.is_fallback,
+        geometry_type=routing_result.geometry_type,
+        transport_type=routing_result.transport_type,
     )
     uow.commit()
 
@@ -76,6 +85,11 @@ def _route_to_dict(route: Route) -> Dict:
         "distance_km": route.distance_km,
         "duration_minutes": route.duration_minutes,
         "coordinates": route.coordinates,
+        "geometry": route.geometry,
+        "provider": route.provider,
+        "is_fallback": route.is_fallback,
+        "geometry_type": route.geometry_type,
+        "transport_type": route.transport_type,
     }
 
 

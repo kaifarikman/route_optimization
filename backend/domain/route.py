@@ -9,3 +9,8 @@ class Route:
     distance_km: float
     duration_minutes: float
     coordinates: List[Tuple[float, float]]
+    geometry: List[Tuple[float, float]]
+    provider: str
+    is_fallback:bool
+    geometry_type:str
+    transport_type: str

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Protocol, Tuple
+from backend.domain.point import Point
 
 @dataclass
 class RoutingResult():
@@ -14,5 +15,5 @@ class RoutingResult():
 
 
 class RoutingProvider(Protocol):
-    def build_route(points, transport_type="driving") -> RoutingResult:
+    def build_route(points: List[Point], transport_type="driving") -> RoutingResult:
         ...

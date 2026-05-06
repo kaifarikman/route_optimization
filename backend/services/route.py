@@ -3,6 +3,7 @@ from typing import Dict, List
 from backend.db.uow import AbstractUnitOfWork
 from backend.domain.route import Route
 from backend.domain.point import Point
+from backend.services.routing_providers.factory import get_routing_provider
 from backend.services.routing_service import build_nearest_neighbor_route
 from backend.utils.geo import calculate_distance
 
@@ -17,47 +18,21 @@ def _get_points_in_requested_order(point_ids: list[int], uow: AbstractUnitOfWork
     return points
 
 
-def calculate_route_distance(points: list[Point]) -> float:
-    """
-    Рассчитывает длину пути через заданные точки 
-    """
-    path_length = 0.0
-    for i in range(len(points) - 1):
-        point1, point2 = points[i], points[i + 1]
-        lat1, lon1 = point1.lat, point1.lon
-        lat2, lon2 = point2.lat, point2.lon
-
-        path_length += calculate_distance(lat1, lon1, lat2, lon2)
-
-    return path_length
-
-
-def calculate_route_duration(distance_km: float) -> float:
-    """
-    Рассчитывает время пути в минутах
-    """
-    speed_km_h = 40
-    time_hours = distance_km / speed_km_h
-    time_minutes = time_hours * 60
-
-    return time_minutes
-
-
 def build_base_route(point_ids: list[int], uow: AbstractUnitOfWork) -> Route:
     """
     Строит базовый маршрут и записывает его в БД
     """
-    points = _get_points_in_requested_order(point_ids, uow)
+    provider = get_routing_provider()
 
-    distance_km = calculate_route_distance(points)
-    duration_minutes = calculate_route_duration(distance_km)
+    points = _get_points_in_requested_order(point_ids, uow)
+    routing_result = provider.build_route(points)
 
     coordinates = [[point.lat, point.lon] for point in points]
 
     route = uow.routes.add(
         points=[point.id for point in points],
-        distance_km=distance_km,
-        duration_minutes=duration_minutes,
+        distance_km=routing_result.distance_km,
+        duration_minutes=routing_result.duration_minutes,
         coordinates=coordinates,
     )
     uow.commit()
@@ -78,14 +53,15 @@ def optimize_route(point_ids: List[int], uow: AbstractUnitOfWork) -> Route:
     ordered_points = [points_by_id[point_id] for point_id in point_ids]
     optimized_points = build_nearest_neighbor_route(ordered_points)
 
+    provider = get_routing_provider()
+
     coords = [[point.lat, point.lon] for point in optimized_points]
-    distance_km = calculate_route_distance(optimized_points)
-    duration_mins = calculate_route_duration(distance_km)
+    routing_result = provider.build_route(optimized_points)
 
     route = uow.routes.add(
         points=[point.id for point in optimized_points],
-        distance_km=distance_km,
-        duration_minutes=duration_mins,
+        distance_km=routing_result.distance_km,
+        duration_minutes=routing_result.duration_mins,
         coordinates=coords,
     )
     uow.commit()

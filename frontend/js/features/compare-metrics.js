@@ -7,15 +7,31 @@ export function compareMetrics() {
         return null;
     }
 
-    const distanceSaved = baseRoute.distance_km - optimizedRoute.distance_km;
-    const timeSaved = baseRoute.duration_minutes - optimizedRoute.duration_minutes;
+    const distanceBefore = baseRoute.distance_km;
+    const distanceAfter = optimizedRoute.distance_km;
+    const timeBefore = baseRoute.duration_minutes;
+    const timeAfter = optimizedRoute.duration_minutes;
+
+    if (distanceBefore === undefined || distanceAfter === undefined || timeBefore === undefined || timeAfter === undefined) {
+        return null;
+    }
+
+    const distanceSaved = distanceBefore - distanceAfter;
+    const timeSaved = timeBefore - timeAfter;
+    let distancePercent = 0;
+    if (distanceBefore > 0) {
+        distancePercent = ((distanceBefore - distanceAfter) / distanceBefore) * 100;
+    }
 
     return {
-        distanceBefore: baseRoute.distance_km,
-        distanceAfter: optimizedRoute.distance_km,
+        distanceBefore,
+        distanceAfter,
         distanceSaved,
-        timeBefore: baseRoute.duration_minutes,
-        timeAfter: optimizedRoute.duration_minutes,
+        timeBefore,
+        timeAfter,
         timeSaved,
+        distancePercent
     };
 }
+
+

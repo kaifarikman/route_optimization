@@ -3,7 +3,9 @@ const initialState = {
     baseRoute: null,
     optimizedRoute: null,
     selectedRouteMode: 'base',
-    status: 'idle'
+    status: 'idle',
+    isLoading: false,
+    loadingAction: null
 };
 
 let state = { ...initialState };
@@ -25,3 +27,5 @@ export const store = {
         };
     }
 };
+
+

@@ -46,7 +46,7 @@ class HaversineRoutingProvider:
 
         return time_minutes
     
-    def build_route(self, points: list[Point], transport_type="driving") -> RoutingResult:
+    def build_route(self, points: list[Point], transport_type: str = "driving") -> RoutingResult:
         distance = self.calculate_route_distance(points)
         duration = self.calculate_route_duration(distance)
         geometry = [[point.lat, point.lon] for point in points]
@@ -57,5 +57,19 @@ class HaversineRoutingProvider:
             provider="haversine",
             is_fallback=False,
             geometry_type="straight",
-            transport_type=transport_type
+            transport_type=transport_type,
         )
+
+    def calculate_route(self, points: list[dict], transport_type: str = "driving") -> dict:
+        """Dict-based interface: points are {"lat": ..., "lon": ...}."""
+        point_objects = [Point(id=i + 1, lat=p["lat"], lon=p["lon"]) for i, p in enumerate(points)]
+        result = self.build_route(point_objects, transport_type)
+        return {
+            "provider": result.provider,
+            "distance_km": result.distance_km,
+            "duration_sec": result.duration_minutes * 60,
+            "geometry": result.geometry,
+            "geometry_type": result.geometry_type,
+            "transport_type": result.transport_type,
+            "is_fallback": result.is_fallback,
+        }

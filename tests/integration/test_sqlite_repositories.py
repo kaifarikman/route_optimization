@@ -42,6 +42,11 @@ def test_sqlite_repositories_roundtrip(tmp_path: Path):
         coordinates=[[first.lat, first.lon], [second.lat, second.lon]],
         distance_km=1.5,
         duration_minutes=2.25,
+        geometry=[[first.lat, first.lon], [second.lat, second.lon]],
+        provider="haversine",
+        is_fallback=False,
+        geometry_type="straight",
+        transport_type="driving",
     )
     session.commit()
 

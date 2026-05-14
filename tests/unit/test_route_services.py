@@ -22,13 +22,29 @@ class FakeRouteRepository:
         self.items = []
         self.next_id = 1
 
-    def add(self, points: list[int], coordinates: list[list[float]], distance_km: float, duration_minutes: float):
+    def add(
+        self,
+        points: list[int],
+        coordinates: list[list[float]],
+        distance_km: float,
+        duration_minutes: float,
+        geometry: list,
+        provider: str,
+        is_fallback: bool,
+        geometry_type: str,
+        transport_type: str,
+    ):
         route = SimpleNamespace(
             id=self.next_id,
             points=points,
             coordinates=[tuple(item) for item in coordinates],
             distance_km=distance_km,
             duration_minutes=duration_minutes,
+            geometry=[tuple(item) for item in geometry] if geometry else [],
+            provider=provider,
+            is_fallback=is_fallback,
+            geometry_type=geometry_type,
+            transport_type=transport_type,
         )
         self.next_id += 1
         self.items.append(route)

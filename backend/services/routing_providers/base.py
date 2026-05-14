@@ -3,7 +3,7 @@ from typing import List, Protocol, Tuple
 from backend.domain.point import Point
 
 @dataclass
-class RoutingResult():
+class RoutingResult:
     """Модель результата маршрутизации"""
     distance_km: float
     duration_minutes: float

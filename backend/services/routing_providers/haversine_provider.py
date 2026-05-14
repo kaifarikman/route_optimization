@@ -49,11 +49,11 @@ class HaversineRoutingProvider:
     def build_route(self, points: list[Point], transport_type="driving") -> RoutingResult:
         distance = self.calculate_route_distance(points)
         duration = self.calculate_route_duration(distance)
-
+        geometry = [[point.lat, point.lon] for point in points]
         return RoutingResult(
             distance_km=distance,
             duration_minutes=duration,
-            geometry=points,
+            geometry=geometry,
             provider="haversine",
             is_fallback=False,
             geometry_type="straight",

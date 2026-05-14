@@ -5,7 +5,7 @@
 ## Инструкция по запуску
 
 ```shell
-docker compose up --build
+docker compose up --build -d
 ```
 
 Frontend `http://localhost:8080`

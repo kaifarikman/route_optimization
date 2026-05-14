@@ -15,5 +15,5 @@ class RoutingResult():
 
 
 class RoutingProvider(Protocol):
-    def build_route(points: List[Point], transport_type="driving") -> RoutingResult:
+    def build_route(self, points: List[Point], transport_type="driving") -> RoutingResult:
         ...

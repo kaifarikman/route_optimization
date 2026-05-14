@@ -26,15 +26,25 @@ class FakeRouteRepository:
         self,
         points: list[int],
         coordinates: list[list[float]],
+        geometry: list[list[float]],
         distance_km: float,
         duration_minutes: float,
+        provider: str,
+        is_fallback: bool,
+        geometry_type: str,
+        transport_type: str,
     ):
         route = {
             "id": self._next_id,
             "points": points,
             "coordinates": [tuple(item) for item in coordinates],
+            "geometry": [tuple(item) for item in geometry],
             "distance_km": distance_km,
             "duration_minutes": duration_minutes,
+            "provider": provider,
+            "is_fallback": is_fallback,
+            "geometry_type": geometry_type,
+            "transport_type": transport_type,
         }
         self._next_id += 1
         self._routes.append(route)
@@ -92,6 +102,12 @@ def test_build_base_route_endpoint_returns_route():
     assert data["coordinates"] == [[55.75, 37.61], [55.76, 37.62], [55.77, 37.63]]
     assert data["distance_km"] > 0
     assert data["duration_minutes"] > 0
+
+    assert len(data["geometry"]) == len(data["coordinates"])
+    assert data["provider"] in ["osrm", "haversine"]
+    assert isinstance(data["is_fallback"], bool)
+    assert data["geometry_type"] in ["full", "straight"]
+    assert data["transport_type"] == "driving"
     assert holder["uow"].committed is True
 
 
@@ -117,6 +133,15 @@ def test_optimize_route_endpoint_returns_route():
     assert data["points"][0] == 1
     assert sorted(data["points"]) == [1, 2, 3, 4]
     assert len(data["coordinates"]) == 4
+    assert data["distance_km"] > 0
+    assert data["duration_minutes"] > 0
+
+    assert isinstance(data["geometry"], list)
+    assert len(data["geometry"]) == len(data["coordinates"])
+    assert data["provider"] in ["osrm", "haversine"]
+    assert isinstance(data["is_fallback"], bool)
+    assert data["geometry_type"] in ["full", "straight"]
+    assert data["transport_type"] == "driving"
     assert holder["uow"].committed is True
 
 
@@ -149,4 +174,20 @@ def test_get_all_routes_endpoint_returns_saved_routes():
     assert build_response.status_code == 200
     assert list_response.status_code == 200
     assert list_response.json()["total"] == 1
+
+    route = list_response.json()["routes"][0]
+    assert "id" in route
+    assert "points" in route
+    assert "coordinates" in route
+    assert "geometry" in route
+    assert "distance_km" in route
+    assert "duration_minutes" in route
+    assert "provider" in route
+    assert "is_fallback" in route
+    assert "geometry_type" in route
+    assert "transport_type" in route
     assert list_response.json()["routes"][0]["points"] == [1, 2]
+    assert isinstance(route["geometry"], list)
+    assert isinstance(route["provider"], str)
+    assert isinstance(route["is_fallback"], bool)
+    assert isinstance(route["geometry_type"], str)

@@ -2,8 +2,8 @@ import math
 from backend.domain.point import Point
 from backend.services.routing_providers.base import RoutingResult
 
-class HaversineRoutingProvider():
-    def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+class HaversineRoutingProvider:
+    def calculate_distance(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         """
         Расчитывает кратчайшее расстояние между 2 точками по формуле гаверсинусов
         """
@@ -21,7 +21,7 @@ class HaversineRoutingProvider():
         return R_earth * c
     
 
-    def calculate_route_distance(points: list[Point]) -> float:
+    def calculate_route_distance(self, points: list[Point]) -> float:
         """
         Рассчитывает длину пути через заданные точки 
         """
@@ -31,12 +31,12 @@ class HaversineRoutingProvider():
             lat1, lon1 = point1.lat, point1.lon
             lat2, lon2 = point2.lat, point2.lon
 
-            path_length += HaversineRoutingProvider.calculate_distance(lat1, lon1, lat2, lon2)
+            path_length += self.calculate_distance(lat1, lon1, lat2, lon2)
 
         return path_length
 
 
-    def calculate_route_duration(distance_km: float) -> float:
+    def calculate_route_duration(self, distance_km: float) -> float:
         """
         Рассчитывает время пути в минутах
         """
@@ -46,9 +46,9 @@ class HaversineRoutingProvider():
 
         return time_minutes
     
-    def build_route(points: list[Point], transport_type="driving") -> RoutingResult:
-        distance = HaversineRoutingProvider.calculate_route_distance(points)
-        duration = HaversineRoutingProvider.calculate_route_duration(distance)
+    def build_route(self, points: list[Point], transport_type="driving") -> RoutingResult:
+        distance = self.calculate_route_distance(points)
+        duration = self.calculate_route_duration(distance)
 
         return RoutingResult(
             distance_km=distance,

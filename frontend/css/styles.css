@@ -125,17 +125,3 @@ button.secondary:disabled,
 .field { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
 .field input { width: 80px; padding: 5px; border-radius: 5px; border: none; }
 
-.point-order-tooltip {
-    background: white;
-    color: black;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 2px 6px;
-    font-weight: bold;
-    font-size: 14px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
-
-.point-order-tooltip::before {
-    display: block;
-}

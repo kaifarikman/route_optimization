@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from backend.config import ROUTING_PROVIDER
 from backend.schemas.route import ConfigResponse, HealthResponse
 
 router = APIRouter()
@@ -13,7 +14,7 @@ async def health_check():
 @router.get("/config", response_model=ConfigResponse)
 async def get_config():
     return {
-        "routing_api": "osrm",
+        "routing_api": ROUTING_PROVIDER,
         "version": "1.0.0",
         "cors_enabled": True,
         "database": "sqlite",

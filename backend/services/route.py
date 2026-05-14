@@ -65,7 +65,7 @@ def optimize_route(point_ids: List[int], uow: AbstractUnitOfWork) -> Route:
     route = uow.routes.add(
         points=[point.id for point in optimized_points],
         distance_km=routing_result.distance_km,
-        duration_minutes=routing_result.duration_mins,
+        duration_minutes=routing_result.duration_minutes,
         coordinates=coords,
         geometry=routing_result.geometry,
         provider=routing_result.provider,

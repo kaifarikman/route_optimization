@@ -10,8 +10,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  BACKEND_IMAGE: kaifarikman/route-optimization-backend
-  FRONTEND_IMAGE: kaifarikman/route-optimization-frontend
+  BACKEND_IMAGE: kaifarikmann/route-optimization-backend
+  FRONTEND_IMAGE: kaifarikmann/route-optimization-frontend
 
 jobs:
   test:

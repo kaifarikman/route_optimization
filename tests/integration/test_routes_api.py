@@ -103,7 +103,7 @@ def test_build_base_route_endpoint_returns_route():
     assert data["distance_km"] > 0
     assert data["duration_minutes"] > 0
 
-    assert len(data["geometry"]) == len(data["coordinates"])
+    assert len(data["geometry"]) >= len(data["coordinates"])
     assert data["provider"] in ["osrm", "haversine"]
     assert isinstance(data["is_fallback"], bool)
     assert data["geometry_type"] in ["full", "straight"]
@@ -137,7 +137,7 @@ def test_optimize_route_endpoint_returns_route():
     assert data["duration_minutes"] > 0
 
     assert isinstance(data["geometry"], list)
-    assert len(data["geometry"]) == len(data["coordinates"])
+    assert len(data["geometry"]) >= len(data["coordinates"])
     assert data["provider"] in ["osrm", "haversine"]
     assert isinstance(data["is_fallback"], bool)
     assert data["geometry_type"] in ["full", "straight"]

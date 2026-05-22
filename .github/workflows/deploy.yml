@@ -81,6 +81,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare server compose backup
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -euo pipefail
+
+            mkdir -p ~/route_optimization/data
+            cd ~/route_optimization
+
+            if [ -f compose.yaml ]; then
+              cp compose.yaml compose.yaml.prev
+            fi
+
+      - name: Upload production compose
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: deploy/compose.yaml
+          target: ~/route_optimization
+          strip_components: 1
+
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
         env:
@@ -98,9 +128,37 @@ jobs:
 
             cd ~/route_optimization
 
+            if [ ! -f .env ]; then
+              echo "Missing ~/route_optimization/.env. Create it from deploy/server.env.example before deploying."
+              exit 1
+            fi
+
+            set -a
+            . ./.env
+            set +a
+
             sed -i -E "s|image: ${BACKEND_IMAGE}:.*|image: ${BACKEND_IMAGE}:${TAG}|g" compose.yaml
             sed -i -E "s|image: ${FRONTEND_IMAGE}:.*|image: ${FRONTEND_IMAGE}:${TAG}|g" compose.yaml
 
+            rollback() {
+              echo "Deploy failed. Attempting rollback to compose.yaml.prev..."
+              if [ -f compose.yaml.prev ]; then
+                cp compose.yaml.prev compose.yaml
+                docker compose up -d --remove-orphans || true
+              fi
+            }
+
+            trap rollback ERR
+
             docker compose pull
             docker compose up -d --remove-orphans
+
+            BACKEND_PORT="${BACKEND_PORT:-8000}"
+            FRONTEND_PORT="${FRONTEND_PORT:-8080}"
+
+            curl -fsS "http://127.0.0.1:${BACKEND_PORT}/health"
+            curl -fsS "http://127.0.0.1:${FRONTEND_PORT}/js/env.js"
+            curl -fsS "http://127.0.0.1:${FRONTEND_PORT}/api/health"
+
+            trap - ERR
             docker image prune -f

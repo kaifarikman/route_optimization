@@ -142,23 +142,51 @@ jobs:
 
             rollback() {
               echo "Deploy failed. Attempting rollback to compose.yaml.prev..."
+              docker compose -f compose.yaml ps || true
+              docker compose -f compose.yaml logs --tail=100 backend || true
+              docker compose -f compose.yaml logs --tail=100 frontend || true
+
               if [ -f compose.yaml.prev ]; then
                 cp compose.yaml.prev compose.yaml
-                docker compose up -d --remove-orphans || true
+                docker compose -f compose.yaml up -d --remove-orphans || true
               fi
+            }
+
+            wait_for_url() {
+              local name="$1"
+              local url="$2"
+              local attempts="${3:-30}"
+              local delay="${4:-2}"
+
+              echo "Waiting for ${name}: ${url}"
+
+              for i in $(seq 1 "$attempts"); do
+                if curl -fsS "$url" >/tmp/deploy-check-response 2>/tmp/deploy-check-error; then
+                  cat /tmp/deploy-check-response
+                  echo
+                  return 0
+                fi
+
+                echo "${name} not ready yet (${i}/${attempts})"
+                cat /tmp/deploy-check-error || true
+                sleep "$delay"
+              done
+
+              echo "${name} did not become ready"
+              return 1
             }
 
             trap rollback ERR
 
-            docker compose pull
-            docker compose up -d --remove-orphans
+            docker compose -f compose.yaml pull
+            docker compose -f compose.yaml up -d --remove-orphans
 
             BACKEND_PORT="${BACKEND_PORT:-8000}"
             FRONTEND_PORT="${FRONTEND_PORT:-8080}"
 
-            curl -fsS "http://127.0.0.1:${BACKEND_PORT}/health"
-            curl -fsS "http://127.0.0.1:${FRONTEND_PORT}/js/env.js"
-            curl -fsS "http://127.0.0.1:${FRONTEND_PORT}/api/health"
+            wait_for_url "backend health" "http://127.0.0.1:${BACKEND_PORT}/health"
+            wait_for_url "frontend env" "http://127.0.0.1:${FRONTEND_PORT}/js/env.js"
+            wait_for_url "frontend api proxy" "http://127.0.0.1:${FRONTEND_PORT}/api/health"
 
             trap - ERR
             docker image prune -f

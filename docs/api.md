@@ -41,7 +41,17 @@
     [55.75, 37.61],
     [55.76, 37.62],
     [55.77, 37.63]
-  ]
+  ],
+  "geometry": [
+    [55.75, 37.61],
+    [55.755, 37.615],
+    [55.76, 37.62],
+    [55.77, 37.63]
+  ],
+  "provider": "osrm",
+  "is_fallback": false,
+  "geometry_type": "full",
+  "transport_type": "driving"
 }
 ```
 
@@ -146,7 +156,17 @@ Success response `200 OK`:
       [55.75, 37.61],
       [55.76, 37.62],
       [55.77, 37.63]
-    ]
+    ],
+    "geometry": [
+      [55.75, 37.61],
+      [55.755, 37.615],
+      [55.76, 37.62],
+      [55.77, 37.63]
+    ],
+    "provider": "osrm",
+    "is_fallback": false,
+    "geometry_type": "full",
+    "transport_type": "driving"
   }
 }
 ```
@@ -180,7 +200,16 @@ Success response `200 OK`:
       [55.75, 37.61],
       [55.77, 37.63],
       [55.76, 37.62]
-    ]
+    ],
+    "geometry": [
+      [55.75, 37.61],
+      [55.77, 37.63],
+      [55.76, 37.62]
+    ],
+    "provider": "haversine",
+    "is_fallback": true,
+    "geometry_type": "straight",
+    "transport_type": "driving"
   }
 }
 ```
@@ -210,7 +239,17 @@ Success response `200 OK`:
       [55.75, 37.61],
       [55.76, 37.62],
       [55.77, 37.63]
-    ]
+    ],
+    "geometry": [
+      [55.75, 37.61],
+      [55.755, 37.615],
+      [55.76, 37.62],
+      [55.77, 37.63]
+    ],
+    "provider": "osrm",
+    "is_fallback": false,
+    "geometry_type": "full",
+    "transport_type": "driving"
   }
 }
 ```
@@ -238,7 +277,17 @@ Success response `200 OK`:
         [55.75, 37.61],
         [55.76, 37.62],
         [55.77, 37.63]
-      ]
+      ],
+      "geometry": [
+        [55.75, 37.61],
+        [55.755, 37.615],
+        [55.76, 37.62],
+        [55.77, 37.63]
+      ],
+      "provider": "osrm",
+      "is_fallback": false,
+      "geometry_type": "full",
+      "transport_type": "driving"
     }
   ],
   "total": 1

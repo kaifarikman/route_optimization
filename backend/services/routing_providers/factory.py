@@ -3,11 +3,15 @@ from backend.services.routing_providers.base import RoutingProvider
 from backend.services.routing_providers.exceptions import RoutingProviderError
 from backend.services.routing_providers.haversine_provider import HaversineRoutingProvider
 from backend.services.routing_providers.osrm_provider import OsrmRoutingProvider
+from backend.services.routing_router import RoutingRouter
 
 def get_routing_provider() -> RoutingProvider:
     if ROUTING_PROVIDER.lower() == 'haversine':
         return HaversineRoutingProvider()
     elif ROUTING_PROVIDER.lower() == 'osrm':
-        return OsrmRoutingProvider()
+        return RoutingRouter(
+            primary_provider=OsrmRoutingProvider(),
+            fallback_provider=HaversineRoutingProvider(),
+        )
     else:
         raise RoutingProviderError("Неизвестный routing provider")

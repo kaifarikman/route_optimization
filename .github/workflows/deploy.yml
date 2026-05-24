@@ -93,7 +93,7 @@ jobs:
           script: |
             set -euo pipefail
 
-            mkdir -p ~/route_optimization/data
+            mkdir -p ~/route_optimization/data ~/route_optimization/scripts
             cd ~/route_optimization
 
             if [ -f compose.yaml ]; then
@@ -111,6 +111,16 @@ jobs:
           target: ~/route_optimization
           strip_components: 1
 
+      - name: Upload recovery scripts
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: scripts
+          target: ~/route_optimization
+
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
         env:
@@ -127,6 +137,7 @@ jobs:
             set -euo pipefail
 
             cd ~/route_optimization
+            chmod +x scripts/*.sh 2>/dev/null || true
 
             if [ ! -f .env ]; then
               echo "Missing ~/route_optimization/.env. Create it from deploy/server.env.example before deploying."

@@ -147,9 +147,14 @@ button.secondary:disabled,
     left: 15px;
     right: 15px;
     bottom: 15px;
+    background: #dff3ff;
 }
 
-#map { width: 82%; height: 90%; }
+#map {
+    width: 82%;
+    height: 90%;
+    background: #dff3ff;
+}
 
 .point-order-tooltip {
     background: white !important;

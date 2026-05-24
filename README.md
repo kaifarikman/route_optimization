@@ -2,7 +2,7 @@
 
 Веб-приложение для генерации точек доставки, построения маршрута между ними и сравнения базового порядка с оптимизированным порядком обхода.
 
-Production URL: http://111.88.157.91/
+Production URL: http://111.88.157.91:8080/
 
 ## Стек
 
@@ -63,6 +63,8 @@ git push origin main
 
 Production compose находится в `deploy/compose.yaml` и использует готовые Docker Hub images. Серверный `.env` не хранится в git и создаётся один раз по `deploy/server.env.example`.
 
+Production frontend работает на `8080`, потому что TCP `80` недоступен в текущей Yandex Cloud Security Group.
+
 Инструкции для агентов:
 
 - локально: `docs/agent-local-setup.md`;
@@ -76,9 +78,9 @@ Production compose находится в `deploy/compose.yaml` и использ
 | --- | --- | --- | --- |
 | `APP_ENV` | `development` | `production` | Режим приложения |
 | `BACKEND_PORT` | `8000` | `8000` | Порт FastAPI |
-| `FRONTEND_PORT` | `8080` | `80` | Публичный порт nginx frontend |
+| `FRONTEND_PORT` | `8080` | `8080` | Публичный порт nginx frontend |
 | `FRONTEND_API_BASE_URL` | `/api` | `/api` | Base URL для frontend API client |
-| `CORS_ALLOW_ORIGINS` | `http://localhost:8080,http://127.0.0.1:8080` | `http://111.88.157.91,http://111.88.157.91:80,http://localhost:8080` | Разрешённые browser origins |
+| `CORS_ALLOW_ORIGINS` | `http://localhost:8080,http://127.0.0.1:8080` | `http://111.88.157.91:8080,http://111.88.157.91,http://localhost:8080,http://127.0.0.1:8080` | Разрешённые browser origins |
 | `DATABASE_URL` | `sqlite:///./data/database.db` | `sqlite:///./data/database.db` | SQLite database path |
 | `NGINX_BACKEND_UPSTREAM` | `backend:8000` | `backend:8000` | nginx upstream для `/api` |
 | `ROUTING_PROVIDER` | `osrm` | `osrm` | Основной routing provider |

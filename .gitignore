@@ -33,3 +33,8 @@ data/*.sqlite3
 
 # Logs
 *.log
+
+# Keep only stable public docs in git
+docs/*
+!docs/api.md
+!docs/wireframe.pdf

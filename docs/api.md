@@ -1,15 +1,14 @@
-# API Contract
+# API
 
-Актуальный контракт backend API по текущей реализации.
+Backend отдает JSON API. Локально он доступен напрямую на `http://localhost:8000` и через frontend proxy на `http://localhost:8080/api`.
 
-## Content Type
+Swagger UI доступен на `http://localhost:8000/docs`.
 
-- Request: `application/json`
-- Response: `application/json`
+## Общие правила
 
-## Error Format
+Request и response body используют `application/json`.
 
-При ошибках endpoints возвращают стандартный объект FastAPI:
+Ошибки возвращаются в стандартном формате FastAPI:
 
 ```json
 {
@@ -17,15 +16,22 @@
 }
 ```
 
-## Schemas
+Чаще всего клиенту важны такие статусы:
+
+- `200 OK` - запрос выполнен.
+- `400 Bad Request` - некорректный запрос или не найдены точки для маршрута.
+- `404 Not Found` - маршрут с таким ID не найден.
+- `500 Internal Server Error` - ошибка чтения или записи на стороне backend.
+
+## Модели
 
 ### Point
 
 ```json
 {
   "id": 1,
-  "lat": 55.75,
-  "lon": 37.61
+  "lat": 55.751244,
+  "lon": 37.618423
 }
 ```
 
@@ -34,19 +40,18 @@
 ```json
 {
   "id": 1,
-  "points": [1, 2, 3],
-  "distance_km": 12.5,
-  "duration_minutes": 18.75,
+  "points": [1, 3, 2],
+  "distance_km": 12.4,
+  "duration_minutes": 23.8,
   "coordinates": [
-    [55.75, 37.61],
-    [55.76, 37.62],
-    [55.77, 37.63]
+    [55.751244, 37.618423],
+    [55.761244, 37.628423],
+    [55.741244, 37.608423]
   ],
   "geometry": [
-    [55.75, 37.61],
-    [55.755, 37.615],
-    [55.76, 37.62],
-    [55.77, 37.63]
+    [55.751244, 37.618423],
+    [55.755000, 37.620000],
+    [55.761244, 37.628423]
   ],
   "provider": "osrm",
   "is_fallback": false,
@@ -55,68 +60,102 @@
 }
 ```
 
+Поля маршрута:
+
+- `points` - ID точек в порядке посещения.
+- `coordinates` - координаты выбранных точек в том же порядке.
+- `geometry` - линия для отрисовки на карте.
+- `provider` - `osrm` или `haversine`.
+- `is_fallback` - `true`, если основной провайдер маршрутизации упал и использован резервный расчет.
+- `geometry_type` - `full` для дорожной геометрии OSRM, `straight` для прямых линий haversine.
+- `transport_type` - сейчас используется `driving`.
+
+## System
+
+### `GET /health`
+
+Проверяет, что backend отвечает.
+
+Response:
+
+```json
+{
+  "status": "ok",
+  "message": "Сервер запущен"
+}
+```
+
+### `GET /config`
+
+Возвращает runtime-настройки, которые нужны frontend и проверкам.
+
+Response:
+
+```json
+{
+  "routing_api": "osrm",
+  "version": "1.0.0",
+  "cors_enabled": true,
+  "database": "sqlite"
+}
+```
+
 ## Points
 
 ### `POST /points/generate`
 
-Генерирует точки вокруг заданного центра и сохраняет их в БД.
+Генерирует новый набор точек вокруг заданного центра.
 
-Request body:
+Важно: генерация заменяет текущий рабочий набор. Перед созданием новых точек backend удаляет старые точки и сохраненные маршруты.
+
+Request:
 
 ```json
 {
-  "center_lat": 55.75,
-  "center_lon": 37.61,
+  "center_lat": 55.751244,
+  "center_lon": 37.618423,
   "radius_km": 10,
   "count": 5
 }
 ```
 
-Success response `200 OK`:
+Response:
 
 ```json
 {
   "points": [
     {
       "id": 1,
-      "lat": 55.7541,
-      "lon": 37.6123
+      "lat": 55.754100,
+      "lon": 37.612300
     }
   ]
 }
 ```
-
-Error response:
-
-- `400 Bad Request` если произошла ошибка при генерации или сохранении
 
 ### `GET /points`
 
 Возвращает все сохраненные точки.
 
-Success response `200 OK`:
+Response:
 
 ```json
 {
   "points": [
     {
       "id": 1,
-      "lat": 55.7541,
-      "lon": 37.6123
+      "lat": 55.754100,
+      "lon": 37.612300
     }
   ]
 }
 ```
 
-Error response:
-
-- `500 Internal Server Error` если произошла ошибка чтения
-
 ### `DELETE /points`
 
-Удаляет все точки и все сохраненные маршруты.
+Удаляет все точки и все маршруты.
 
-Success response `200 OK`:
+Response:
 
 ```json
 {
@@ -125,17 +164,13 @@ Success response `200 OK`:
 }
 ```
 
-Error response:
-
-- `500 Internal Server Error` если произошла ошибка удаления
-
 ## Routes
 
 ### `POST /routes/base`
 
-Строит базовый маршрут в порядке переданных `point_ids`, рассчитывает метрики и сохраняет маршрут в БД.
+Строит маршрут в том порядке, в котором переданы `point_ids`.
 
-Request body:
+Request:
 
 ```json
 {
@@ -143,7 +178,7 @@ Request body:
 }
 ```
 
-Success response `200 OK`:
+Response:
 
 ```json
 {
@@ -153,15 +188,14 @@ Success response `200 OK`:
     "distance_km": 12.5,
     "duration_minutes": 18.75,
     "coordinates": [
-      [55.75, 37.61],
-      [55.76, 37.62],
-      [55.77, 37.63]
+      [55.751244, 37.618423],
+      [55.761244, 37.628423],
+      [55.741244, 37.608423]
     ],
     "geometry": [
-      [55.75, 37.61],
-      [55.755, 37.615],
-      [55.76, 37.62],
-      [55.77, 37.63]
+      [55.751244, 37.618423],
+      [55.761244, 37.628423],
+      [55.741244, 37.608423]
     ],
     "provider": "osrm",
     "is_fallback": false,
@@ -171,15 +205,13 @@ Success response `200 OK`:
 }
 ```
 
-Error responses:
-
-- `400 Bad Request` если одна или несколько точек не найдены или запрос некорректен
-
 ### `POST /routes/optimize`
 
-Строит оптимизированный маршрут по алгоритму nearest neighbor, рассчитывает метрики и сохраняет маршрут в БД.
+Строит оптимизированный маршрут по тем же точкам.
 
-Request body:
+Алгоритм начинает с первой переданной точки, затем каждый раз выбирает ближайшую еще не посещенную точку. Это быстрый жадный алгоритм, а не поиск глобального оптимума.
+
+Request:
 
 ```json
 {
@@ -187,46 +219,38 @@ Request body:
 }
 ```
 
-Success response `200 OK`:
+Response:
 
 ```json
 {
   "route": {
-    "id": 1,
+    "id": 2,
     "points": [1, 3, 2],
     "distance_km": 10.2,
     "duration_minutes": 15.3,
     "coordinates": [
-      [55.75, 37.61],
-      [55.77, 37.63],
-      [55.76, 37.62]
+      [55.751244, 37.618423],
+      [55.741244, 37.608423],
+      [55.761244, 37.628423]
     ],
     "geometry": [
-      [55.75, 37.61],
-      [55.77, 37.63],
-      [55.76, 37.62]
+      [55.751244, 37.618423],
+      [55.741244, 37.608423],
+      [55.761244, 37.628423]
     ],
-    "provider": "haversine",
-    "is_fallback": true,
-    "geometry_type": "straight",
+    "provider": "osrm",
+    "is_fallback": false,
+    "geometry_type": "full",
     "transport_type": "driving"
   }
 }
 ```
-
-Error responses:
-
-- `400 Bad Request` если одна или несколько точек не найдены или запрос некорректен
 
 ### `GET /routes/{route_id}`
 
 Возвращает сохраненный маршрут по ID.
 
-Path params:
-
-- `route_id: int`
-
-Success response `200 OK`:
+Response:
 
 ```json
 {
@@ -236,15 +260,14 @@ Success response `200 OK`:
     "distance_km": 12.5,
     "duration_minutes": 18.75,
     "coordinates": [
-      [55.75, 37.61],
-      [55.76, 37.62],
-      [55.77, 37.63]
+      [55.751244, 37.618423],
+      [55.761244, 37.628423],
+      [55.741244, 37.608423]
     ],
     "geometry": [
-      [55.75, 37.61],
-      [55.755, 37.615],
-      [55.76, 37.62],
-      [55.77, 37.63]
+      [55.751244, 37.618423],
+      [55.761244, 37.628423],
+      [55.741244, 37.608423]
     ],
     "provider": "osrm",
     "is_fallback": false,
@@ -254,16 +277,11 @@ Success response `200 OK`:
 }
 ```
 
-Error responses:
-
-- `404 Not Found` если маршрут не найден
-- `500 Internal Server Error` если произошла ошибка чтения
-
 ### `GET /routes`
 
-Возвращает список всех сохраненных маршрутов.
+Возвращает все сохраненные маршруты.
 
-Success response `200 OK`:
+Response:
 
 ```json
 {
@@ -274,15 +292,14 @@ Success response `200 OK`:
       "distance_km": 12.5,
       "duration_minutes": 18.75,
       "coordinates": [
-        [55.75, 37.61],
-        [55.76, 37.62],
-        [55.77, 37.63]
+        [55.751244, 37.618423],
+        [55.761244, 37.628423],
+        [55.741244, 37.608423]
       ],
       "geometry": [
-        [55.75, 37.61],
-        [55.755, 37.615],
-        [55.76, 37.62],
-        [55.77, 37.63]
+        [55.751244, 37.618423],
+        [55.761244, 37.628423],
+        [55.741244, 37.608423]
       ],
       "provider": "osrm",
       "is_fallback": false,
@@ -294,36 +311,13 @@ Success response `200 OK`:
 }
 ```
 
-Error response:
+## Маршрутизация и fallback
 
-- `500 Internal Server Error` если произошла ошибка чтения
+По умолчанию backend использует OSRM:
 
-## System
-
-### `GET /health`
-
-Проверка доступности backend.
-
-Success response `200 OK`:
-
-```json
-{
-  "status": "ok",
-  "message": "Server is running"
-}
+```env
+ROUTING_PROVIDER=osrm
+OSRM_BASE_URL=https://router.project-osrm.org
 ```
 
-### `GET /config`
-
-Возвращает текущую конфигурацию, которую backend отдает как service info.
-
-Success response `200 OK`:
-
-```json
-{
-  "routing_api": "osrm",
-  "version": "1.0.0",
-  "cors_enabled": true,
-  "database": "sqlite"
-}
-```
+Если OSRM недоступен, backend автоматически строит маршрут через haversine. Такой маршрут возвращается с `is_fallback=true`, `provider="haversine"` и `geometry_type="straight"`.

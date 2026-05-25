@@ -34,18 +34,20 @@ export function resetMetrics() {
     document.getElementById('optimizedMetrics').innerHTML = '0 км | 0 мин';
     document.getElementById('comparisonCard').style.display = 'none';
     document.getElementById('routeOrderCard').style.display = 'none';
-    document.getElementById('routeOrderList').innerHTML = '';
 }
 
 export function updateMetrics(route, mode) {
-    const baseEl = document.getElementById('baseMetrics');
-    const optEl = document.getElementById('optimizedMetrics');
+    if (!route) return;
 
-    if (route) {
-        const formattedHtml = formatRouteMetrics(route);
-        if (mode === 'base') baseEl.innerHTML = formattedHtml;
-        if (mode === 'optimized') optEl.innerHTML = formattedHtml;
+    const formattedHtml = formatRouteMetrics(route);
+    if (mode === 'base') {
+        const baseEl = document.getElementById('baseMetrics');
+        if (baseEl) baseEl.innerHTML = formattedHtml;
+    } else if (mode === 'optimized') {
+        const optEl = document.getElementById('optimizedMetrics');
+        if (optEl) optEl.innerHTML = formattedHtml;
     }
+
     renderOrderList(route);
 
     const comparison = compareMetrics();
@@ -77,7 +79,7 @@ function renderOrderList(route) {
 
     list.innerHTML = orderedIds.map((id, index) => {
         const p = points.find(point => point.id === id);
-        return p ? `<li><b>${index + 1}.</b> Точка ${p.id} — ${p.lat.toFixed(3)}, ${p.lon.toFixed(3)}</li>` : '';
+        return `<li>${index + 1}. Точка ${id} ${p ? `(${p.lat.toFixed(4)}, ${p.lon.toFixed(4)})` : ''}</li>`;
     }).join('');
 
     card.style.display = 'block';

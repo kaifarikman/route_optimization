@@ -20,7 +20,7 @@ export class ApiClient {
 
         try {
             const response = await fetch(url, options);
-            
+
             if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.detail || `Ошибка: ${response.status}`);
@@ -68,15 +68,6 @@ export class ApiClient {
 
     async getAllRoutes() {
         return this.request('GET', '/routes');
-    }
-
-    // Service endpoints
-    async checkHealth() {
-        return this.request('GET', '/health');
-    }
-
-    async getConfig() {
-        return this.request('GET', '/config');
     }
 }
 

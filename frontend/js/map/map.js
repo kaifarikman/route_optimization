@@ -6,9 +6,10 @@ let mapInstance = null;
 
 export function initMap() {
     if (mapInstance) return mapInstance;
-
-    mapInstance = L.map('map').setView([20.22, 20.22], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance);
+    mapInstance = L.map('map').setView([55.75, 37.62], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(mapInstance);
 
     store.subscribe((state) => {
         const isOptimized = state.selectedRouteMode === 'optimized';

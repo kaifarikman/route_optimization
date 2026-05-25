@@ -21,11 +21,9 @@ export const store = {
     },
     subscribe(listener) {
         listeners.push(listener);
-        listener(state); // Сразу уведомляем подписчика о текущем состоянии
+        listener(state);
         return () => {
             listeners = listeners.filter(l => l !== listener);
         };
     }
 };
-
-

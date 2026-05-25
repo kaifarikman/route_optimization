@@ -33,5 +33,3 @@ export function compareMetrics() {
         distancePercent
     };
 }
-
-

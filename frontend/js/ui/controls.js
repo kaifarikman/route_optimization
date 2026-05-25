@@ -42,10 +42,23 @@ export function initControls() {
 
         if (buildRouteBtn) {
             buildRouteBtn.disabled = state.isLoading || !hasMinPoints;
+            if (!hasMinPoints) {
+                buildRouteBtn.title = "Нужно минимум 2 точки";
+            } else {
+                buildRouteBtn.removeAttribute('title');
+            }
         }
         if (optimizeRouteBtn) {
             optimizeRouteBtn.disabled = state.isLoading || !hasMinPoints || !hasBaseRoute;
+            if (!hasMinPoints) {
+                optimizeRouteBtn.title = "Нужно минимум 2 точки";
+            } else if (!hasBaseRoute) {
+                optimizeRouteBtn.title = "Сначала постройте базовый маршрут";
+            } else {
+                optimizeRouteBtn.removeAttribute('title');
+            }
         }
+
         allButtons.forEach(btn => {
             if (btn && state.isLoading) {
                 if (btn.id === 'generateBtn' && state.loadingAction === 'generate') btn.textContent = 'Генерация...';
@@ -59,6 +72,7 @@ export function initControls() {
                 if (btn.id === 'optimizeRouteBtn') btn.textContent = 'Оптимизировать';
             }
         });
+
         const baseCard = buildRouteBtn?.closest('.card');
         const optCard = optimizeRouteBtn?.closest('.card');
         if (baseCard && optCard) {

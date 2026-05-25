@@ -42,6 +42,12 @@ export class ApiClient {
         });
     }
 
+    async addPoint(lat, lon) {
+        return this.request('POST', '/points', {
+            lat: lat,
+            lon: lon
+        });
+    }
     async getPoints() {
         return this.request('GET', '/points');
     }
@@ -64,10 +70,6 @@ export class ApiClient {
 
     async getRoute(routeId) {
         return this.request('GET', `/routes/${routeId}`);
-    }
-
-    async getAllRoutes() {
-        return this.request('GET', '/routes');
     }
 }
 

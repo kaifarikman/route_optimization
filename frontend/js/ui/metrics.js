@@ -1,5 +1,6 @@
 import { store } from '../state/store.js';
 import { compareMetrics } from '../features/compare-metrics.js';
+import { buildRoute } from '../features/build-route.js';
 
 function formatRouteMetrics(route) {
     const distance = `Длина: ${route.distance_km.toFixed(1)} км`;
@@ -36,14 +37,13 @@ export function resetMetrics() {
     document.getElementById('routeOrderCard').style.display = 'none';
 }
 
-export function updateMetrics(route, mode) {
-    if (!route) return;
-
+export function updateMetrics(route, type) {
     const formattedHtml = formatRouteMetrics(route);
-    if (mode === 'base') {
+
+    if (type === 'base') {
         const baseEl = document.getElementById('baseMetrics');
         if (baseEl) baseEl.innerHTML = formattedHtml;
-    } else if (mode === 'optimized') {
+    } else if (type === 'optimized') {
         const optEl = document.getElementById('optimizedMetrics');
         if (optEl) optEl.innerHTML = formattedHtml;
     }
@@ -77,10 +77,56 @@ function renderOrderList(route) {
     }
     const orderedIds = route.point_ids || route.points?.map(p => p.id || p) || [];
 
-    list.innerHTML = orderedIds.map((id, index) => {
-        const p = points.find(point => point.id === id);
-        return `<li>${index + 1}. Точка ${id} ${p ? `(${p.lat.toFixed(4)}, ${p.lon.toFixed(4)})` : ''}</li>`;
-    }).join('');
+    list.innerHTML = '';
+
+    orderedIds.forEach((id, index) => {
+        const pointObj = points.find(p => p.id === id);
+        if (!pointObj) return;
+
+        const li = document.createElement('li');
+        li.style.padding = '8px';
+        li.style.margin = '4px 0';
+        li.style.background = '#fff';
+        li.style.border = '1px solid #ccc';
+        li.style.borderRadius = '4px';
+        li.style.cursor = 'grab';
+        li.setAttribute('draggable', 'true');
+        li.setAttribute('data-id', id);
+        li.innerHTML = `<b>${index + 1}.</b> Точка ${id} (${pointObj.lat.toFixed(4)}, ${pointObj.lon.toFixed(4)})`;
+
+        // Реализация HTML5 Drag and Drop API
+        li.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', index);
+            li.style.opacity = '0.5';
+        });
+
+        li.addEventListener('dragend', () => {
+            li.style.opacity = '1';
+        });
+
+        li.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        li.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+            const toIndex = index;
+
+            if (fromIndex === toIndex) return;
+
+            const newOrderedIds = [...orderedIds];
+            const [movedId] = newOrderedIds.splice(fromIndex, 1);
+            newOrderedIds.splice(toIndex, 0, movedId);
+
+            const reorderedPoints = newOrderedIds.map(pid => points.find(p => p.id === pid));
+            store.setState({ points: reorderedPoints });
+
+            await buildRoute();
+        });
+
+        list.appendChild(li);
+    });
 
     card.style.display = 'block';
 }

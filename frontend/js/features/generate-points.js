@@ -35,11 +35,20 @@ function validateForm(countStr, latStr, lonStr, radiusStr) {
     if (isNaN(lon) || lon < -180 || lon > 180) {
         return setError('westInput', "Долготу: от -180 до 180");
     }
-    if (isNaN(radius) || radius <= 0 || radius > 50) {
+    if (isNaN(radius) || radius < 0.1 || radius > 50) {
         return setError('radInput', "Радиус: от 0.1 до 50 км");
     }
 
     return null;
+}
+
+function getPluralForm(number, titles) {
+    const cases = [2, 0, 1, 1, 1, 2];
+    return titles[
+        (number % 100 > 4 && number % 100 < 20)
+            ? 2
+            : cases[(number % 10 < 5) ? number % 10 : 5]
+    ];
 }
 export async function extractText() {
     const state = store.getState();
@@ -71,9 +80,13 @@ export async function extractText() {
             selectedRouteMode: 'base',
         });
         resetMetrics();
-        notify(`Сгенерировано ${result.points ? result.points.length : 0} точек`, 'info');
+
+        const count = result.points ? result.points.length : 0;
+        const wordForm = getPluralForm(count, ['точка', 'точки', 'точек']);
+        notify(`Сгенерировано ${count} ${wordForm}`, 'info');
+
     } catch (error) {
         store.setState({ status: 'error', isLoading: false, loadingAction: null });
-        notify("Ошибка генерации: " + error.message, "error");
+        notify("Ошибка генерации точек: " + error.message, "error");
     }
 }

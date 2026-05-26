@@ -1,4 +1,3 @@
-// frontend/js/ui/controls.js
 import { store } from '../state/store.js';
 import { buildRoute } from '../features/build-route.js';
 import { optimizeRoute } from '../features/optimize-route.js';
@@ -40,8 +39,6 @@ export function initControls() {
     store.subscribe((state) => {
         const hasMinPoints = state.points && state.points.length >= 2;
         const hasBaseRoute = !!state.baseRoute;
-        if (generateBtn) generateBtn.disabled = state.isLoading;
-        if (clearPointsBtn) clearPointsBtn.disabled = state.isLoading || state.points.length === 0;
 
         if (buildRouteBtn) {
             buildRouteBtn.disabled = state.isLoading || !hasMinPoints;
@@ -65,8 +62,8 @@ export function initControls() {
         const baseCard = buildRouteBtn?.closest('.card');
         const optCard = optimizeRouteBtn?.closest('.card');
         if (baseCard && optCard) {
-            baseCard.style.border = state.selectedRouteMode === 'base' ? '2px solid #3388ff' : '1px solid #ccc';
-            optCard.style.border = state.selectedRouteMode === 'optimized' ? '2px solid #4CAF50' : '1px solid #ccc';
+            baseCard.style.border = state.selectedRouteMode === 'base' && hasBaseRoute ? '2px solid #3388ff' : '1px solid #ccc';
+            optCard.style.border = state.selectedRouteMode === 'optimized' && state.optimizedRoute ? '2px solid #4CAF50' : '1px solid #ccc';
         }
     });
 }

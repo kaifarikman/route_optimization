@@ -11,6 +11,7 @@ function clearErrors() {
 function setError(id, message) {
     document.getElementById(id)?.classList.add('input-error');
     notify(message, "error");
+    return true;
 }
 function validateForm(countStr, latStr, lonStr, radiusStr) {
     clearErrors();
@@ -32,7 +33,7 @@ function validateForm(countStr, latStr, lonStr, radiusStr) {
         return setError('northInput', "Широта: от -90 до 90");
     }
     if (isNaN(lon) || lon < -180 || lon > 180) {
-        return setError('westInput', "Долгота: от -180 до 180");
+        return setError('westInput', "Долготу: от -180 до 180");
     }
     if (isNaN(radius) || radius <= 0 || radius > 50) {
         return setError('radInput', "Радиус: от 0.1 до 50 км");
@@ -40,7 +41,6 @@ function validateForm(countStr, latStr, lonStr, radiusStr) {
 
     return null;
 }
-
 export async function extractText() {
     const state = store.getState();
     if (state.isLoading) return;
@@ -62,7 +62,7 @@ export async function extractText() {
     try {
         const result = await api.generatePoints(northValue, westValue, radValue, pointsValue);
         store.setState({
-            points: result.points,
+            points: result.points || [],
             status: 'idle',
             isLoading: false,
             loadingAction: null,
@@ -71,9 +71,9 @@ export async function extractText() {
             selectedRouteMode: 'base',
         });
         resetMetrics();
-        notify(`Сгенерировано ${result.points.length} точек`, 'info');
+        notify(`Сгенерировано ${result.points ? result.points.length : 0} точек`, 'info');
     } catch (error) {
         store.setState({ status: 'error', isLoading: false, loadingAction: null });
-        notify("Ошибка API: " + error.message, 'error');
+        notify("Ошибка генерации: " + error.message, "error");
     }
 }

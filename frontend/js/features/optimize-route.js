@@ -5,8 +5,7 @@ import { notify } from "../ui/notifications.js";
 
 export async function optimizeRoute() {
     const state = store.getState();
-    if (state.isLoading) return; // Блокировка повторного вызова
-
+    if (state.isLoading) return;
     if (!state.points || state.points.length < 2) {
         notify("Недостаточное количество точек", "error");
         return;
@@ -33,5 +32,3 @@ export async function optimizeRoute() {
         notify("Ошибка оптимизации: " + error.message, "error");
     }
 }
-
-

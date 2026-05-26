@@ -5,7 +5,7 @@ import { notify } from "../ui/notifications.js";
 
 export async function buildRoute() {
     const state = store.getState();
-    if (state.isLoading) return; // Блокировка повторного вызова
+    if (state.isLoading) return;
 
     if (!state.points || state.points.length < 2) {
         notify("Недостаточное количество точек", "error");
@@ -33,6 +33,3 @@ export async function buildRoute() {
         notify("Ошибка построения маршрута: " + error.message, "error");
     }
 }
-
-
-

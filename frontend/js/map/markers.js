@@ -37,14 +37,7 @@ export function renderPoints(mapInstance, points, currentRoute = null, pointColo
             });
         }
 
-        marker.bindPopup(`<b>Точка ${point.id}</b>${orderText ? `Порядок: ${orderText}` : ''}`);
+        marker.bindPopup(`<b>Точка ${point.id}</b>${orderText ? `<br>Порядок: ${orderText}` : ''}`);
         currentMarkers.push(marker);
     });
-
-    if (currentMarkers.length > 0) {
-        const featureGroup = L.featureGroup(currentMarkers);
-        mapInstance.fitBounds(featureGroup.getBounds(), { padding: [50, 50] });
-    }
 }
-
-

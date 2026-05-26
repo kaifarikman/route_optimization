@@ -5,7 +5,7 @@ import { notify } from "../ui/notifications.js";
 
 export async function clearPoints() {
     const state = store.getState();
-    if (state.isLoading) return; // Блокировка повторного вызова
+    if (state.isLoading) return;
 
     store.setState({ status: 'loading', isLoading: true, loadingAction: 'clear' });
 
@@ -28,5 +28,3 @@ export async function clearPoints() {
         notify("Ошибка очистки точек: " + error.message, "error");
     }
 }
-
-

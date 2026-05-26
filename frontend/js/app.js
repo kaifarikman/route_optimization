@@ -20,11 +20,11 @@ async function initApp() {
     });
 
     try {
-        store.setState({ status: 'loading' });
+        store.setState({ status: 'loading', loadingAction: 'init' });
         const result = await api.getPoints();
-        store.setState({ points: result.points || [], status: 'idle' });
+        store.setState({ points: result.points || [], status: 'idle', loadingAction: null });
     } catch (e) {
-        store.setState({ status: 'error' });
+        store.setState({ status: 'error', loadingAction: null });
     }
 }
 

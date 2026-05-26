@@ -1,8 +1,7 @@
 import { store } from '../state/store.js';
 import { renderPoints, clearMarkers } from './markers.js';
 import { drawRoute, clearRoute } from './routes.js';
-import api from '../api/client.js';
-import { notify } from '../ui/notifications.js';
+import { addPointByCoordinates } from '../features/add-point.js';
 
 let mapInstance = null;
 
@@ -17,27 +16,8 @@ export function initMap() {
         const state = store.getState();
         if (state.isLoading) return;
 
-        store.setState({ status: 'loading', isLoading: true, loadingAction: 'generate' });
-        try {
-            const { lat, lng } = e.latlng;
-            const result = await api.addPoint(lat, lng);
-
-            const pointsResult = await api.getPoints();
-
-            store.setState({
-                points: pointsResult.points || [],
-                status: 'idle',
-                isLoading: false,
-                loadingAction: null,
-                baseRoute: null,
-                optimizedRoute: null,
-                selectedRouteMode: 'base'
-            });
-            notify("Точка успешно добавлена кликом", "info");
-        } catch (error) {
-            store.setState({ status: 'error', isLoading: false, loadingAction: null });
-            notify("Ошибка добавления точки: " + error.message, "error");
-        }
+        const { lat, lng } = e.latlng;
+        await addPointByCoordinates(lat, lng, "Точка добавлена кликом");
     });
 
     store.subscribe((state) => {

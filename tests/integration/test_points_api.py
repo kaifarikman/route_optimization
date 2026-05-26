@@ -1,6 +1,61 @@
 from fastapi.testclient import TestClient
 
+from backend.api.points import get_uow
+from backend.domain.point import Point
 from backend.main import app
+
+
+class FakePointRepository:
+    def __init__(self, points: list[Point] | None = None):
+        self._points = list(points or [])
+        self._next_id = max([point.id for point in self._points], default=0) + 1
+
+    def add(self, lat: float, lon: float) -> Point:
+        point = Point(id=self._next_id, lat=lat, lon=lon)
+        self._next_id += 1
+        self._points.append(point)
+        return point
+
+    def list(self) -> list[Point]:
+        return list(self._points)
+
+    def count(self) -> int:
+        return len(self._points)
+
+    def clear_all(self) -> None:
+        self._points.clear()
+
+
+class FakeRouteRepository:
+    def __init__(self):
+        self.items = [{"id": 1}]
+        self.clear_count = 0
+
+    def clear_all(self) -> None:
+        self.items.clear()
+        self.clear_count += 1
+
+
+class FakeUoW:
+    def __init__(self, points: list[Point] | None = None):
+        self.points = FakePointRepository(points)
+        self.routes = FakeRouteRepository()
+        self.committed = False
+
+    def commit(self):
+        self.committed = True
+
+    def rollback(self):
+        return None
+
+
+def _override_uow(holder: dict, points: list[Point] | None = None):
+    def _get_fake_uow():
+        if "uow" not in holder:
+            holder["uow"] = FakeUoW(points)
+        yield holder["uow"]
+
+    return _get_fake_uow
 
 
 def test_generate_points_wraps_response(monkeypatch):
@@ -17,6 +72,46 @@ def test_generate_points_wraps_response(monkeypatch):
 
     assert response.status_code == 200
     assert response.json() == {"points": [{"id": 1, "lat": 55.75, "lon": 37.61}]}
+
+
+def test_add_point_endpoint_returns_point_and_clears_routes():
+    holder = {}
+    app.dependency_overrides[get_uow] = _override_uow(holder)
+
+    client = TestClient(app)
+    response = client.post("/points", json={"lat": 55.75, "lon": 37.62})
+    points_response = client.get("/points")
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == {"point": {"id": 1, "lat": 55.75, "lon": 37.62}}
+    assert points_response.status_code == 200
+    assert points_response.json() == {"points": [{"id": 1, "lat": 55.75, "lon": 37.62}]}
+    assert holder["uow"].routes.items == []
+    assert holder["uow"].routes.clear_count == 1
+    assert holder["uow"].committed is True
+
+
+def test_add_point_endpoint_returns_validation_error_for_invalid_latitude():
+    client = TestClient(app)
+    response = client.post("/points", json={"lat": 900, "lon": 37.62})
+
+    assert response.status_code == 422
+
+
+def test_add_point_endpoint_returns_400_when_limit_reached():
+    holder = {}
+    existing_points = [Point(id=index + 1, lat=55.75, lon=37.62) for index in range(50)]
+    app.dependency_overrides[get_uow] = _override_uow(holder, existing_points)
+
+    client = TestClient(app)
+    response = client.post("/points", json={"lat": 55.76, "lon": 37.63})
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Количество точек: не больше 50"}
 
 
 def test_generate_points_returns_400_when_service_fails(monkeypatch):

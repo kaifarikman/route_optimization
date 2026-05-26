@@ -1,8 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from backend.db.uow import AbstractUnitOfWork, get_uow
-from backend.schemas.point import ClearResponse, PointGenerationRequest, PointsResponse
-from backend.services.point import clear_all_points, generate_points, get_points
+from backend.schemas.point import (
+    ClearResponse,
+    PointCreateRequest,
+    PointGenerationRequest,
+    PointResponse,
+    PointsResponse,
+)
+from backend.services.point import add_point, clear_all_points, generate_points, get_points
 
 router = APIRouter()
 
@@ -21,6 +27,18 @@ async def generate_points_endpoint(
             uow=uow,
         )
         return {"points": points}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/points", response_model=PointResponse)
+async def add_point_endpoint(
+    request: PointCreateRequest,
+    uow: AbstractUnitOfWork = Depends(get_uow),
+):
+    try:
+        point = add_point(lat=request.lat, lon=request.lon, uow=uow)
+        return {"point": point}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

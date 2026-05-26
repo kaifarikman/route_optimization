@@ -37,5 +37,8 @@ class PointRepository:
         rows = self.session.query(PointModel).all()
         return [Point(id=row.id, lat=row.lat, lon=row.lon) for row in rows]
 
+    def count(self) -> int:
+        return self.session.query(PointModel).count()
+
     def clear_all(self) -> None:
         self.session.query(PointModel).delete()

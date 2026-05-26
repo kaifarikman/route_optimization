@@ -1,6 +1,7 @@
 import api from './api/client.js';
 import { store } from './state/store.js';
 import { extractText } from './features/generate-points.js';
+import { addPointFromForm } from './features/add-point.js';
 import { clearPoints } from './features/clear-points.js';
 import { initMap } from './map/map.js';
 import { initControls } from './ui/controls.js';
@@ -11,6 +12,7 @@ async function initApp() {
     initControls();
 
     document.getElementById('generateBtn').addEventListener('click', extractText);
+    document.getElementById('addPointBtn').addEventListener('click', addPointFromForm);
     document.getElementById('clearPointsBtn').addEventListener('click', clearPoints);
 
     store.subscribe((state) => {

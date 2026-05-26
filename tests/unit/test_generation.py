@@ -9,7 +9,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..
 sys.path.insert(0, PROJECT_ROOT)
 
 from backend.domain.point import Point
-from backend.services.point import clear_all_points, generate_points, get_points
+from backend.services.point import add_point, clear_all_points, generate_points, get_points
 
 
 class FakeUoW:
@@ -42,6 +42,35 @@ class TestPoints(unittest.TestCase):
         points = generate_points(58.5, 62.73, 10.1, 5, uow=self.uow)
         self.assertIsInstance(points, list)
         self.assertEqual(len(points), 5)
+
+    def test_add_point_saves_point_clears_routes_and_commits(self):
+        self.points_repo.count.return_value = 0
+        self.points_repo.add.return_value = Point(id=1, lat=55.75, lon=37.62)
+
+        point = add_point(55.75, 37.62, uow=self.uow)
+
+        self.assertEqual(point, {"id": 1, "lat": 55.75, "lon": 37.62})
+        self.uow.routes.clear_all.assert_called_once()
+        self.points_repo.add.assert_called_once_with(55.75, 37.62)
+        self.assertTrue(self.uow.committed)
+
+    def test_add_point_rejects_invalid_coordinates(self):
+        self.points_repo.count.return_value = 0
+
+        with self.assertRaisesRegex(ValueError, "Широта: от -90 до 90"):
+            add_point(900, 37.62, uow=self.uow)
+
+        self.points_repo.add.assert_not_called()
+        self.assertFalse(self.uow.committed)
+
+    def test_add_point_rejects_when_point_limit_reached(self):
+        self.points_repo.count.return_value = 50
+
+        with self.assertRaisesRegex(ValueError, "Количество точек"):
+            add_point(55.75, 37.62, uow=self.uow)
+
+        self.points_repo.add.assert_not_called()
+        self.assertFalse(self.uow.committed)
 
     def test_generate_points_creates_correct_number_of_points(self):
         count = 10

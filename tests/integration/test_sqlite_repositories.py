@@ -54,6 +54,7 @@ def test_sqlite_repositories_roundtrip(tmp_path: Path):
     stored_points = points.list()
 
     assert [point.id for point in stored_points] == [first.id, second.id]
+    assert points.count() == 2
     assert stored_route is not None
     assert stored_route.points == [first.id, second.id]
     assert stored_route.coordinates == [(55.75, 37.61), (55.76, 37.62)]

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import List
 
 
@@ -17,6 +17,17 @@ class PointGenerationRequest(BaseModel):
     center_lon: float
     radius_km: float
     count: int  # количество точек
+
+
+class PointCreateRequest(BaseModel):
+    """Запрос на ручное добавление точки"""
+    lat: float = Field(ge=-90, le=90)
+    lon: float = Field(ge=-180, le=180)
+
+
+class PointResponse(BaseModel):
+    """Ответ с одной точкой"""
+    point: Point
 
 
 class PointsResponse(BaseModel):

@@ -128,6 +128,7 @@ docker compose logs --tail=100 frontend
 - `GET /health`
 - `GET /config`
 - `POST /points/generate`
+- `POST /points`
 - `GET /points`
 - `DELETE /points`
 - `POST /routes/base`

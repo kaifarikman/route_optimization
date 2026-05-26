@@ -5,9 +5,25 @@ import numpy as np
 from backend.db.uow import AbstractUnitOfWork
 from backend.domain.point import Point
 
+MAX_POINTS = 50
+
 
 def _point_to_dict(point: Point) -> Dict:
     return {"id": point.id, "lat": float(point.lat), "lon": float(point.lon)}
+
+
+def add_point(lat: float, lon: float, uow: AbstractUnitOfWork) -> Dict:
+    if lat < -90 or lat > 90:
+        raise ValueError("Широта: от -90 до 90")
+    if lon < -180 or lon > 180:
+        raise ValueError("Долгота: от -180 до 180")
+    if uow.points.count() >= MAX_POINTS:
+        raise ValueError(f"Количество точек: не больше {MAX_POINTS}")
+
+    uow.routes.clear_all()
+    point = uow.points.add(float(lat), float(lon))
+    uow.commit()
+    return _point_to_dict(point)
 
 
 def generate_points(

@@ -1,172 +1,418 @@
 /* frontend/css/styles.css */
 
+/* ── Токены темы ─────────────────────────────── */
+:root {
+    --bg: #F4F6F9;
+    --surface: #FFFFFF;
+    --surface-hover: #F8FAFC;
+    --border: #E2E8F0;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+
+    --blue: #1E40AF;
+    --blue-light: #EFF6FF;
+    --blue-border: #BFDBFE;
+
+    --green: #16A34A;
+    --green-light: #DCFCE7;
+    --green-border: #BBF7D0;
+
+    --red: #DC2626;
+    --red-light: #FEE2E2;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --radius: 12px;
+}
+
+/* ── Базовые стили ────────────────────────────── */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 html, body {
     height: 100%;
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg);
+    color: var(--text-primary);
+    overflow: hidden;
 }
 
-.container {
-    position: absolute;
-    right: 40px;
-    top: 35px;
-    width: 15%;
+/* ── Разметка приложения ───────────────────────── */
+.app-layout {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 380px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
+    padding: 24px;
     gap: 20px;
-    z-index: 1000;
-}
-
-.card {
-    background: #E2E4FF;
-    padding: 18px;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-}
-
-.card.small {
-    text-align: center;
-    min-height: fit-content;
-}
-
-h3, h4 { margin-top: 0; }
-h4 { margin-bottom: 10px; font-size: 16px; }
-
-/* Кнопки */
-button {
-    width: 100%;
-    margin-top: 15px;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    background: #b3a8f5;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s, opacity 0.2s;
-}
-
-button.secondary { background: #d8dcef; }
-.card.green button { background: #8fd19e; }
-
-button:disabled,
-button.secondary:disabled,
-.card.green button:disabled {
-    background: #d1d5db !important;
-    color: #9ca3af;
-    cursor: not-allowed;
-    opacity: 0.8;
-}
-
-.field {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 8px; /* Чуть плотнее */
-    gap: 12px;
-}
-
-.field label {
-    flex: 1; /* Заставляет текст занимать всё место слева */
-    text-align: left;
-    font-size: 14px;
-    color: #333;
-}
-
-.field input {
-    width: 90px; /* Фиксированная ширина для ровной колонки */
-    padding: 6px 10px;
-    border-radius: 8px;
-    border: 1px solid transparent; /* Место под рамку ошибки */
-    text-align: center;
-    font-size: 14px;
-    outline: none;
-    background: #ffffff;
-}
-
-/* Ошибка валидации */
-.field input.input-error {
-    border: 2px solid #ff6666 !important;
-    background-color: #fffafa;
-}
-
-/* Метрики и варнинги */
-.card.improvement {
-    display: none;
-    text-align: left;
-    color: #2f6b3d;
-    font-size: 14px;
-}
-
-.metric-row {
-    font-size: 13px;
-    text-align: left;
-    margin: 2px 0;
-    color: #333;
-}
-
-.fallback-warning {
-    margin-top: 8px;
-    padding: 6px;
-    background: #fffbeb;
-    border: 1px solid #f59e0b;
-    border-radius: 4px;
-    color: #b45309;
-    font-size: 11px;
-    font-weight: bold;
-    text-align: left;
-    line-height: 1.2;
-}
-
-/* Список маршрута */
-.card.route-order {
-    display: none;
-    max-height: 250px;
     overflow-y: auto;
-    background: #E2E4FF;
+    z-index: 10;
+    box-shadow: var(--shadow-md);
 }
 
-#routeOrderList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-#routeOrderList li {
-    font-size: 13px;
-    margin-bottom: 6px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid #d0d4f5;
-}
-
-/* Карта */
-.map-wrapper {
-    position: absolute;
-    top: 35px;
-    left: 15px;
-    right: 15px;
-    bottom: 15px;
-    background: #ffffff;
+.map-container-wrapper {
+    flex: 1;
+    position: relative;
+    height: 100%;
 }
 
 #map {
-    width: 82%;
-    height: 90%;
-    background: #ffffff;
+    width: 100%;
+    height: 100%;
 }
 
-.point-order-tooltip {
-    background: white !important;
-    color: black !important;
-    border: 2px solid #3388ff !important;
-    border-radius: 50% !important;
-    width: 20px;
-    height: 20px;
+/* ── Пошаговый интерфейс ──────────────────────── */
+.step-node {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    transition: all 0.25s ease;
+    background: var(--surface);
+    opacity: 0.6;
+}
+
+.step-node.active {
+    opacity: 1;
+    border-color: var(--blue-border);
+    box-shadow: var(--shadow-sm);
+    background: var(--surface);
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.step-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
+    font-weight: 700;
     font-size: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    transition: all 0.2s ease;
+}
+
+.step-node.active .step-number {
+    background: var(--blue);
+    color: white;
+}
+
+.step-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text-primary);
+}
+
+.step-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ── Формы и Инпуты ───────────────────────────── */
+.input-grid {
+    display: flex;
+    gap: 12px;
+}
+
+.field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.field label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+.field input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-primary);
+    background: var(--bg);
+    transition: border-color 0.15s ease;
+}
+
+.field input:focus {
+    outline: none;
+    border-color: var(--blue);
+    background: var(--surface);
+}
+
+.field input.input-error {
+    border-color: var(--red);
+    background: var(--red-light);
+}
+
+/* ── Кнопки ───────────────────────────────────── */
+.actions-row {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    width: 100%;
+}
+
+.btn i {
+    font-size: 16px;
+}
+
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--border) !important;
+    color: var(--text-muted) !important;
+}
+
+.btn-primary {
+    background: var(--blue);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #113a8c;
+}
+
+.btn-secondary {
+    background: var(--bg);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    width: auto;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--border);
+}
+
+.btn-accent {
+    background: var(--green);
+    color: white;
+}
+
+.btn-accent:hover:not(:disabled) {
+    background: #0f7d37;
+}
+
+/* ── Вывод метрик ─────────────────────────────── */
+.metrics-output {
+    margin-top: 4px;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.metric-row {
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.fallback-warning {
+    margin-top: 6px;
+    padding: 8px;
+    background: #FFFBEB;
+    border: 1px solid #FCD34D;
+    border-radius: 6px;
+    color: #B45309;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+/* Блок сравнения (улучшения) */
+.improvement-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: var(--green-light);
+    color: var(--green);
+    border: 1px solid var(--green-border);
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 12px;
+    margin-top: 6px;
+    align-self: flex-start;
+}
+
+/* ── Список порядка посещения ──────────────────── */
+.order-section {
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+}
+
+.order-header {
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+}
+
+.order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* Стилизация скроллбара списка */
+.order-list::-webkit-scrollbar {
+    width: 4px;
+}
+.order-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.order-list::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: grab;
+    transition: all 0.15s ease;
+}
+
+.order-item:active {
+    cursor: grabbing;
+}
+
+.order-num {
+    width: 20px;
+    height: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.order-coord {
+    flex: 1;
+    font-family: monospace;
+    color: var(--text-primary);
+}
+
+.order-dist {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Раздел элементов поверх карты в frontend/css/styles.css */
+.status-badge {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    z-index: 1000;
+    background: #FFFFFF; /* Всегда белый фон */
+    color: #111827;      /* Черный/темный текст по умолчанию */
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md); /* Тень, чтобы плашка не терялась */
+    transition: all 0.2s ease;
+}
+.map-layers-control {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 1000;
+    display: flex;
+    gap: 2px;
+    background: var(--surface);
+    padding: 3px;
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+}
+
+.layer-btn {
+    border: none;
+    background: transparent;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.layer-btn.active {
+    background: var(--blue-light);
+    color: var(--blue);
+}
+
+/* Тултипы точек на карте */
+.point-order-tooltip {
+    background: var(--text-primary) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+    box-shadow: var(--shadow-sm) !important;
 }

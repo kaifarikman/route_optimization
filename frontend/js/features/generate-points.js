@@ -33,7 +33,7 @@ function validateForm(countStr, latStr, lonStr, radiusStr) {
         return setError('northInput', "Широта: от -90 до 90");
     }
     if (isNaN(lon) || lon < -180 || lon > 180) {
-        return setError('westInput', "Долгота: от -180 до 180");
+        return setError('westInput', "Долготу: от -180 до 180");
     }
     if (isNaN(radius) || radius < 0.1 || radius > 50) {
         return setError('radInput', "Радиус: от 0.1 до 50 км");

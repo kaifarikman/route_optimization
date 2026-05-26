@@ -8,6 +8,10 @@ export function initControls() {
     const generateBtn = document.getElementById('generateBtn');
     const clearPointsBtn = document.getElementById('clearPointsBtn');
 
+    const step1 = document.getElementById('step-1');
+    const step2 = document.getElementById('step-2');
+    const step3 = document.getElementById('step-3');
+
     const allButtons = [buildRouteBtn, optimizeRouteBtn, generateBtn, clearPointsBtn].filter(Boolean);
 
     if (buildRouteBtn && !buildRouteBtn.dataset.bound) {
@@ -36,48 +40,62 @@ export function initControls() {
         optimizeRouteBtn.dataset.bound = 'true';
     }
 
+    // Подписка на обновление реактивного состояния приложения
     store.subscribe((state) => {
-        const hasMinPoints = state.points && state.points.length >= 2;
+        const hasPoints = state.points && state.points.length >= 2;
         const hasBaseRoute = !!state.baseRoute;
+        const hasOptimizedRoute = !!state.optimizedRoute;
 
+        // ── Управление активностью шагов (UI) ──
+        if (step1 && step2 && step3) {
+            // По умолчанию Шаг 1 активен всегда
+            step1.classList.add('active');
+
+            // Шаг 2 активен, если есть точки для маршрута
+            if (hasPoints) {
+                step2.classList.add('active');
+            } else {
+                step2.classList.remove('active');
+            }
+
+            // Шаг 3 активен, если построен базовый маршрут
+            if (hasBaseRoute) {
+                step3.classList.add('active');
+            } else {
+                step3.classList.remove('active');
+            }
+        }
+
+        // Блокировка/разблокировка кнопок управления
         if (buildRouteBtn) {
-            buildRouteBtn.disabled = state.isLoading || !hasMinPoints;
-            if (!hasMinPoints) {
-                buildRouteBtn.title = "Нужно минимум 2 точки";
+            if (!hasPoints || state.isLoading) {
+                buildRouteBtn.setAttribute('disabled', 'true');
             } else {
-                buildRouteBtn.removeAttribute('title');
-            }
-        }
-        if (optimizeRouteBtn) {
-            optimizeRouteBtn.disabled = state.isLoading || !hasMinPoints || !hasBaseRoute;
-            if (!hasMinPoints) {
-                optimizeRouteBtn.title = "Нужно минимум 2 точки";
-            } else if (!hasBaseRoute) {
-                optimizeRouteBtn.title = "Сначала постройте базовый маршрут";
-            } else {
-                optimizeRouteBtn.removeAttribute('title');
+                buildRouteBtn.removeAttribute('disabled');
             }
         }
 
+        if (optimizeRouteBtn) {
+            if (!hasBaseRoute || state.isLoading) {
+                optimizeRouteBtn.setAttribute('disabled', 'true');
+            } else {
+                optimizeRouteBtn.removeAttribute('disabled');
+            }
+        }
+
+        // Текстовые индикаторы загрузки внутри кнопок
         allButtons.forEach(btn => {
             if (btn && state.isLoading) {
-                if (btn.id === 'generateBtn' && state.loadingAction === 'generate') btn.textContent = 'Генерация...';
-                if (btn.id === 'clearPointsBtn' && state.loadingAction === 'clear') btn.textContent = 'Очистка...';
-                if (btn.id === 'buildRouteBtn' && state.loadingAction === 'build') btn.textContent = 'Построение...';
-                if (btn.id === 'optimizeRouteBtn' && state.loadingAction === 'optimize') btn.textContent = 'Оптимизация...';
+                if (btn.id === 'generateBtn' && state.loadingAction === 'generate') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Генерация...';
+                if (btn.id === 'clearPointsBtn' && state.loadingAction === 'clear') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Очистка...';
+                if (btn.id === 'buildRouteBtn' && state.loadingAction === 'build') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Построение...';
+                if (btn.id === 'optimizeRouteBtn' && state.loadingAction === 'optimize') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Оптимизация...';
             } else if (btn) {
-                if (btn.id === 'generateBtn') btn.textContent = 'Сгенерировать точки';
-                if (btn.id === 'clearPointsBtn') btn.textContent = 'Сбросить точки';
-                if (btn.id === 'buildRouteBtn') btn.textContent = 'Построить маршрут';
-                if (btn.id === 'optimizeRouteBtn') btn.textContent = 'Оптимизировать';
+                if (btn.id === 'generateBtn') btn.innerHTML = '<i class="ti ti-map-pin-plus"></i> Сгенерировать';
+                if (btn.id === 'clearPointsBtn') btn.innerHTML = '<i class="ti ti-trash"></i>';
+                if (btn.id === 'buildRouteBtn') btn.innerHTML = '<i class="ti ti-route"></i> Построить маршрут';
+                if (btn.id === 'optimizeRouteBtn') btn.innerHTML = '<i class="ti ti-bolt"></i> Оптимизировать';
             }
         });
-
-        const baseCard = buildRouteBtn?.closest('.card');
-        const optCard = optimizeRouteBtn?.closest('.card');
-        if (baseCard && optCard) {
-            baseCard.style.border = state.selectedRouteMode === 'base' && hasBaseRoute ? '2px solid #3388ff' : '1px solid #ccc';
-            optCard.style.border = state.selectedRouteMode === 'optimized' && state.optimizedRoute ? '2px solid #4CAF50' : '1px solid #ccc';
-        }
     });
 }

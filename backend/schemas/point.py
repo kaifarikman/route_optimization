@@ -25,6 +25,11 @@ class PointCreateRequest(BaseModel):
     lon: float = Field(ge=-180, le=180)
 
 
+class PointsImportRequest(BaseModel):
+    """Запрос на импорт набора точек"""
+    points: List[PointCreateRequest]
+
+
 class PointResponse(BaseModel):
     """Ответ с одной точкой"""
     point: Point

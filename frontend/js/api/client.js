@@ -1,3 +1,5 @@
+import { getUserId } from "./user-id.js";
+
 const API_BASE_URL = (window.APP_CONFIG?.API_BASE_URL || "/api").replace(/\/$/, "");
 
 export class ApiClient {
@@ -5,14 +7,19 @@ export class ApiClient {
         this.baseUrl = baseUrl;
     }
 
-    async request(method, endpoint, data = null) {
+    async request(method, endpoint, data = null, optionsOverride = {}) {
         const url = `${this.baseUrl}${endpoint}`;
+        const includeUserHeader = optionsOverride.includeUserHeader !== false;
         const options = {
             method,
             headers: {
                 'Content-Type': 'application/json',
             }
         };
+
+        if (includeUserHeader) {
+            options.headers['X-User-Id'] = getUserId();
+        }
 
         if (data) {
             options.body = JSON.stringify(data);
@@ -56,6 +63,10 @@ export class ApiClient {
         return this.request('DELETE', '/points');
     }
 
+    async importPoints(points) {
+        return this.request('POST', '/points/import', { points });
+    }
+
     async buildBaseRoute(pointIds) {
         return this.request('POST', '/routes/base', {
             point_ids: pointIds
@@ -70,6 +81,19 @@ export class ApiClient {
 
     async getRoute(routeId) {
         return this.request('GET', `/routes/${routeId}`);
+    }
+
+    async createRouteShare(baseRouteId, optimizedRouteId) {
+        return this.request('POST', '/routes/share', {
+            base_route_id: baseRouteId,
+            optimized_route_id: optimizedRouteId
+        });
+    }
+
+    async getRouteShare(token) {
+        return this.request('GET', `/routes/share/${encodeURIComponent(token)}`, null, {
+            includeUserHeader: false,
+        });
     }
 }
 

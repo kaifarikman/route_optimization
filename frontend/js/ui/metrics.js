@@ -1,6 +1,5 @@
 import { store } from '../state/store.js';
 import { compareMetrics } from '../features/compare-metrics.js';
-import { buildRoute } from '../features/build-route.js';
 
 function formatRouteMetrics(route) {
     const distance = `Длина: ${route.distance_km.toFixed(1)} км`;
@@ -61,6 +60,16 @@ export function updateMetrics(route, mode) {
     renderRouteOrderList(route);
 }
 
+function getOrderedIds(route) {
+    if (route?.point_ids) {
+        return route.point_ids;
+    }
+    if (route?.points) {
+        return route.points.map(point => point.id || point);
+    }
+    return [];
+}
+
 function renderRouteOrderList(route) {
     const orderCard = document.getElementById('routeOrderCard');
     const orderList = document.getElementById('routeOrderList');
@@ -72,12 +81,7 @@ function renderRouteOrderList(route) {
         return;
     }
 
-    let orderedIds = [];
-    if (route.point_ids) {
-        orderedIds = route.point_ids;
-    } else if (route.points) {
-        orderedIds = route.points.map(p => p.id || p);
-    }
+    const orderedIds = getOrderedIds(route);
 
     if (orderedIds.length === 0) {
         orderCard.style.display = 'none';

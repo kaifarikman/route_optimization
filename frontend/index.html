@@ -6,7 +6,7 @@
     <title>Система маршрутизации</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css"/>
-    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/styles.css?v=20260527-route-order">
 </head>
 <body>
     <div class="app-layout">
@@ -59,6 +59,10 @@
                         <button id="addPointBtn" class="btn btn-secondary">
                             <i class="ti ti-map-pin-plus"></i> Добавить точку
                         </button>
+                        <button id="importPointsBtn" class="btn btn-secondary">
+                            <i class="ti ti-upload"></i> Импорт точек
+                        </button>
+                        <input type="file" id="importFileInput" accept=".json,.csv" style="display: none;">
                     </div>
                 </div>
             </div>
@@ -88,6 +92,24 @@
                     </button>
                     <div id="optimizedMetrics" class="metrics-output">
                         </div>
+                </div>
+            </div>
+
+            <div class="step-node export-node" id="export-section">
+                <div class="step-header">
+                    <div class="step-number"><i class="ti ti-download"></i></div>
+                    <div class="step-title">Экспорт</div>
+                </div>
+                <div class="step-content">
+                    <button id="exportJsonBtn" class="btn btn-secondary" disabled>
+                        <i class="ti ti-file-type-json"></i> Скачать JSON
+                    </button>
+                    <button id="exportCsvBtn" class="btn btn-secondary" disabled>
+                        <i class="ti ti-file-spreadsheet"></i> Скачать CSV
+                    </button>
+                    <button id="shareRouteBtn" class="btn btn-secondary" disabled>
+                        <i class="ti ti-link"></i> Скопировать ссылку
+                    </button>
                 </div>
             </div>
 

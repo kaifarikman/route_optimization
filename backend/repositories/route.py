@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy.orm import Session
 from typing import List, Tuple
 
@@ -6,8 +7,15 @@ from backend.domain.route import Route
 
 
 class RouteRepository:
-    def __init__(self, session: Session):
+    def __init__(self, session: Session, user_id: str | None = None):
         self.session = session
+        self.user_id = user_id
+
+    def _query(self):
+        query = self.session.query(RouteModel)
+        if self.user_id is not None:
+            query = query.filter(RouteModel.user_id == self.user_id)
+        return query
 
     def add(
             self, points: list[int], coordinates: list[list[float]], distance_km: float, duration_minutes: float,
@@ -23,6 +31,8 @@ class RouteRepository:
             is_fallback=is_fallback,
             geometry_type=geometry_type,
             transport_type=transport_type,
+            user_id=self.user_id,
+            last_accessed_at=datetime.utcnow(),
         )
         self.session.add(model)
         self.session.flush()
@@ -40,7 +50,7 @@ class RouteRepository:
         )
 
     def get(self, route_id: int) -> Route | None:
-        row = self.session.get(RouteModel, route_id)
+        row = self._query().filter(RouteModel.id == route_id).first()
         if row is None:
             return None
         return Route(
@@ -57,7 +67,7 @@ class RouteRepository:
         )
 
     def list(self) -> list[Route]:
-        rows = self.session.query(RouteModel).all()
+        rows = self._query().all()
         return [
             Route(
                 id=row.id,
@@ -75,4 +85,4 @@ class RouteRepository:
         ]
 
     def clear_all(self) -> None:
-        self.session.query(RouteModel).delete()
+        self._query().delete(synchronize_session=False)

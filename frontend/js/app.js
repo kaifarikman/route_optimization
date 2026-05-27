@@ -1,15 +1,24 @@
-import api from './api/client.js';
+import { getUserId } from './api/user-id.js';
 import { store } from './state/store.js';
 import { extractText } from './features/generate-points.js';
 import { addPointFromForm } from './features/add-point.js';
 import { clearPoints } from './features/clear-points.js';
+import { initExportControls } from './features/export-route.js';
+import { initImportControls } from './features/import-points.js';
+import { getShareTokenFromUrl, loadSharedRoute } from './features/load-shared-route.js';
 import { initMap } from './map/map.js';
 import { initControls } from './ui/controls.js';
 import { notify } from './ui/notifications.js';
 
 async function initApp() {
+    const shareToken = getShareTokenFromUrl();
+    if (!shareToken) {
+        getUserId();
+    }
     initMap();
     initControls();
+    initExportControls();
+    initImportControls();
 
     document.getElementById('generateBtn').addEventListener('click', extractText);
     document.getElementById('addPointBtn').addEventListener('click', addPointFromForm);
@@ -21,12 +30,8 @@ async function initApp() {
         if (state.status === 'error') notify('Ошибка API', 'error');
     });
 
-    try {
-        store.setState({ status: 'loading', loadingAction: 'init' });
-        const result = await api.getPoints();
-        store.setState({ points: result.points || [], status: 'idle', loadingAction: null });
-    } catch (e) {
-        store.setState({ status: 'error', loadingAction: null });
+    if (shareToken) {
+        await loadSharedRoute(shareToken);
     }
 }
 

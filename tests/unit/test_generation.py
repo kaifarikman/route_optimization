@@ -9,7 +9,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..
 sys.path.insert(0, PROJECT_ROOT)
 
 from backend.domain.point import Point
-from backend.services.point import add_point, clear_all_points, generate_points, get_points
+from backend.services.point import add_point, clear_all_points, generate_points, get_points, import_points
 
 
 class FakeUoW:
@@ -131,6 +131,24 @@ class TestPoints(unittest.TestCase):
         points = get_points(uow=self.uow)
         self.assertEqual(points, [{"id": 1, "lat": 58.5, "lon": 62.73}, {"id": 2, "lat": 58.6, "lon": 62.74}])
         self.points_repo.list.assert_called_once()
+
+    def test_import_points_limits_to_max_points(self):
+        self.points_repo.add.side_effect = [
+            Point(id=index + 1, lat=55.0 + index, lon=37.0 + index)
+            for index in range(50)
+        ]
+        source_points = [
+            {"lat": 55.0 + index, "lon": 37.0 + index}
+            for index in range(60)
+        ]
+
+        points = import_points(source_points, uow=self.uow)
+
+        self.assertEqual(len(points), 50)
+        self.assertEqual(self.points_repo.add.call_count, 50)
+        self.uow.routes.clear_all.assert_called_once()
+        self.points_repo.clear_all.assert_called_once()
+        self.assertTrue(self.uow.committed)
 
     def test_clear_all_points_returns_count(self):
         self.points_repo.list.return_value = [

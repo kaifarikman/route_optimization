@@ -1,17 +1,21 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
+from datetime import datetime, timedelta
 from typing import Callable
 
 from sqlalchemy.orm import Session
 
+from backend.db.models import PointModel, RouteModel
 from backend.db.session import SessionLocal
 from backend.repositories.point import PointRepository
 from backend.repositories.route import RouteRepository
+from backend.repositories.share import RouteShareRepository
 
 
 class AbstractUnitOfWork(ABC):
     points: PointRepository
     routes: RouteRepository
+    shares: RouteShareRepository
 
     def __enter__(self):
         return self
@@ -29,14 +33,20 @@ class AbstractUnitOfWork(ABC):
 
 
 class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
-    def __init__(self, session_factory: Callable[[], Session] = SessionLocal):
+    def __init__(
+        self,
+        session_factory: Callable[[], Session] = SessionLocal,
+        user_id: str | None = None,
+    ):
         self.session_factory = session_factory
+        self.user_id = user_id
         self.session: Session | None = None
 
     def __enter__(self):
         self.session = self.session_factory()
-        self.points = PointRepository(self.session)
-        self.routes = RouteRepository(self.session)
+        self.points = PointRepository(self.session, user_id=self.user_id)
+        self.routes = RouteRepository(self.session, user_id=self.user_id)
+        self.shares = RouteShareRepository(self.session, owner_user_id=self.user_id)
         return super().__enter__()
 
     def __exit__(self, exc_type, exc, tb):
@@ -55,6 +65,29 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         if self.session is None:
             return
         self.session.rollback()
+
+    def cleanup_expired_users(self, ttl_hours: int = 24):
+        if self.session is None:
+            raise RuntimeError("Unit of work session is not initialized")
+        cutoff = datetime.utcnow() - timedelta(hours=ttl_hours)
+        for model in (RouteModel, PointModel):
+            self.session.query(model).filter(
+                model.user_id.isnot(None),
+                model.last_accessed_at.isnot(None),
+                model.last_accessed_at < cutoff,
+            ).delete(synchronize_session=False)
+
+    def touch_current_user(self):
+        if self.session is None:
+            raise RuntimeError("Unit of work session is not initialized")
+        if self.user_id is None:
+            return
+        now = datetime.utcnow()
+        for model in (PointModel, RouteModel):
+            self.session.query(model).filter(model.user_id == self.user_id).update(
+                {"last_accessed_at": now},
+                synchronize_session=False,
+            )
 
 
 def get_uow() -> Iterator[AbstractUnitOfWork]:

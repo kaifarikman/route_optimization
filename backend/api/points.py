@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from backend.db.uow import AbstractUnitOfWork, get_uow
+from backend.api.dependencies import get_user_uow
+from backend.db.uow import AbstractUnitOfWork
 from backend.schemas.point import (
     ClearResponse,
     PointCreateRequest,
     PointGenerationRequest,
     PointResponse,
+    PointsImportRequest,
     PointsResponse,
 )
-from backend.services.point import add_point, clear_all_points, generate_points, get_points
+from backend.services.point import add_point, clear_all_points, generate_points, get_points, import_points
 
 router = APIRouter()
 
@@ -16,7 +18,7 @@ router = APIRouter()
 @router.post("/points/generate", response_model=PointsResponse)
 async def generate_points_endpoint(
     request: PointGenerationRequest,
-    uow: AbstractUnitOfWork = Depends(get_uow),
+    uow: AbstractUnitOfWork = Depends(get_user_uow),
 ):
     try:
         points = generate_points(
@@ -34,7 +36,7 @@ async def generate_points_endpoint(
 @router.post("/points", response_model=PointResponse)
 async def add_point_endpoint(
     request: PointCreateRequest,
-    uow: AbstractUnitOfWork = Depends(get_uow),
+    uow: AbstractUnitOfWork = Depends(get_user_uow),
 ):
     try:
         point = add_point(lat=request.lat, lon=request.lon, uow=uow)
@@ -43,8 +45,23 @@ async def add_point_endpoint(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.post("/points/import", response_model=PointsResponse)
+async def import_points_endpoint(
+    request: PointsImportRequest,
+    uow: AbstractUnitOfWork = Depends(get_user_uow),
+):
+    try:
+        points = import_points(
+            [{"lat": point.lat, "lon": point.lon} for point in request.points],
+            uow=uow,
+        )
+        return {"points": points}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.get("/points", response_model=PointsResponse)
-async def get_points_endpoint(uow: AbstractUnitOfWork = Depends(get_uow)):
+async def get_points_endpoint(uow: AbstractUnitOfWork = Depends(get_user_uow)):
     try:
         points = get_points(uow=uow)
         return {"points": points}
@@ -53,7 +70,7 @@ async def get_points_endpoint(uow: AbstractUnitOfWork = Depends(get_uow)):
 
 
 @router.delete("/points", response_model=ClearResponse)
-async def clear_points_endpoint(uow: AbstractUnitOfWork = Depends(get_uow)):
+async def clear_points_endpoint(uow: AbstractUnitOfWork = Depends(get_user_uow)):
     try:
         deleted_count = clear_all_points(uow=uow)
         return {

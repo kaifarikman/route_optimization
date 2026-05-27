@@ -3,6 +3,7 @@ const initialState = {
     baseRoute: null,
     optimizedRoute: null,
     selectedRouteMode: 'base',
+    sharedView: false,
     status: 'idle',
     isLoading: false,
     loadingAction: null

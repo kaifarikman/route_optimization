@@ -1,3 +1,4 @@
+import secrets
 from typing import Dict, List
 
 from backend.db.uow import AbstractUnitOfWork
@@ -91,6 +92,57 @@ def _route_to_dict(route: Route) -> Dict:
         "geometry_type": route.geometry_type,
         "transport_type": route.transport_type,
     }
+
+
+def _route_to_share_dict(route: Route, index_by_id: dict[int, int]) -> Dict:
+    route_data = _route_to_dict(route)
+    route_data["points"] = [index_by_id[point_id] for point_id in route.points if point_id in index_by_id]
+    return route_data
+
+
+def create_route_share(base_route_id: int, optimized_route_id: int, uow: AbstractUnitOfWork) -> dict:
+    base_route = uow.routes.get(base_route_id)
+    optimized_route = uow.routes.get(optimized_route_id)
+
+    if base_route is None or optimized_route is None:
+        raise ValueError("Маршрут не найден")
+
+    current_points = uow.points.list()
+    points_by_id = {point.id: point for point in current_points}
+    ordered_point_ids = []
+    for point_id in [*base_route.points, *optimized_route.points]:
+        if point_id in points_by_id and point_id not in ordered_point_ids:
+            ordered_point_ids.append(point_id)
+
+    index_by_id = {
+        point_id: index + 1
+        for index, point_id in enumerate(ordered_point_ids)
+    }
+    share_points = [
+        {
+            "id": index_by_id[point_id],
+            "lat": points_by_id[point_id].lat,
+            "lon": points_by_id[point_id].lon,
+        }
+        for point_id in ordered_point_ids
+    ]
+
+    snapshot = {
+        "version": 1,
+        "points": share_points,
+        "base_route": _route_to_share_dict(base_route, index_by_id),
+        "optimized_route": _route_to_share_dict(optimized_route, index_by_id),
+    }
+
+    token = secrets.token_urlsafe(16)
+    uow.shares.add(token=token, snapshot=snapshot)
+    uow.commit()
+    return {"token": token, "share": snapshot}
+
+
+def get_route_share(token: str, uow: AbstractUnitOfWork) -> Dict | None:
+    share = uow.shares.get(token)
+    return share["snapshot"] if share else None
 
 
 def get_route_by_id(route_id: int, uow: AbstractUnitOfWork) -> Dict | None:

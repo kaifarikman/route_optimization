@@ -60,6 +60,18 @@ def generate_points(
     return points
 
 
+def import_points(points_data: List[Dict], uow: AbstractUnitOfWork) -> List[Dict]:
+    uow.routes.clear_all()
+    uow.points.clear_all()
+
+    points = []
+    for item in points_data[:MAX_POINTS]:
+        point = uow.points.add(float(item["lat"]), float(item["lon"]))
+        points.append(_point_to_dict(point))
+    uow.commit()
+    return points
+
+
 def get_points(uow: AbstractUnitOfWork) -> List[Dict]:
     return [_point_to_dict(point) for point in uow.points.list()]
 

@@ -14,7 +14,7 @@ export function initMap() {
 
     mapInstance.on('click', async (e) => {
         const state = store.getState();
-        if (state.isLoading) return;
+        if (state.isLoading || state.sharedView) return;
 
         const { lat, lng } = e.latlng;
         await addPointByCoordinates(lat, lng, "Точка добавлена кликом");

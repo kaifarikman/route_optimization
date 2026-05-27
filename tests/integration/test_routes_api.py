@@ -1,9 +1,11 @@
 from fastapi.testclient import TestClient
 from types import SimpleNamespace
 
+from backend.api.dependencies import get_user_uow
 from backend.domain.point import Point
 from backend.main import app
-from backend.api.routes import get_uow
+
+USER_HEADERS = {"X-User-Id": "user-1"}
 
 
 class FakePointRepository:
@@ -15,6 +17,9 @@ class FakePointRepository:
 
     def get_by_ids(self, point_ids: list[int]) -> list[Point]:
         return [self._points[point_id] for point_id in point_ids if point_id in self._points]
+
+    def list(self) -> list[Point]:
+        return list(self._points.values())
 
 
 class FakeRouteRepository:
@@ -58,10 +63,27 @@ class FakeRouteRepository:
         return [SimpleNamespace(**route) for route in self._routes]
 
 
+class FakeShareRepository:
+    def __init__(self):
+        self._shares = {}
+
+    def add(self, token: str, snapshot: dict):
+        self._shares[token] = {
+            "token": token,
+            "owner_user_id": "user-1",
+            "snapshot": snapshot,
+        }
+        return self._shares[token]
+
+    def get(self, token: str):
+        return self._shares.get(token)
+
+
 class FakeUoW:
     def __init__(self, points: list[Point]):
         self.points = FakePointRepository(points)
         self.routes = FakeRouteRepository()
+        self.shares = FakeShareRepository()
         self.committed = False
 
     def commit(self):
@@ -82,7 +104,7 @@ def _override_uow(points: list[Point], holder: dict):
 
 def test_build_base_route_endpoint_returns_route():
     holder = {}
-    app.dependency_overrides[get_uow] = _override_uow(
+    app.dependency_overrides[get_user_uow] = _override_uow(
         [
             Point(id=1, lat=55.75, lon=37.61),
             Point(id=2, lat=55.76, lon=37.62),
@@ -92,7 +114,7 @@ def test_build_base_route_endpoint_returns_route():
     )
 
     client = TestClient(app)
-    response = client.post("/routes/base", json={"point_ids": [1, 2, 3]})
+    response = client.post("/routes/base", json={"point_ids": [1, 2, 3]}, headers=USER_HEADERS)
 
     app.dependency_overrides.clear()
 
@@ -113,7 +135,7 @@ def test_build_base_route_endpoint_returns_route():
 
 def test_optimize_route_endpoint_returns_route():
     holder = {}
-    app.dependency_overrides[get_uow] = _override_uow(
+    app.dependency_overrides[get_user_uow] = _override_uow(
         [
             Point(id=1, lat=55.75, lon=37.61),
             Point(id=2, lat=55.80, lon=37.80),
@@ -124,7 +146,11 @@ def test_optimize_route_endpoint_returns_route():
     )
 
     client = TestClient(app)
-    response = client.post("/routes/optimize", json={"point_ids": [1, 2, 3, 4]})
+    response = client.post(
+        "/routes/optimize",
+        json={"point_ids": [1, 2, 3, 4]},
+        headers=USER_HEADERS,
+    )
 
     app.dependency_overrides.clear()
 
@@ -147,10 +173,10 @@ def test_optimize_route_endpoint_returns_route():
 
 def test_get_route_endpoint_returns_404_for_unknown_route():
     holder = {}
-    app.dependency_overrides[get_uow] = _override_uow([Point(id=1, lat=55.75, lon=37.61)], holder)
+    app.dependency_overrides[get_user_uow] = _override_uow([Point(id=1, lat=55.75, lon=37.61)], holder)
 
     client = TestClient(app)
-    response = client.get("/routes/999")
+    response = client.get("/routes/999", headers=USER_HEADERS)
 
     app.dependency_overrides.clear()
 
@@ -160,14 +186,14 @@ def test_get_route_endpoint_returns_404_for_unknown_route():
 
 def test_get_all_routes_endpoint_returns_saved_routes():
     holder = {}
-    app.dependency_overrides[get_uow] = _override_uow(
+    app.dependency_overrides[get_user_uow] = _override_uow(
         [Point(id=1, lat=55.75, lon=37.61), Point(id=2, lat=55.76, lon=37.62)],
         holder,
     )
 
     client = TestClient(app)
-    build_response = client.post("/routes/base", json={"point_ids": [1, 2]})
-    list_response = client.get("/routes")
+    build_response = client.post("/routes/base", json={"point_ids": [1, 2]}, headers=USER_HEADERS)
+    list_response = client.get("/routes", headers=USER_HEADERS)
 
     app.dependency_overrides.clear()
 
@@ -191,3 +217,122 @@ def test_get_all_routes_endpoint_returns_saved_routes():
     assert isinstance(route["provider"], str)
     assert isinstance(route["is_fallback"], bool)
     assert isinstance(route["geometry_type"], str)
+
+
+def test_routes_require_user_id_header():
+    client = TestClient(app)
+    response = client.get("/routes")
+
+    assert response.status_code == 400
+    assert response.json() == {"error": "X-User-Id header is required"}
+
+
+def test_create_route_share_returns_public_url(monkeypatch):
+    holder = {}
+    app.dependency_overrides[get_user_uow] = _override_uow(
+        [
+            Point(id=1, lat=55.75, lon=37.61),
+            Point(id=2, lat=55.76, lon=37.62),
+            Point(id=3, lat=55.77, lon=37.63),
+        ],
+        holder,
+    )
+    monkeypatch.setattr("backend.services.route.secrets.token_urlsafe", lambda size: "share-token")
+
+    client = TestClient(app)
+    client.post("/routes/base", json={"point_ids": [1, 2, 3]}, headers=USER_HEADERS)
+    client.post("/routes/optimize", json={"point_ids": [1, 2, 3]}, headers=USER_HEADERS)
+    response = client.post(
+        "/routes/share",
+        json={"base_route_id": 1, "optimized_route_id": 2},
+        headers=USER_HEADERS,
+    )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["token"] == "share-token"
+    assert response.json()["share_url"].endswith("/?share=share-token")
+    snapshot = holder["uow"].shares.get("share-token")["snapshot"]
+    assert [point["id"] for point in snapshot["points"]] == [1, 2, 3]
+    assert snapshot["base_route"]["points"] == [1, 2, 3]
+    assert sorted(snapshot["optimized_route"]["points"]) == [1, 2, 3]
+
+
+def test_create_route_share_rejects_missing_scoped_routes():
+    holder = {}
+    app.dependency_overrides[get_user_uow] = _override_uow(
+        [Point(id=1, lat=55.75, lon=37.61), Point(id=2, lat=55.76, lon=37.62)],
+        holder,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/routes/share",
+        json={"base_route_id": 999, "optimized_route_id": 1000},
+        headers=USER_HEADERS,
+    )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Маршрут не найден"}
+
+
+def test_get_route_share_endpoint_is_public(monkeypatch):
+    holder = {}
+    app.dependency_overrides[get_user_uow] = _override_uow(
+        [Point(id=1, lat=55.75, lon=37.61), Point(id=2, lat=55.76, lon=37.62)],
+        holder,
+    )
+    monkeypatch.setattr("backend.services.route.secrets.token_urlsafe", lambda size: "public-token")
+
+    client = TestClient(app)
+    client.post("/routes/base", json={"point_ids": [1, 2]}, headers=USER_HEADERS)
+    client.post("/routes/optimize", json={"point_ids": [1, 2]}, headers=USER_HEADERS)
+    client.post(
+        "/routes/share",
+        json={"base_route_id": 1, "optimized_route_id": 2},
+        headers=USER_HEADERS,
+    )
+
+    class PublicUoW(FakeUoW):
+        def __init__(self, shares):
+            super().__init__([])
+            self.shares = shares
+
+    def _get_public_uow():
+        yield PublicUoW(holder["uow"].shares)
+
+    from backend.api.routes import get_uow
+
+    app.dependency_overrides.clear()
+    app.dependency_overrides[get_uow] = _get_public_uow
+
+    response = client.get("/routes/share/public-token")
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["share"]["version"] == 1
+
+
+def test_get_route_share_endpoint_returns_404_for_unknown_token():
+    class EmptyUoW(FakeUoW):
+        def __init__(self):
+            super().__init__([])
+
+    def _get_empty_uow():
+        yield EmptyUoW()
+
+    from backend.api.routes import get_uow
+
+    app.dependency_overrides[get_uow] = _get_empty_uow
+
+    client = TestClient(app)
+    response = client.get("/routes/share/missing")
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Ссылка на маршрут не найдена"}

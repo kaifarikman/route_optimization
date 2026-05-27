@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 class RouteRequest(BaseModel):
     """Запрос на построение маршрута"""
@@ -28,6 +28,20 @@ class RoutesResponse(BaseModel):
     """Ответ со списком маршрутов"""
     routes: List[Route]
     total: int
+
+class RouteShareRequest(BaseModel):
+    """Запрос на создание публичной ссылки маршрута"""
+    base_route_id: int
+    optimized_route_id: int
+
+class RouteShareCreateResponse(BaseModel):
+    """Ответ создания публичной ссылки маршрута"""
+    share_url: str
+    token: str
+
+class RouteShareResponse(BaseModel):
+    """Ответ публичного просмотра маршрута"""
+    share: dict[str, Any]
 
 class HealthResponse(BaseModel):
     """Ответ на health check"""

@@ -1,6 +1,7 @@
 import { store } from '../state/store.js';
 import { buildRoute } from '../features/build-route.js';
 import { optimizeRoute } from '../features/optimize-route.js';
+import { updateMetrics } from './metrics.js';
 
 export function initControls() {
     const buildRouteBtn = document.getElementById('buildRouteBtn');
@@ -8,19 +9,22 @@ export function initControls() {
     const generateBtn = document.getElementById('generateBtn');
     const addPointBtn = document.getElementById('addPointBtn');
     const clearPointsBtn = document.getElementById('clearPointsBtn');
+    const importPointsBtn = document.getElementById('importPointsBtn');
 
     const step1 = document.getElementById('step-1');
     const step2 = document.getElementById('step-2');
     const step3 = document.getElementById('step-3');
+    const exportSection = document.getElementById('export-section');
 
-    const allButtons = [buildRouteBtn, optimizeRouteBtn, generateBtn, addPointBtn, clearPointsBtn].filter(Boolean);
+    const allButtons = [buildRouteBtn, optimizeRouteBtn, generateBtn, addPointBtn, clearPointsBtn, importPointsBtn].filter(Boolean);
 
     if (buildRouteBtn && !buildRouteBtn.dataset.bound) {
         buildRouteBtn.addEventListener('click', async () => {
-            const { baseRoute, isLoading } = store.getState();
-            if (isLoading) return;
+            const { baseRoute, isLoading, sharedView } = store.getState();
+            if (isLoading || sharedView) return;
             if (baseRoute) {
                 store.setState({ selectedRouteMode: 'base' });
+                updateMetrics(baseRoute, 'base');
                 return;
             }
             await buildRoute();
@@ -30,10 +34,11 @@ export function initControls() {
 
     if (optimizeRouteBtn && !optimizeRouteBtn.dataset.bound) {
         optimizeRouteBtn.addEventListener('click', async () => {
-            const { optimizedRoute, isLoading } = store.getState();
-            if (isLoading) return;
+            const { optimizedRoute, isLoading, sharedView } = store.getState();
+            if (isLoading || sharedView) return;
             if (optimizedRoute) {
                 store.setState({ selectedRouteMode: 'optimized' });
+                updateMetrics(optimizedRoute, 'optimized');
                 return;
             }
             await optimizeRoute();
@@ -46,6 +51,7 @@ export function initControls() {
         const hasPoints = state.points && state.points.length >= 2;
         const hasBaseRoute = !!state.baseRoute;
         const hasOptimizedRoute = !!state.optimizedRoute;
+        const mutationsDisabled = state.isLoading || state.sharedView;
 
         // ── Управление активностью шагов (UI) ──
         if (step1 && step2 && step3) {
@@ -67,9 +73,17 @@ export function initControls() {
             }
         }
 
+        if (exportSection) {
+            if (hasBaseRoute || hasOptimizedRoute) {
+                exportSection.classList.add('active');
+            } else {
+                exportSection.classList.remove('active');
+            }
+        }
+
         // Блокировка/разблокировка кнопок управления
         if (buildRouteBtn) {
-            if (!hasPoints || state.isLoading) {
+            if (!hasPoints || mutationsDisabled) {
                 buildRouteBtn.setAttribute('disabled', 'true');
             } else {
                 buildRouteBtn.removeAttribute('disabled');
@@ -77,24 +91,35 @@ export function initControls() {
         }
 
         if (optimizeRouteBtn) {
-            if (!hasBaseRoute || state.isLoading) {
+            if (!hasBaseRoute || mutationsDisabled) {
                 optimizeRouteBtn.setAttribute('disabled', 'true');
             } else {
                 optimizeRouteBtn.removeAttribute('disabled');
             }
         }
 
+        [generateBtn, addPointBtn, clearPointsBtn, importPointsBtn].forEach(btn => {
+            if (!btn) return;
+            if (mutationsDisabled) {
+                btn.setAttribute('disabled', 'true');
+            } else {
+                btn.removeAttribute('disabled');
+            }
+        });
+
         // Текстовые индикаторы загрузки внутри кнопок
         allButtons.forEach(btn => {
             if (btn && state.isLoading) {
                 if (btn.id === 'generateBtn' && state.loadingAction === 'generate') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Генерация...';
                 if (btn.id === 'addPointBtn' && state.loadingAction === 'add') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Добавление...';
+                if (btn.id === 'importPointsBtn' && state.loadingAction === 'import') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Импорт...';
                 if (btn.id === 'clearPointsBtn' && state.loadingAction === 'clear') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Очистка...';
                 if (btn.id === 'buildRouteBtn' && state.loadingAction === 'build') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Построение...';
                 if (btn.id === 'optimizeRouteBtn' && state.loadingAction === 'optimize') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Оптимизация...';
             } else if (btn) {
                 if (btn.id === 'generateBtn') btn.innerHTML = '<i class="ti ti-map-pin-plus"></i> Сгенерировать';
                 if (btn.id === 'addPointBtn') btn.innerHTML = '<i class="ti ti-map-pin-plus"></i> Добавить точку';
+                if (btn.id === 'importPointsBtn') btn.innerHTML = '<i class="ti ti-upload"></i> Импорт точек';
                 if (btn.id === 'clearPointsBtn') btn.innerHTML = '<i class="ti ti-trash"></i>';
                 if (btn.id === 'buildRouteBtn') btn.innerHTML = '<i class="ti ti-route"></i> Построить маршрут';
                 if (btn.id === 'optimizeRouteBtn') btn.innerHTML = '<i class="ti ti-bolt"></i> Оптимизировать';

@@ -3,6 +3,19 @@ import { store } from "../state/store.js";
 import { resetMetrics } from "../ui/metrics.js";
 import { notify } from "../ui/notifications.js";
 
+function clearInputErrors() {
+    [
+        "pointsInput",
+        "northInput",
+        "westInput",
+        "radInput",
+        "manualLatInput",
+        "manualLonInput",
+    ].forEach(id => {
+        document.getElementById(id)?.classList.remove("input-error");
+    });
+}
+
 export async function clearPoints() {
     const state = store.getState();
     if (state.isLoading) return;
@@ -21,6 +34,7 @@ export async function clearPoints() {
             isLoading: false,
             loadingAction: null
         });
+        clearInputErrors();
         resetMetrics();
         notify("Точки и маршруты сброшены", "info");
     } catch (error) {

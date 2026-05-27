@@ -1,12 +1,23 @@
 let currentMarkers = [];
 
-export function clearMarkers(mapInstance) {
-    currentMarkers.forEach((marker) => mapInstance.removeLayer(marker));
+export function clearMarkers() {
+    currentMarkers.forEach((marker) => marker.remove());
     currentMarkers = [];
 }
 
+function markerElement(label, color) {
+    const element = document.createElement("button");
+    element.type = "button";
+    element.className = "route-marker";
+    element.textContent = label;
+    element.style.setProperty("--marker-color", color);
+    element.setAttribute("aria-label", `Точка маршрута ${label}`);
+    element.addEventListener("click", (event) => event.stopPropagation());
+    return element;
+}
+
 export function renderPoints(mapInstance, points, currentRoute = null, pointColor = "#3388ff") {
-    clearMarkers(mapInstance);
+    clearMarkers();
     let orderedIds = [];
     if (currentRoute) {
         if (currentRoute.point_ids) {
@@ -33,24 +44,16 @@ export function renderPoints(mapInstance, points, currentRoute = null, pointColo
             }
         }
 
-        const marker = L.circleMarker([point.lat, point.lon], {
-            radius: 7,
-            fillColor: finalColor,
-            color: "#111827",
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.88
-        }).addTo(mapInstance);
-        if (orderText) {
-            marker.bindTooltip(orderText, {
-                permanent: true,
-                direction: 'top',
-                className: 'point-order-tooltip',
-                offset: [0, -5]
-            });
-        }
-
-        marker.bindPopup(`<b>${orderText}</b><br><b>Широта:</b> ${point.lat.toFixed(5)}<br><b>Долгота:</b> ${point.lon.toFixed(5)}`);
+        const popup = new maplibregl.Popup({ offset: 18 }).setHTML(
+            `<b>${orderText}</b><br><b>Широта:</b> ${point.lat.toFixed(5)}<br><b>Долгота:</b> ${point.lon.toFixed(5)}`
+        );
+        const marker = new maplibregl.Marker({
+            element: markerElement(orderText, finalColor),
+            anchor: "center",
+        })
+            .setLngLat([point.lon, point.lat])
+            .setPopup(popup)
+            .addTo(mapInstance);
 
         currentMarkers.push(marker);
     });

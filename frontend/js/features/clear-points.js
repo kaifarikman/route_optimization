@@ -30,13 +30,17 @@ export async function clearPoints() {
             baseRoute: null,
             optimizedRoute: null,
             selectedRouteMode: 'base',
+            sharedView: false,
             status: 'idle',
             isLoading: false,
             loadingAction: null
         });
+        if (window.location.search) {
+            window.history.replaceState({}, "", window.location.pathname);
+        }
         clearInputErrors();
         resetMetrics();
-        notify("Точки и маршруты сброшены", "info");
+        notify("Новый маршрут готов", "info");
     } catch (error) {
         store.setState({ status: 'error', isLoading: false, loadingAction: null });
         notify("Ошибка очистки точек: " + error.message, "error");

@@ -389,47 +389,35 @@ html, body {
     pointer-events: none;
     transform: translateY(4px);
 }
-.map-layers-control {
-    position: absolute;
-    top: 24px;
-    right: 24px;
-    z-index: 1000;
-    display: flex;
-    gap: 2px;
-    background: var(--surface);
-    padding: 3px;
-    border-radius: 8px;
-    box-shadow: var(--shadow-md);
-}
-
-.layer-btn {
-    border: none;
-    background: transparent;
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
+/* Маркеры точек на карте */
+.route-marker {
+    --marker-color: var(--blue);
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    border: 2px solid #111827;
+    border-radius: 50%;
+    background: var(--marker-color);
+    color: #fff;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    padding: 0;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0;
+    text-shadow: 0 0 2px #000;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.3);
+    cursor: pointer;
 }
 
-.layer-btn.active {
-    background: var(--blue-light);
-    color: var(--blue);
+.route-marker:hover {
+    transform: scale(1.08);
 }
 
-/* Тултипы точек на карте */
-.point-order-tooltip {
-    background: var(--text-primary) !important;
-    border: none !important;
-    color: white !important;
-    font-weight: 700 !important;
-    font-size: 10px !important;
-    border-radius: 4px !important;
-    padding: 1px 5px !important;
-    box-shadow: var(--shadow-sm) !important;
-    text-shadow: 0 0 2px #000 !important;
+.maplibregl-popup-content {
+    border-radius: 6px;
+    font: 12px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--text-primary);
 }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Система маршрутизации</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="./vendor/maplibre/maplibre-gl.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css"/>
     <link rel="stylesheet" href="./css/styles.css?v=20260527-route-order">
 </head>
@@ -41,8 +41,8 @@
                         <button id="generateBtn" class="btn btn-primary">
                             <i class="ti ti-map-pin-plus"></i> Сгенерировать
                         </button>
-                        <button id="clearPointsBtn" class="btn btn-secondary" title="Сбросить все">
-                            <i class="ti ti-trash"></i>
+                        <button id="clearPointsBtn" class="btn btn-secondary" title="Начать новый маршрут">
+                            <i class="ti ti-refresh"></i> Новый маршрут
                         </button>
                     </div>
                     <div class="manual-entry">
@@ -126,19 +126,10 @@
             <div id="map"></div>
 
             <div class="status-badge" id="status-indicator">Готово</div>
-
-            <div class="map-layers-control">
-                <button class="layer-btn active" data-layer="osm">
-                    <i class="ti ti-map-2"></i> Карта
-                </button>
-                <button class="layer-btn" data-layer="topo">
-                    <i class="ti ti-mountain"></i> Рельеф
-                </button>
-            </div>
         </main>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="./vendor/maplibre/maplibre-gl.js"></script>
     <script type="module" src="./js/app.js"></script>
 </body>
 </html>

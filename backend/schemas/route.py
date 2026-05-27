@@ -1,9 +1,9 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Any, List, Tuple
 
 class RouteRequest(BaseModel):
     """Запрос на построение маршрута"""
-    point_ids: List[int]
+    point_ids: List[int] = Field(min_length=2, max_length=50)
 
 class Route(BaseModel):
     """Модель маршрута"""

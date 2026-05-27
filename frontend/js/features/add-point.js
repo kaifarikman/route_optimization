@@ -17,6 +17,23 @@ function setManualError(id, message) {
     return true;
 }
 
+function validateCoordInput(input, min, max) {
+    if (!input) return true;
+    const value = input.value.trim();
+    const number = Number(value);
+    const valid = value === "" || (!Number.isNaN(number) && number >= min && number <= max);
+    input.classList.toggle("input-error", !valid);
+    return valid;
+}
+
+export function initManualPointValidation() {
+    const latInput = document.getElementById("manualLatInput");
+    const lonInput = document.getElementById("manualLonInput");
+
+    latInput?.addEventListener("input", () => validateCoordInput(latInput, -90, 90));
+    lonInput?.addEventListener("input", () => validateCoordInput(lonInput, -180, 180));
+}
+
 function validateManualPoint(latStr, lonStr) {
     clearManualErrors();
 

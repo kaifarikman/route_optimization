@@ -133,6 +133,38 @@ def test_build_base_route_endpoint_returns_route():
     assert holder["uow"].committed is True
 
 
+def test_build_base_route_rejects_too_few_points():
+    holder = {}
+    app.dependency_overrides[get_user_uow] = _override_uow(
+        [Point(id=1, lat=55.75, lon=37.61)],
+        holder,
+    )
+
+    client = TestClient(app)
+
+    for point_ids in ([], [1]):
+        response = client.post("/routes/base", json={"point_ids": point_ids}, headers=USER_HEADERS)
+        assert response.status_code == 422
+
+    app.dependency_overrides.clear()
+
+
+def test_build_base_route_rejects_too_many_points():
+    holder = {}
+    app.dependency_overrides[get_user_uow] = _override_uow([], holder)
+
+    client = TestClient(app)
+    response = client.post(
+        "/routes/base",
+        json={"point_ids": list(range(1, 52))},
+        headers=USER_HEADERS,
+    )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 422
+
+
 def test_optimize_route_endpoint_returns_route():
     holder = {}
     app.dependency_overrides[get_user_uow] = _override_uow(
@@ -169,6 +201,38 @@ def test_optimize_route_endpoint_returns_route():
     assert data["geometry_type"] in ["full", "straight"]
     assert data["transport_type"] == "driving"
     assert holder["uow"].committed is True
+
+
+def test_optimize_route_rejects_too_few_points():
+    holder = {}
+    app.dependency_overrides[get_user_uow] = _override_uow(
+        [Point(id=1, lat=55.75, lon=37.61)],
+        holder,
+    )
+
+    client = TestClient(app)
+
+    for point_ids in ([], [1]):
+        response = client.post("/routes/optimize", json={"point_ids": point_ids}, headers=USER_HEADERS)
+        assert response.status_code == 422
+
+    app.dependency_overrides.clear()
+
+
+def test_optimize_route_rejects_too_many_points():
+    holder = {}
+    app.dependency_overrides[get_user_uow] = _override_uow([], holder)
+
+    client = TestClient(app)
+    response = client.post(
+        "/routes/optimize",
+        json={"point_ids": list(range(1, 52))},
+        headers=USER_HEADERS,
+    )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 422
 
 
 def test_get_route_endpoint_returns_404_for_unknown_route():

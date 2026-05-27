@@ -71,7 +71,7 @@ def test_generate_points_wraps_response(monkeypatch):
     client = TestClient(app)
     response = client.post(
         "/points/generate",
-        json={"center_lat": 55.75, "center_lon": 37.61, "radius_km": 1, "count": 1},
+        json={"center_lat": 55.75, "center_lon": 37.61, "radius_km": 1, "count": 2},
         headers=USER_HEADERS,
     )
 
@@ -79,6 +79,27 @@ def test_generate_points_wraps_response(monkeypatch):
 
     assert response.status_code == 200
     assert response.json() == {"points": [{"id": 1, "lat": 55.75, "lon": 37.61}]}
+
+
+def test_generate_points_rejects_invalid_request_payload():
+    holder = {}
+    app.dependency_overrides[get_user_uow] = _override_uow(holder)
+
+    client = TestClient(app)
+    invalid_payloads = [
+        {"center_lat": 55.75, "center_lon": 37.61, "radius_km": 1, "count": 1},
+        {"center_lat": 55.75, "center_lon": 37.61, "radius_km": 1, "count": 51},
+        {"center_lat": 55.75, "center_lon": 37.61, "radius_km": 0, "count": 2},
+        {"center_lat": 55.75, "center_lon": 37.61, "radius_km": 51, "count": 2},
+        {"center_lat": 91, "center_lon": 37.61, "radius_km": 1, "count": 2},
+        {"center_lat": 55.75, "center_lon": 181, "radius_km": 1, "count": 2},
+    ]
+
+    for payload in invalid_payloads:
+        response = client.post("/points/generate", json=payload, headers=USER_HEADERS)
+        assert response.status_code == 422
+
+    app.dependency_overrides.clear()
 
 
 def test_add_point_endpoint_returns_point_and_clears_routes():
@@ -138,7 +159,7 @@ def test_generate_points_returns_400_when_service_fails(monkeypatch):
     client = TestClient(app)
     response = client.post(
         "/points/generate",
-        json={"center_lat": 55.75, "center_lon": 37.61, "radius_km": 1, "count": 1},
+        json={"center_lat": 55.75, "center_lon": 37.61, "radius_km": 1, "count": 2},
         headers=USER_HEADERS,
     )
 

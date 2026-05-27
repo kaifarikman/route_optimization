@@ -383,6 +383,12 @@ html, body {
     box-shadow: var(--shadow-md); /* Тень, чтобы плашка не терялась */
     transition: all 0.2s ease;
 }
+
+.status-badge.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px);
+}
 .map-layers-control {
     position: absolute;
     top: 24px;
@@ -421,8 +427,9 @@ html, body {
     border: none !important;
     color: white !important;
     font-weight: 700 !important;
-    font-size: 11px !important;
+    font-size: 10px !important;
     border-radius: 4px !important;
-    padding: 2px 6px !important;
+    padding: 1px 5px !important;
     box-shadow: var(--shadow-sm) !important;
+    text-shadow: 0 0 2px #000 !important;
 }

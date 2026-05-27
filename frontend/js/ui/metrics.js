@@ -103,15 +103,14 @@ function renderRouteOrderList(route) {
         item.setAttribute('draggable', 'true');
         item.setAttribute('data-id', id);
 
-        // Расчет расстояния до следующей точки (чисто декоративно для UI из макета)
-        let distText = '— финиш';
-        if (index === 0) distText = 'старт';
-        else if (index < orderedIds.length - 1) distText = `→ Точка ${orderedIds[index+1]}`;
+        let routePosition = `Точка ${index + 1}`;
+        if (index === 0) routePosition = 'Старт';
+        else if (index === orderedIds.length - 1) routePosition = 'Финиш';
 
         item.innerHTML = `
             <div class="order-num">${index + 1}</div>
             <div class="order-coord">${pointObj.lat.toFixed(4)}, ${pointObj.lon.toFixed(4)}</div>
-            <div class="order-dist">${distText}</div>
+            <div class="order-dist">${routePosition}</div>
         `;
 
         // Реализация HTML5 Drag and Drop API

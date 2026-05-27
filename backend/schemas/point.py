@@ -13,10 +13,10 @@ class Point(BaseModel):
 
 class PointGenerationRequest(BaseModel):
     """Запрос на генерацию точек"""
-    center_lat: float
-    center_lon: float
-    radius_km: float
-    count: int  # количество точек
+    center_lat: float = Field(ge=-90, le=90)
+    center_lon: float = Field(ge=-180, le=180)
+    radius_km: float = Field(gt=0, le=50)
+    count: int = Field(ge=2, le=50)  # количество точек
 
 
 class PointCreateRequest(BaseModel):

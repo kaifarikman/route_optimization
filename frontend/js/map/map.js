@@ -4,6 +4,16 @@ import { drawRoute, clearRoute } from './routes.js';
 import { addPointByCoordinates } from '../features/add-point.js';
 
 let mapInstance = null;
+let lastFitRouteKey = null;
+
+function routeBounds(route) {
+    const routeLine = route?.geometry && route.geometry.length >= 2
+        ? route.geometry
+        : route?.coordinates;
+    if (!routeLine || routeLine.length === 0) return null;
+
+    return L.latLngBounds(routeLine.map(([lat, lon]) => [lat, lon]));
+}
 
 export function initMap() {
     if (mapInstance) return mapInstance;
@@ -33,8 +43,15 @@ export function initMap() {
 
         if (route) {
             drawRoute(mapInstance, route, { color });
+            const fitKey = `${state.selectedRouteMode}:${route.id || route.points?.join(',')}`;
+            const bounds = routeBounds(route);
+            if (bounds?.isValid() && fitKey !== lastFitRouteKey) {
+                mapInstance.fitBounds(bounds, { padding: [36, 36], maxZoom: 14 });
+                lastFitRouteKey = fitKey;
+            }
         } else {
             clearRoute(mapInstance);
+            lastFitRouteKey = null;
         }
     });
     return mapInstance;

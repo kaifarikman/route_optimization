@@ -1,8 +1,17 @@
 // frontend/js/ui/notifications.js
 
+let autoHideTimer = null;
+
 export function notify(message, type = 'info') {
     const statusIndicator = document.getElementById('status-indicator');
     if (!statusIndicator) return;
+
+    if (autoHideTimer) {
+        clearTimeout(autoHideTimer);
+        autoHideTimer = null;
+    }
+
+    statusIndicator.classList.remove('is-hidden');
 
     // Сразу принудительно ставим белый фон и черный текст для ВСЕХ сообщений
     statusIndicator.style.background = '#FFFFFF';
@@ -23,5 +32,9 @@ export function notify(message, type = 'info') {
         // Для статуса "Готово" или успеха делаем зеленую рамку и зеленый текст
         statusIndicator.style.border = '1px solid #BBF7D0';
         statusIndicator.style.color = '#16A34A';
+        autoHideTimer = setTimeout(() => {
+            statusIndicator.classList.add('is-hidden');
+            autoHideTimer = null;
+        }, 3000);
     }
 }

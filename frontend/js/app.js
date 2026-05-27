@@ -1,7 +1,7 @@
 import { getUserId } from './api/user-id.js';
 import { store } from './state/store.js';
 import { extractText } from './features/generate-points.js';
-import { addPointFromForm } from './features/add-point.js';
+import { addPointFromForm, initManualPointValidation } from './features/add-point.js';
 import { clearPoints } from './features/clear-points.js';
 import { initExportControls } from './features/export-route.js';
 import { initImportControls } from './features/import-points.js';
@@ -19,6 +19,7 @@ async function initApp() {
     initControls();
     initExportControls();
     initImportControls();
+    initManualPointValidation();
 
     document.getElementById('generateBtn').addEventListener('click', extractText);
     document.getElementById('addPointBtn').addEventListener('click', addPointFromForm);

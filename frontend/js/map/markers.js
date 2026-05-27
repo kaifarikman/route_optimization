@@ -15,14 +15,15 @@ export function renderPoints(mapInstance, points, currentRoute = null, pointColo
             orderedIds = currentRoute.points.map(p => p.id || p);
         }
     }
+    const hasRouteOrder = orderedIds.length > 0;
 
-    points.forEach((point) => {
+    points.forEach((point, index) => {
         const orderIndex = orderedIds.indexOf(point.id);
-        let orderText = (orderIndex !== -1) ? String(orderIndex + 1) : '';
+        let orderText = hasRouteOrder && orderIndex !== -1 ? String(orderIndex + 1) : String(index + 1);
         let finalColor = pointColor;
 
         // Если построен маршрут, выделяем Старт и Финиш согласно ТЗ
-        if (orderIndex !== -1 && orderedIds.length > 0) {
+        if (hasRouteOrder && orderIndex !== -1) {
             if (orderIndex === 0) {
                 finalColor = "#4CAF50"; // Зеленый для Старта
                 orderText = "Старт";
@@ -33,12 +34,12 @@ export function renderPoints(mapInstance, points, currentRoute = null, pointColo
         }
 
         const marker = L.circleMarker([point.lat, point.lon], {
-            radius: 9,
+            radius: 7,
             fillColor: finalColor,
-            color: "#000",
-            weight: 15,
+            color: "#111827",
+            weight: 2,
             opacity: 1,
-            fillOpacity: 0.9
+            fillOpacity: 0.88
         }).addTo(mapInstance);
         if (orderText) {
             marker.bindTooltip(orderText, {
@@ -49,7 +50,7 @@ export function renderPoints(mapInstance, points, currentRoute = null, pointColo
             });
         }
 
-        marker.bindPopup(`<b>Точка ID:</b> ${point.id}<br><b>Широта:</b> ${point.lat.toFixed(5)}<br><b>Долгота:</b> ${point.lon.toFixed(5)}`);
+        marker.bindPopup(`<b>${orderText}</b><br><b>Широта:</b> ${point.lat.toFixed(5)}<br><b>Долгота:</b> ${point.lon.toFixed(5)}`);
 
         currentMarkers.push(marker);
     });

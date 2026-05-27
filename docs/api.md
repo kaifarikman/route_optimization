@@ -20,6 +20,7 @@ Request и response body используют `application/json`.
 
 - `200 OK` - запрос выполнен.
 - `400 Bad Request` - некорректный запрос или не найдены точки для маршрута.
+- `422 Unprocessable Entity` - входной JSON не прошел schema-валидацию FastAPI.
 - `404 Not Found` - маршрут с таким ID не найден.
 - `500 Internal Server Error` - ошибка чтения или записи на стороне backend.
 
@@ -119,6 +120,13 @@ Request:
 }
 ```
 
+Ограничения:
+
+- `center_lat`: от `-90` до `90`.
+- `center_lon`: от `-180` до `180`.
+- `radius_km`: больше `0`, не больше `50`.
+- `count`: от `2` до `50`.
+
 Response:
 
 ```json
@@ -166,6 +174,11 @@ Request:
 }
 ```
 
+Ограничения:
+
+- `lat`: от `-90` до `90`.
+- `lon`: от `-180` до `180`.
+
 Response:
 
 ```json
@@ -204,6 +217,10 @@ Request:
   "point_ids": [1, 2, 3]
 }
 ```
+
+Ограничения:
+
+- `point_ids`: от `2` до `50` идентификаторов.
 
 Response:
 
@@ -245,6 +262,10 @@ Request:
   "point_ids": [1, 2, 3]
 }
 ```
+
+Ограничения:
+
+- `point_ids`: от `2` до `50` идентификаторов.
 
 Response:
 

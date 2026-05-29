@@ -8,6 +8,7 @@ import { initImportControls } from './features/import-points.js';
 import { getShareTokenFromUrl, loadSharedRoute } from './features/load-shared-route.js';
 import { initMap } from './map/map.js';
 import { initControls } from './ui/controls.js';
+import { initSavingsDashboard } from './ui/metrics.js';
 import { notify } from './ui/notifications.js';
 
 async function initApp() {
@@ -20,6 +21,7 @@ async function initApp() {
     initExportControls();
     initImportControls();
     initManualPointValidation();
+    initSavingsDashboard();
 
     document.getElementById('generateBtn').addEventListener('click', extractText);
     document.getElementById('addPointBtn').addEventListener('click', addPointFromForm);

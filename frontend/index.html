@@ -6,7 +6,7 @@
     <title>Система маршрутизации</title>
     <link rel="stylesheet" href="./vendor/maplibre/maplibre-gl.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css"/>
-    <link rel="stylesheet" href="./css/styles.css?v=20260527-route-order">
+    <link rel="stylesheet" href="./css/styles.css?v=20260530-b3-savings">
 </head>
 <body>
     <div class="app-layout">
@@ -95,6 +95,39 @@
                     </button>
                     <div id="optimizedMetrics" class="metrics-output">
                         </div>
+                    <div id="savingsDashboard" class="savings-dashboard" hidden>
+                        <div class="savings-header">
+                            <i class="ti ti-cash"></i>
+                            <span>Экономия в рублях</span>
+                        </div>
+                        <div class="savings-summary">
+                            <div class="savings-item">
+                                <span>Километры</span>
+                                <strong id="savingsDistance">0,0 км</strong>
+                            </div>
+                            <div class="savings-item">
+                                <span>Минуты</span>
+                                <strong id="savingsTime">0 мин</strong>
+                            </div>
+                            <div class="savings-item savings-total">
+                                <span>Оценка</span>
+                                <strong id="savingsRubles">0 ₽</strong>
+                            </div>
+                        </div>
+                        <div class="savings-inputs">
+                            <label for="rubPerKmInput">
+                                ₽/км
+                                <input type="text" id="rubPerKmInput" inputmode="decimal" placeholder="стоимость 1 км" value="35">
+                            </label>
+                            <label for="rubPerMinuteInput">
+                                ₽/мин
+                                <input type="text" id="rubPerMinuteInput" inputmode="decimal" placeholder="стоимость 1 мин" value="8">
+                            </label>
+                        </div>
+                        <div id="savingsFormula" class="savings-formula">
+                            Расчет: 0,0 км × 35 ₽/км + 0 мин × 8 ₽/мин
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -133,6 +166,6 @@
     </div>
 
     <script src="./vendor/maplibre/maplibre-gl.js"></script>
-    <script type="module" src="./js/app.js"></script>
+    <script type="module" src="./js/app.js?v=20260530-b3-savings"></script>
 </body>
 </html>

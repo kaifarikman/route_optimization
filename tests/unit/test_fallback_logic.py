@@ -83,3 +83,28 @@ class TestFallbackLogic:
         assert result.geometry == expected_geometry
         assert result.geometry[0] == [sample_points[0].lat, sample_points[0].lon]
         assert result.geometry[-1] == [sample_points[-1].lat, sample_points[-1].lon]
+
+    def test_fallback_triggers_when_osrm_ok_route_is_unusable(self, mocker, sample_points):
+        mock_get = mocker.patch("requests.get")
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {
+            "code": "Ok",
+            "routes": [{
+                "distance": 0,
+                "duration": 0,
+                "geometry": {"type": "LineString", "coordinates": []},
+            }],
+        }
+        mock_get.return_value.raise_for_status = lambda: None
+
+        router = RoutingRouter(
+            primary_provider=OSRMRoutingProvider(),
+            fallback_provider=HaversineRoutingProvider(),
+        )
+
+        result = router.build_route(sample_points)
+
+        assert result.provider == "haversine"
+        assert result.is_fallback is True
+        assert result.geometry_type == "straight"
+        assert result.distance_km > 0

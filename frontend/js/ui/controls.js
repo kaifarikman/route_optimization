@@ -2,12 +2,14 @@ import { store } from '../state/store.js';
 import { buildRoute } from '../features/build-route.js';
 import { optimizeRoute } from '../features/optimize-route.js';
 import { updateMetrics } from './metrics.js';
+import { notify } from './notifications.js';
 
 export function initControls() {
     const buildRouteBtn = document.getElementById('buildRouteBtn');
     const optimizeRouteBtn = document.getElementById('optimizeRouteBtn');
     const generateBtn = document.getElementById('generateBtn');
     const addPointBtn = document.getElementById('addPointBtn');
+    const mapClickAddBtn = document.getElementById('mapClickAddBtn');
     const clearPointsBtn = document.getElementById('clearPointsBtn');
     const importPointsBtn = document.getElementById('importPointsBtn');
 
@@ -16,7 +18,7 @@ export function initControls() {
     const step3 = document.getElementById('step-3');
     const exportSection = document.getElementById('export-section');
 
-    const allButtons = [buildRouteBtn, optimizeRouteBtn, generateBtn, addPointBtn, clearPointsBtn, importPointsBtn].filter(Boolean);
+    const allButtons = [buildRouteBtn, optimizeRouteBtn, generateBtn, addPointBtn, mapClickAddBtn, clearPointsBtn, importPointsBtn].filter(Boolean);
 
     if (buildRouteBtn && !buildRouteBtn.dataset.bound) {
         buildRouteBtn.addEventListener('click', async () => {
@@ -44,6 +46,32 @@ export function initControls() {
             await optimizeRoute();
         });
         optimizeRouteBtn.dataset.bound = 'true';
+    }
+
+    if (mapClickAddBtn && !mapClickAddBtn.dataset.bound) {
+        mapClickAddBtn.addEventListener('click', () => {
+            const { isLoading, sharedView, mapClickAddMode } = store.getState();
+            if (isLoading || sharedView) return;
+
+            const nextMode = !mapClickAddMode;
+            store.setState({ mapClickAddMode: nextMode });
+            notify(
+                nextMode ? 'Кликните по карте, чтобы добавить точку' : 'Добавление кликом выключено',
+                'info',
+            );
+        });
+        mapClickAddBtn.dataset.bound = 'true';
+    }
+
+    if (!document.body.dataset.mapClickEscapeBound) {
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') return;
+            if (!store.getState().mapClickAddMode) return;
+
+            store.setState({ mapClickAddMode: false });
+            notify('Добавление кликом выключено', 'info');
+        });
+        document.body.dataset.mapClickEscapeBound = 'true';
     }
 
     // Подписка на обновление реактивного состояния приложения
@@ -98,7 +126,7 @@ export function initControls() {
             }
         }
 
-        [generateBtn, addPointBtn, importPointsBtn].forEach(btn => {
+        [generateBtn, addPointBtn, mapClickAddBtn, importPointsBtn].forEach(btn => {
             if (!btn) return;
             if (mutationsDisabled) {
                 btn.setAttribute('disabled', 'true');
@@ -114,6 +142,11 @@ export function initControls() {
             }
         }
 
+        if (mapClickAddBtn) {
+            mapClickAddBtn.classList.toggle('is-active', !!state.mapClickAddMode);
+            mapClickAddBtn.setAttribute('aria-pressed', state.mapClickAddMode ? 'true' : 'false');
+        }
+
         // Текстовые индикаторы загрузки внутри кнопок
         allButtons.forEach(btn => {
             if (btn && state.isLoading) {
@@ -126,6 +159,7 @@ export function initControls() {
             } else if (btn) {
                 if (btn.id === 'generateBtn') btn.innerHTML = '<i class="ti ti-map-pin-plus"></i> Сгенерировать';
                 if (btn.id === 'addPointBtn') btn.innerHTML = '<i class="ti ti-map-pin-plus"></i> Добавить точку';
+                if (btn.id === 'mapClickAddBtn') btn.innerHTML = '<i class="ti ti-crosshair"></i> Клик по карте';
                 if (btn.id === 'importPointsBtn') btn.innerHTML = '<i class="ti ti-upload"></i> Импорт точек';
                 if (btn.id === 'clearPointsBtn') btn.innerHTML = '<i class="ti ti-refresh"></i> Новый маршрут';
                 if (btn.id === 'buildRouteBtn') btn.innerHTML = '<i class="ti ti-route"></i> Построить маршрут';

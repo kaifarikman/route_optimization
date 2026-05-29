@@ -32,6 +32,7 @@ function renderMapState(state) {
     if (!mapLoaded) return;
 
     const { route, color } = activeRoute(state);
+    mapInstance.getCanvas().style.cursor = state.mapClickAddMode ? "crosshair" : "";
 
     if (state.points && state.points.length > 0) {
         renderPoints(mapInstance, state.points, route, color);
@@ -68,7 +69,7 @@ export function initMap() {
 
     mapInstance.on('click', async (e) => {
         const state = store.getState();
-        if (state.isLoading || state.sharedView) return;
+        if (state.isLoading || state.sharedView || !state.mapClickAddMode) return;
 
         const { lat, lng } = e.lngLat;
         await addPointByCoordinates(lat, lng, "Точка добавлена кликом");

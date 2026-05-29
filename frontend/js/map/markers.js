@@ -5,13 +5,13 @@ export function clearMarkers() {
     currentMarkers = [];
 }
 
-function markerElement(label, color) {
+function markerElement(label, color, ariaLabel) {
     const element = document.createElement("button");
     element.type = "button";
     element.className = "route-marker";
     element.textContent = label;
     element.style.setProperty("--marker-color", color);
-    element.setAttribute("aria-label", `Точка маршрута ${label}`);
+    element.setAttribute("aria-label", `Точка маршрута ${ariaLabel}`);
     element.addEventListener("click", (event) => event.stopPropagation());
     return element;
 }
@@ -31,6 +31,7 @@ export function renderPoints(mapInstance, points, currentRoute = null, pointColo
     points.forEach((point, index) => {
         const orderIndex = orderedIds.indexOf(point.id);
         let orderText = hasRouteOrder && orderIndex !== -1 ? String(orderIndex + 1) : String(index + 1);
+        let markerText = orderText;
         let finalColor = pointColor;
 
         // Если построен маршрут, выделяем Старт и Финиш согласно ТЗ
@@ -38,9 +39,11 @@ export function renderPoints(mapInstance, points, currentRoute = null, pointColo
             if (orderIndex === 0) {
                 finalColor = "#4CAF50"; // Зеленый для Старта
                 orderText = "Старт";
+                markerText = "S";
             } else if (orderIndex === orderedIds.length - 1) {
                 finalColor = "#F44336"; // Красный для Финиша
                 orderText = "Финиш";
+                markerText = "F";
             }
         }
 
@@ -48,7 +51,7 @@ export function renderPoints(mapInstance, points, currentRoute = null, pointColo
             `<b>${orderText}</b><br><b>Широта:</b> ${point.lat.toFixed(5)}<br><b>Долгота:</b> ${point.lon.toFixed(5)}`
         );
         const marker = new maplibregl.Marker({
-            element: markerElement(orderText, finalColor),
+            element: markerElement(markerText, finalColor, orderText),
             anchor: "center",
         })
             .setLngLat([point.lon, point.lat])

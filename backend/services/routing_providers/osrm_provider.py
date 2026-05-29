@@ -1,8 +1,18 @@
+import math
 import requests
 from typing import List
 from backend.config import OSRM_BASE_URL, ROUTING_TIMEOUT_SECONDS
 from backend.domain.point import Point
 from backend.services.routing_providers.base import RoutingResult
+from backend.services.routing_providers.exceptions import RoutingProviderError
+
+
+def _has_distinct_points(points: List[Point]) -> bool:
+    return len({(point.lat, point.lon) for point in points}) > 1
+
+
+def _valid_number(value) -> bool:
+    return isinstance(value, (int, float)) and math.isfinite(value)
 
 
 class OSRMRoutingProvider:
@@ -15,14 +25,29 @@ class OSRMRoutingProvider:
         data = response.json()
 
         if data.get("code") != "Ok":
-            raise Exception(f"OSRM error: {data.get('code')}: {data.get('message', '')}")
+            raise RoutingProviderError(f"OSRM error: {data.get('code')}: {data.get('message', '')}")
 
-        route = data["routes"][0]
-        distance_km = route["distance"] / 1000
-        duration_min = route["duration"] / 60
+        routes = data.get("routes") or []
+        if not routes:
+            raise RoutingProviderError("OSRM returned no routes")
+
+        route = routes[0]
+        distance_m = route.get("distance")
+        duration_sec = route.get("duration")
+        if not _valid_number(distance_m) or not _valid_number(duration_sec):
+            raise RoutingProviderError("OSRM returned invalid route metrics")
+
+        distance_km = distance_m / 1000
+        duration_min = duration_sec / 60
         
-        geometry_coords = route.get("geometry", {}).get("coordinates", [])
+        route_geometry = route.get("geometry") or {}
+        geometry_coords = route_geometry.get("coordinates") or []
+        if not all(isinstance(coord, list) and len(coord) >= 2 for coord in geometry_coords):
+            raise RoutingProviderError("OSRM returned invalid route geometry")
         geometry = [[coord[1], coord[0]] for coord in geometry_coords]
+        distinct_points = _has_distinct_points(points)
+        if distinct_points and (distance_km <= 0 or len(geometry) < 2):
+            raise RoutingProviderError("OSRM returned unusable route geometry")
 
         return RoutingResult(
             provider="osrm",

@@ -2,6 +2,7 @@ import api from "../api/client.js";
 import { store } from "../state/store.js";
 import { notify } from "../ui/notifications.js";
 import { resetMetrics } from "../ui/metrics.js";
+import { generatedPointsMessage } from "../utils/plural.js";
 
 function clearErrors() {
     ['pointsInput', 'northInput', 'westInput', 'radInput'].forEach(id => {
@@ -42,14 +43,6 @@ function validateForm(countStr, latStr, lonStr, radiusStr) {
     return null;
 }
 
-function getPluralForm(number, titles) {
-    const cases = [2, 0, 1, 1, 1, 2];
-    return titles[
-        (number % 100 > 4 && number % 100 < 20)
-            ? 2
-            : cases[(number % 10 < 5) ? number % 10 : 5]
-    ];
-}
 export async function extractText() {
     const state = store.getState();
     if (state.isLoading) return;
@@ -82,8 +75,7 @@ export async function extractText() {
         resetMetrics();
 
         const count = result.points ? result.points.length : 0;
-        const wordForm = getPluralForm(count, ['точка', 'точки', 'точек']);
-        notify(`Сгенерировано ${count} ${wordForm}`, 'info');
+        notify(generatedPointsMessage(count), 'info');
 
     } catch (error) {
         store.setState({ status: 'error', isLoading: false, loadingAction: null });

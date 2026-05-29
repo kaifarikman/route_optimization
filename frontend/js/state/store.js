@@ -4,6 +4,7 @@ const initialState = {
     optimizedRoute: null,
     selectedRouteMode: 'base',
     sharedView: false,
+    mapClickAddMode: false,
     status: 'idle',
     isLoading: false,
     loadingAction: null

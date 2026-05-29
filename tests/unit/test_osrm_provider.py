@@ -1,6 +1,7 @@
 import pytest
 import json
 from backend.services.routing_providers.osrm_provider import OSRMRoutingProvider
+from backend.services.routing_providers.exceptions import RoutingProviderError
 from backend.schemas.point import Point
 
 
@@ -79,6 +80,24 @@ class TestOSRMRoutingProvider:
             provider.build_route(sample_points)
 
         assert "NoRoute" in str(exc_info.value)
+
+    def test_rejects_ok_response_with_unusable_route(self, provider, sample_points, mocker):
+        mock_get = mocker.patch("requests.get")
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {
+            "code": "Ok",
+            "routes": [{
+                "distance": 0,
+                "duration": 0,
+                "geometry": {"type": "LineString", "coordinates": []},
+            }],
+        }
+        mock_get.return_value.raise_for_status = lambda: None
+
+        with pytest.raises(RoutingProviderError) as exc_info:
+            provider.build_route(sample_points)
+
+        assert "unusable route geometry" in str(exc_info.value)
 
     def test_handles_http_error(self, provider, sample_points, mocker):
         mock_get = mocker.patch("requests.get")

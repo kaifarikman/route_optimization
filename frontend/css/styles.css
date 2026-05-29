@@ -230,6 +230,13 @@ html, body {
     background: var(--border);
 }
 
+.btn-secondary.is-active {
+    background: var(--blue-light);
+    border-color: var(--blue);
+    color: var(--blue);
+    box-shadow: inset 0 0 0 1px var(--blue);
+}
+
 .btn-accent {
     background: var(--green);
     color: white;

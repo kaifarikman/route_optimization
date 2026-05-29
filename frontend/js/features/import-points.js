@@ -2,6 +2,7 @@ import api from "../api/client.js";
 import { store } from "../state/store.js";
 import { resetMetrics } from "../ui/metrics.js";
 import { notify } from "../ui/notifications.js";
+import { pointWord } from "../utils/plural.js";
 
 const MAX_IMPORT_POINTS = 50;
 
@@ -17,8 +18,23 @@ function normalizePoint(raw) {
 function parseJsonPoints(content) {
     const data = JSON.parse(content);
     const items = Array.isArray(data) ? data : data.points;
-    if (!Array.isArray(items)) return [];
-    return items.map(normalizePoint).filter(Boolean);
+    if (!Array.isArray(items)) {
+        return { validPoints: [], totalRows: 0, skippedInvalid: 0 };
+    }
+
+    const validPoints = [];
+    let skippedInvalid = 0;
+
+    items.forEach((item) => {
+        const point = normalizePoint(item);
+        if (point) {
+            validPoints.push(point);
+        } else {
+            skippedInvalid += 1;
+        }
+    });
+
+    return { validPoints, totalRows: items.length, skippedInvalid };
 }
 
 function parseCsvPoints(content) {
@@ -27,31 +43,41 @@ function parseCsvPoints(content) {
         .trim()
         .split(/\r?\n/)
         .filter(Boolean);
-    if (lines.length < 2) return [];
+    if (lines.length < 2) return { validPoints: [], totalRows: 0, skippedInvalid: 0 };
 
     const sep = lines[0].includes(";") ? ";" : ",";
     const headers = lines[0].split(sep).map(header => header.trim().toLowerCase());
     const latIndex = headers.findIndex(header => ["lat", "широта", "latitude"].includes(header));
     const lonIndex = headers.findIndex(header => ["lng", "lon", "долгота", "longitude"].includes(header));
 
-    if (latIndex === -1 || lonIndex === -1) return [];
+    if (latIndex === -1 || lonIndex === -1) {
+        return { validPoints: [], totalRows: Math.max(lines.length - 1, 0), skippedInvalid: Math.max(lines.length - 1, 0) };
+    }
 
-    return lines.slice(1)
-        .map((line) => {
-            const cols = line.split(sep);
-            return normalizePoint({
-                lat: cols[latIndex],
-                lon: cols[lonIndex],
-            });
-        })
-        .filter(Boolean);
+    const validPoints = [];
+    let skippedInvalid = 0;
+
+    lines.slice(1).forEach((line) => {
+        const cols = line.split(sep);
+        const point = normalizePoint({
+            lat: cols[latIndex],
+            lon: cols[lonIndex],
+        });
+        if (point) {
+            validPoints.push(point);
+        } else {
+            skippedInvalid += 1;
+        }
+    });
+
+    return { validPoints, totalRows: lines.length - 1, skippedInvalid };
 }
 
-function parseFilePoints(content, filename) {
+export function parseFilePoints(content, filename) {
     const ext = filename.split(".").pop().toLowerCase();
     if (ext === "json") return parseJsonPoints(content);
     if (ext === "csv") return parseCsvPoints(content);
-    return [];
+    return { validPoints: [], totalRows: 0, skippedInvalid: 0 };
 }
 
 function readFile(file) {
@@ -63,32 +89,39 @@ function readFile(file) {
     });
 }
 
-function pluralPoints(count) {
-    const cases = [2, 0, 1, 1, 1, 2];
-    const forms = ["точка", "точки", "точек"];
-    return forms[(count % 100 > 4 && count % 100 < 20) ? 2 : cases[(count % 10 < 5) ? count % 10 : 5]];
+export function importSummary(importedCount, skippedInvalid, skippedByLimit) {
+    const parts = [
+        `Импортировано ${importedCount} ${pointWord(importedCount)}.`,
+        `Пропущено ${skippedInvalid} невалидных.`,
+    ];
+
+    if (skippedByLimit > 0) {
+        parts.push(`Ещё ${skippedByLimit} сверх лимита ${MAX_IMPORT_POINTS}.`);
+    }
+
+    return parts.join(" ");
 }
 
 async function importFile(file) {
     const state = store.getState();
     if (state.isLoading) return;
 
-    let parsedPoints;
+    let parseResult;
     try {
         const content = await readFile(file);
-        parsedPoints = parseFilePoints(content, file.name);
+        parseResult = parseFilePoints(content, file.name);
     } catch (error) {
         notify("Пустой или битый файл", "error");
         return;
     }
 
-    if (parsedPoints.length === 0) {
+    if (parseResult.validPoints.length === 0) {
         notify("Не найдено валидных точек в файле", "error");
         return;
     }
 
-    const total = parsedPoints.length;
-    const points = parsedPoints.slice(0, MAX_IMPORT_POINTS);
+    const points = parseResult.validPoints.slice(0, MAX_IMPORT_POINTS);
+    const skippedByLimit = Math.max(parseResult.validPoints.length - MAX_IMPORT_POINTS, 0);
 
     store.setState({ status: "loading", isLoading: true, loadingAction: "import" });
 
@@ -107,11 +140,7 @@ async function importFile(file) {
         });
         resetMetrics();
 
-        if (total > MAX_IMPORT_POINTS) {
-            notify(`Загружено ${MAX_IMPORT_POINTS} из ${total} точек (лимит). Импортировано ${imported.length} ${pluralPoints(imported.length)} из файла`, "info");
-        } else {
-            notify(`Импортировано ${imported.length} ${pluralPoints(imported.length)} из файла`, "info");
-        }
+        notify(importSummary(imported.length, parseResult.skippedInvalid, skippedByLimit), "info");
     } catch (error) {
         store.setState({ status: "error", isLoading: false, loadingAction: null });
         notify("Ошибка импорта точек: " + error.message, "error");

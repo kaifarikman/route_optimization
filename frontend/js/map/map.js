@@ -1,7 +1,7 @@
 import { store } from '../state/store.js';
-import { renderPoints, clearMarkers } from './markers.js?v=20260530-b2-addresses-v2';
-import { drawRoute, clearRoute } from './routes.js?v=20260530-b2-addresses-v2';
-import { activeVisibleRoute, isRouteVisible, ROUTE_COLORS } from './route-visibility.js?v=20260530-b2-addresses-v2';
+import { renderPoints, clearMarkers } from './markers.js?v=20260530-b2-addresses-v3';
+import { drawRoute, clearRoute } from './routes.js?v=20260530-b2-addresses-v3';
+import { activeVisibleRoute, isRouteVisible, ROUTE_COLORS } from './route-visibility.js?v=20260530-b2-addresses-v3';
 import { addPointByCoordinates } from '../features/add-point.js';
 
 export const MAP_STYLES = Object.freeze({
@@ -85,6 +85,24 @@ function renderLoadedStyle() {
     renderMapState(store.getState());
 }
 
+function registerMissingStyleImage(event) {
+    if (event.id !== 'wood-pattern' || !mapInstance || mapInstance.hasImage(event.id)) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 16;
+    canvas.height = 16;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#2d2a24';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#3a342c';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 11);
+    ctx.lineTo(16, 5);
+    ctx.stroke();
+    mapInstance.addImage(event.id, ctx.getImageData(0, 0, canvas.width, canvas.height), { pixelRatio: 1 });
+}
+
 export function setMapStyle(styleId) {
     const nextStyle = mapStyleConfig(styleId);
     const state = store.getState();
@@ -125,6 +143,7 @@ export function initMap() {
 
     mapInstance.on('load', renderLoadedStyle);
     mapInstance.on('style.load', renderLoadedStyle);
+    mapInstance.on('styleimagemissing', registerMissingStyleImage);
 
     store.subscribe(renderMapState);
     return mapInstance;

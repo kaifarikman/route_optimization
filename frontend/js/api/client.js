@@ -72,6 +72,10 @@ export class ApiClient {
         return this.request('POST', '/geocode', { query, limit });
     }
 
+    async reverseGeocode(lat, lon) {
+        return this.request('POST', '/geocode/reverse', { lat, lon });
+    }
+
     async buildBaseRoute(pointIds) {
         return this.request('POST', '/routes/base', {
             point_ids: pointIds

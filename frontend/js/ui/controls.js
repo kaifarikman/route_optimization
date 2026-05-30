@@ -3,8 +3,8 @@ import { buildRoute } from '../features/build-route.js';
 import { optimizeRoute } from '../features/optimize-route.js';
 import { updateMetrics, updateRouteOrder } from './metrics.js';
 import { notify } from './notifications.js';
-import { nextRouteToggleState, routeForMode, routeVisibilityState } from '../map/route-visibility.js?v=20260530-b2-addresses-v2';
-import { MAP_STYLES, setMapStyle } from '../map/map.js?v=20260530-b2-addresses-v2';
+import { nextRouteToggleState, routeForMode, routeVisibilityState } from '../map/route-visibility.js?v=20260530-b2-addresses-v3';
+import { MAP_STYLES, setMapStyle } from '../map/map.js?v=20260530-b2-addresses-v3';
 
 function routeStateKey(route) {
     if (!route) return null;

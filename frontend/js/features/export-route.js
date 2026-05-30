@@ -169,6 +169,17 @@ async function copyToClipboard(text) {
     document.body.removeChild(input);
 }
 
+export function clientShareUrl(result) {
+    if (result?.token && window.location?.origin) {
+        const url = new URL(window.location.href);
+        url.search = "";
+        url.hash = "";
+        url.searchParams.set("share", result.token);
+        return url.toString();
+    }
+    return result?.share_url || "";
+}
+
 function hasRoute() {
     const state = store.getState();
     return Boolean(state.baseRoute || state.optimizedRoute);
@@ -213,7 +224,7 @@ export function initExportControls() {
         store.setState({ status: "loading", isLoading: true, loadingAction: "share" });
         try {
             const result = await api.createRouteShare(state.baseRoute.id, state.optimizedRoute.id);
-            await copyToClipboard(result.share_url);
+            await copyToClipboard(clientShareUrl(result));
             store.setState({ status: "idle", isLoading: false, loadingAction: null });
             notify("Ссылка скопирована", "info");
         } catch (error) {

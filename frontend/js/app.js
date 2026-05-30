@@ -7,8 +7,8 @@ import { initExportControls } from './features/export-route.js';
 import { initGeocodeControls } from './features/geocode.js';
 import { initImportControls } from './features/import-points.js';
 import { getShareTokenFromUrl, loadSharedRoute } from './features/load-shared-route.js';
-import { initMap } from './map/map.js?v=20260530-b2-addresses-v2';
-import { initControls } from './ui/controls.js?v=20260530-b2-addresses-v2';
+import { initMap } from './map/map.js?v=20260530-b2-addresses-v3';
+import { initControls } from './ui/controls.js?v=20260530-b2-addresses-v3';
 import { initSavingsDashboard } from './ui/metrics.js';
 import { notify } from './ui/notifications.js';
 

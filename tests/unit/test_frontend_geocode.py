@@ -49,6 +49,8 @@ def test_geocode_result_formatting_and_metadata():
 def test_route_order_label_renders_coordinates_with_optional_address():
     module_url = (Path(__file__).resolve().parents[2] / "frontend/js/ui/metrics.js").as_uri()
     script = f"""
+        globalThis.window = {{ APP_CONFIG: null }};
+        globalThis.localStorage = {{ getItem() {{ return null; }}, setItem() {{}} }};
         const {{ pointCoordinateLabel, pointAddressLabel, pointOrderLabelHtml }} = await import({json.dumps(module_url)});
         console.log(JSON.stringify({{
             coord: pointCoordinateLabel({{ lat: 55.75393, lon: 37.6208, address: "Красная площадь" }}),
@@ -75,3 +77,35 @@ def test_route_order_label_renders_coordinates_with_optional_address():
     assert parsed["htmlWithoutAddress"] == (
         '<div class="order-coordinates">55.7539, 37.6208</div>'
     )
+
+
+def test_client_share_url_uses_current_browser_origin():
+    module_url = (Path(__file__).resolve().parents[2] / "frontend/js/features/export-route.js").as_uri()
+    script = f"""
+        globalThis.window = {{
+            APP_CONFIG: null,
+            location: {{
+                href: "https://route-optimization.ru/app/?old=1#map",
+                origin: "https://route-optimization.ru"
+            }}
+        }};
+        globalThis.localStorage = {{ getItem() {{ return null; }}, setItem() {{}} }};
+        const {{ clientShareUrl }} = await import({json.dumps(module_url)});
+        console.log(JSON.stringify({{
+            url: clientShareUrl({{ token: "share-token", share_url: "http://route-optimization.ru/?share=share-token" }}),
+            fallback: clientShareUrl({{ share_url: "http://route-optimization.ru/?share=old" }}),
+        }}));
+    """
+
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    parsed = json.loads(result.stdout)
+    assert parsed == {
+        "url": "https://route-optimization.ru/app/?share=share-token",
+        "fallback": "http://route-optimization.ru/?share=old",
+    }

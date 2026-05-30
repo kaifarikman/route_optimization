@@ -1,7 +1,12 @@
 import { store } from '../state/store.js';
+import api from '../api/client.js';
 import { compareMetrics } from '../features/compare-metrics.js';
 import { estimateSavings } from '../features/savings-estimate.js';
 import { enableRouteVisibility } from '../map/route-visibility.js';
+
+const reverseGeocodeCache = new Map();
+const reverseGeocodePending = new Set();
+let reverseGeocodeQueue = Promise.resolve();
 
 function escapeHtml(value) {
     return String(value ?? '')
@@ -133,6 +138,79 @@ function formatCoefficient(value) {
     return value.toLocaleString('ru-RU', { maximumFractionDigits: 2 });
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function pointLocationKey(point) {
+    return `${Number(point.lat).toFixed(6)},${Number(point.lon).toFixed(6)}`;
+}
+
+async function reverseGeocodeWithRetry(point, attempts = 3) {
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+        try {
+            return await api.reverseGeocode(point.lat, point.lon);
+        } catch (error) {
+            if (!String(error.message || '').includes('rate limit') || attempt === attempts - 1) {
+                throw error;
+            }
+            await sleep(1200);
+        }
+    }
+    return null;
+}
+
+function activeRouteForOrder(state) {
+    return state.optimizedRoute || state.baseRoute;
+}
+
+async function resolvePointAddress(point) {
+    const key = pointLocationKey(point);
+    try {
+        const cachedAddress = reverseGeocodeCache.get(key);
+        if (!cachedAddress) {
+            await sleep(1100);
+        }
+        const address = cachedAddress || String((await reverseGeocodeWithRetry(point))?.result?.display_name || '').trim();
+        if (!address) return;
+
+        reverseGeocodeCache.set(key, address);
+        const state = store.getState();
+        const points = state.points.map(currentPoint => {
+            if (currentPoint.id !== point.id || pointLocationKey(currentPoint) !== key || pointAddressLabel(currentPoint)) {
+                return currentPoint;
+            }
+            return {
+                ...currentPoint,
+                address,
+                geocoding_provider: currentPoint.geocoding_provider || 'nominatim',
+            };
+        });
+        store.setState({ points });
+        renderRouteOrderList(activeRouteForOrder(store.getState()));
+    } catch (error) {
+        console.warn('Reverse geocoding failed:', error);
+    } finally {
+        reverseGeocodePending.delete(key);
+    }
+}
+
+function scheduleReverseGeocoding(orderedIds, state) {
+    const pointsMap = new Map(state.points.map(point => [point.id, point]));
+
+    orderedIds.forEach(id => {
+        const point = pointsMap.get(id);
+        if (!point || pointAddressLabel(point)) return;
+
+        const key = pointLocationKey(point);
+        if (reverseGeocodeCache.has(key)) return;
+        if (reverseGeocodePending.has(key)) return;
+
+        reverseGeocodePending.add(key);
+        reverseGeocodeQueue = reverseGeocodeQueue.then(() => resolvePointAddress({ ...point }));
+    });
+}
+
 function updateSavingsDashboard() {
     const dashboard = document.getElementById('savingsDashboard');
     if (!dashboard) return;
@@ -186,6 +264,7 @@ function renderRouteOrderList(route) {
 
     const state = store.getState();
     const pointsMap = new Map(state.points.map(p => [p.id, p]));
+    scheduleReverseGeocoding(orderedIds, state);
 
     orderedIds.forEach((id, index) => {
         const pointObj = pointsMap.get(id);

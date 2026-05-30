@@ -6,6 +6,11 @@ class GeocodeRequest(BaseModel):
     limit: int = Field(default=5, ge=1, le=5)
 
 
+class ReverseGeocodeRequest(BaseModel):
+    lat: float = Field(ge=-90, le=90)
+    lon: float = Field(ge=-180, le=180)
+
+
 class GeocodeResult(BaseModel):
     lat: float
     lon: float
@@ -19,3 +24,7 @@ class GeocodeResult(BaseModel):
 
 class GeocodeResponse(BaseModel):
     results: list[GeocodeResult]
+
+
+class ReverseGeocodeResponse(BaseModel):
+    result: GeocodeResult | None = None

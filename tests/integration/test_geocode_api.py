@@ -71,6 +71,18 @@ def _sample_payload():
     ]
 
 
+def _sample_reverse_payload():
+    return {
+        "lat": "55.75393",
+        "lon": "37.62080",
+        "display_name": "Красная площадь, Москва, Россия",
+        "place_id": 456,
+        "category": "highway",
+        "type": "pedestrian",
+        "importance": 0.7,
+    }
+
+
 def setup_function():
     reset_geocoding_rate_limit()
     app.dependency_overrides.clear()
@@ -107,6 +119,59 @@ def test_geocode_endpoint_returns_normalized_results(monkeypatch):
         ]
     }
     assert holder["uow"].committed is True
+
+
+def test_reverse_geocode_endpoint_returns_normalized_result(monkeypatch):
+    holder = {}
+    app.dependency_overrides[get_uow] = _override_uow(holder)
+    calls = {}
+
+    def _fake_get(url, params=None, **kwargs):
+        calls["url"] = url
+        calls["params"] = params
+        return FakeResponse(payload=_sample_reverse_payload())
+
+    monkeypatch.setattr("backend.services.geocoding.requests.get", _fake_get)
+
+    response = TestClient(app).post("/geocode/reverse", json={"lat": 55.75393, "lon": 37.6208})
+
+    assert response.status_code == 200
+    assert calls["url"].endswith("/reverse")
+    assert calls["params"]["lat"] == 55.75393
+    assert calls["params"]["lon"] == 37.6208
+    assert response.json() == {
+        "result": {
+            "lat": 55.75393,
+            "lon": 37.6208,
+            "display_name": "Красная площадь, Москва, Россия",
+            "provider": "nominatim",
+            "place_id": "456",
+            "category": "highway",
+            "type": "pedestrian",
+            "importance": 0.7,
+        }
+    }
+    assert holder["uow"].committed is True
+
+
+def test_reverse_geocode_endpoint_cache_hit_bypasses_outbound_request(monkeypatch):
+    holder = {}
+    app.dependency_overrides[get_uow] = _override_uow(holder)
+    calls = {"count": 0}
+
+    def _fake_get(*args, **kwargs):
+        calls["count"] += 1
+        return FakeResponse(payload=_sample_reverse_payload())
+
+    monkeypatch.setattr("backend.services.geocoding.requests.get", _fake_get)
+    client = TestClient(app)
+
+    first = client.post("/geocode/reverse", json={"lat": 55.75393, "lon": 37.6208})
+    second = client.post("/geocode/reverse", json={"lat": 55.75393, "lon": 37.6208})
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert calls["count"] == 1
 
 
 def test_geocode_endpoint_rejects_invalid_request():

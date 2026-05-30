@@ -176,9 +176,24 @@ jobs:
               return 1
             }
 
+            pull_with_retry() {
+              local attempts=3
+              local delay=20
+              for i in $(seq 1 $attempts); do
+                if docker compose -f compose.yaml pull; then
+                  return 0
+                fi
+                if [ "$i" -lt "$attempts" ]; then
+                  echo "Pull attempt $i/$attempts failed, retrying in ${delay}s..."
+                  sleep "$delay"
+                fi
+              done
+              return 1
+            }
+
             trap rollback ERR
 
-            docker compose -f compose.yaml pull
+            pull_with_retry
             docker compose -f compose.yaml up -d --remove-orphans
 
             BACKEND_PORT="${BACKEND_PORT:-8000}"

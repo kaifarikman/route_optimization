@@ -6,38 +6,16 @@
     <title>RouteOpt — Оптимизация маршрутов</title>
     <link rel="stylesheet" href="./vendor/maplibre/maplibre-gl.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css"/>
-    <link rel="stylesheet" href="./css/styles.css?v=20260530-redesign-v1">
+    <link rel="stylesheet" href="./css/styles.css?v=20260530-redesign-v3">
 </head>
 <body>
     <div class="app-layout">
         <aside class="sidebar">
 
-            <!-- Шапка -->
-            <div class="sidebar-header">
-                <div class="sidebar-logo">R</div>
-                <div>
-                    <span class="sidebar-brand">RouteOpt</span>
-                    <span class="sidebar-subtitle">Оптимизация маршрутов</span>
-                </div>
-            </div>
-
-            <!-- Прогресс -->
-            <div class="progress-steps" id="progress-steps">
-                <div class="progress-step active" data-step="1">
-                    <div class="progress-dot"><span>1</span></div>
-                    <span class="progress-label">Точки</span>
-                </div>
-                <div class="progress-connector" id="connector-1-2"></div>
-                <div class="progress-step" data-step="2">
-                    <div class="progress-dot"><span>2</span></div>
-                    <span class="progress-label">Маршрут</span>
-                </div>
-                <div class="progress-connector" id="connector-2-3"></div>
-                <div class="progress-step" data-step="3">
-                    <div class="progress-dot"><span>3</span></div>
-                    <span class="progress-label">Оптимизация</span>
-                </div>
-            </div>
+            <!-- Ручка bottom sheet (только на мобиле) -->
+            <button class="sheet-handle" id="sheetHandle" type="button" aria-label="Развернуть панель">
+                <span class="sheet-handle__bar"></span>
+            </button>
 
             <!-- Контент -->
             <div class="sidebar-content">
@@ -52,14 +30,6 @@
                         </div>
                     </div>
                     <div class="step-content">
-                        <div class="empty-hint" id="step-1-hint">
-                            <span class="empty-hint-icon">💡</span>
-                            <div>
-                                <strong>Начните с добавления точек</strong>
-                                Укажите центр и радиус или добавьте вручную
-                            </div>
-                        </div>
-
                         <div class="input-grid">
                             <div class="field">
                                 <label for="pointsInput">Число точек</label>
@@ -274,6 +244,6 @@
     </div>
 
     <script src="./vendor/maplibre/maplibre-gl.js"></script>
-    <script type="module" src="./js/app.js?v=20260530-redesign-v1"></script>
+    <script type="module" src="./js/app.js?v=20260530-redesign-v3"></script>
 </body>
 </html>

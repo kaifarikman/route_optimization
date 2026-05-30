@@ -19,35 +19,6 @@ function updateStepSummary(id, text) {
     if (el) el.textContent = text;
 }
 
-function updateProgressIndicator(hasPoints, hasBaseRoute, hasOptimizedRoute) {
-    const steps = document.querySelectorAll('.progress-step');
-    const connectors = document.querySelectorAll('.progress-connector');
-    if (!steps.length) return;
-
-    // Step 1
-    steps[0]?.classList.toggle('done', hasPoints);
-    steps[0]?.classList.toggle('active', !hasPoints);
-    const dot1 = steps[0]?.querySelector('.progress-dot span');
-    if (dot1) dot1.textContent = hasPoints ? '✓' : '1';
-
-    // Step 2
-    steps[1]?.classList.toggle('done', hasBaseRoute);
-    steps[1]?.classList.toggle('active', hasPoints && !hasBaseRoute);
-    steps[1]?.classList.toggle('locked-step', !hasPoints && !hasBaseRoute);
-    const dot2 = steps[1]?.querySelector('.progress-dot span');
-    if (dot2) dot2.textContent = hasBaseRoute ? '✓' : '2';
-
-    // Step 3
-    steps[2]?.classList.toggle('done', hasOptimizedRoute);
-    steps[2]?.classList.toggle('active', hasBaseRoute && !hasOptimizedRoute);
-    steps[2]?.classList.toggle('locked-step', !hasBaseRoute);
-    const dot3 = steps[2]?.querySelector('.progress-dot span');
-    if (dot3) dot3.textContent = hasOptimizedRoute ? '✓' : '3';
-
-    // Connectors
-    connectors[0]?.classList.toggle('active', hasPoints);
-    connectors[1]?.classList.toggle('active', hasBaseRoute);
-}
 
 export function initControls() {
     const buildRouteBtn = document.getElementById('buildRouteBtn');
@@ -252,12 +223,6 @@ export function initControls() {
             }
         }
 
-        // Прогресс-индикатор
-        updateProgressIndicator(hasPoints, hasBaseRoute, hasOptimizedRoute);
-
-        // Подсказка пустого состояния шага 1
-        const hint1 = document.getElementById('step-1-hint');
-        if (hint1) hint1.style.display = hasPoints ? 'none' : '';
 
         if (exportSection) {
             if (hasBaseRoute || hasOptimizedRoute) {

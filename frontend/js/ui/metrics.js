@@ -40,22 +40,8 @@ function formatRouteMetrics(route) {
     const providerText = route.provider + (route.is_fallback ? ' (запасной)' : '');
 
     let html = `
-        <div class="metrics-card">
-            <div class="metrics-row-split">
-                <div class="metric-block">
-                    <div class="metric-label">Расстояние</div>
-                    <div class="metric-value">${route.distance_km.toFixed(1)} км</div>
-                </div>
-                <div class="metric-block">
-                    <div class="metric-label">Время в пути</div>
-                    <div class="metric-value">${route.duration_minutes.toFixed(0)} мин</div>
-                </div>
-            </div>
-            <div class="metrics-meta">
-                <span class="provider-badge">● ${escapeHtml(providerText)}</span>
-                <span>${escapeHtml(geometryText)}</span>
-            </div>
-        </div>
+        <div class="metric-row">${route.distance_km.toFixed(1)} км &nbsp;·&nbsp; ${route.duration_minutes.toFixed(0)} мин</div>
+        <div class="metric-row">${escapeHtml(providerText)} &middot; ${escapeHtml(geometryText)}</div>
     `;
 
     if (route.is_fallback) {

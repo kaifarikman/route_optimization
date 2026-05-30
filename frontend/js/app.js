@@ -10,6 +10,7 @@ import { getShareTokenFromUrl, loadSharedRoute } from './features/load-shared-ro
 import { initMap } from './map/map.js?v=20260530-b2-addresses-v3';
 import { initControls } from './ui/controls.js?v=20260530-b2-addresses-v3';
 import { initSavingsDashboard } from './ui/metrics.js';
+import { initBottomSheet } from './ui/bottom-sheet.js';
 import { notify } from './ui/notifications.js';
 
 async function initApp() {
@@ -24,15 +25,23 @@ async function initApp() {
     initGeocodeControls();
     initManualPointValidation();
     initSavingsDashboard();
+    initBottomSheet();
 
     document.getElementById('generateBtn').addEventListener('click', extractText);
     document.getElementById('addPointBtn').addEventListener('click', addPointFromForm);
     document.getElementById('clearPointsBtn').addEventListener('click', clearPoints);
 
+    let hadBaseRoute = false;
     store.subscribe((state) => {
         if (state.status === 'loading') notify('Загрузка', 'loading');
         if (state.status === 'idle') notify('Готово', 'info');
         if (state.status === 'error') notify('Ошибка API', 'error');
+
+        // На мобиле приподнимаем шторку, когда появился маршрут
+        if (state.baseRoute && !hadBaseRoute) {
+            document.dispatchEvent(new CustomEvent('sheet:expand-half'));
+        }
+        hadBaseRoute = !!state.baseRoute;
     });
 
     if (shareToken) {

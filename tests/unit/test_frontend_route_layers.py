@@ -140,3 +140,44 @@ def test_fallback_route_keeps_dashed_line_style():
         "dash": [1.4, 1.4],
         "coordinates": [[37.61, 55.75], [37.62, 55.76]],
     }
+
+
+def test_routes_can_be_restored_after_map_style_reload_removes_layers():
+    parsed = run_routes_script(
+        """
+        const map = makeMap();
+        const baseRoute = {
+            geometry: [[55.75, 37.61], [55.76, 37.62]],
+            geometry_type: "full",
+            is_fallback: false,
+        };
+        const optimizedRoute = {
+            geometry: [[55.75, 37.61], [55.77, 37.63]],
+            geometry_type: "full",
+            is_fallback: false,
+        };
+
+        drawRoute(map, baseRoute, { kind: "base" });
+        drawRoute(map, optimizedRoute, { kind: "optimized" });
+
+        map.layers = {};
+        map.sources = {};
+
+        drawRoute(map, baseRoute, { kind: "base" });
+        drawRoute(map, optimizedRoute, { kind: "optimized" });
+
+        console.log(JSON.stringify({
+            sources: Object.keys(map.sources).sort(),
+            layers: Object.keys(map.layers).sort(),
+            baseCoordinates: map.sources["base-route"].data.geometry.coordinates,
+            optimizedCoordinates: map.sources["optimized-route"].data.geometry.coordinates,
+        }));
+        """
+    )
+
+    assert parsed == {
+        "sources": ["base-route", "optimized-route"],
+        "layers": ["base-route-line", "optimized-route-line"],
+        "baseCoordinates": [[37.61, 55.75], [37.62, 55.76]],
+        "optimizedCoordinates": [[37.61, 55.75], [37.63, 55.77]],
+    }

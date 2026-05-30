@@ -549,6 +549,46 @@ html, body {
     color: var(--green);
 }
 
+.map-style-panel {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 1000;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: var(--shadow-md);
+}
+
+.map-style-toggle {
+    min-height: 34px;
+    min-width: 58px;
+    padding: 7px 10px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+}
+
+.map-style-toggle:hover {
+    background: var(--surface-hover);
+}
+
+.map-style-toggle[aria-pressed="true"] {
+    border-color: var(--blue);
+    background: var(--blue-light);
+    color: var(--blue);
+}
+
 /* Раздел элементов поверх карты в frontend/css/styles.css */
 .status-badge {
     position: absolute;

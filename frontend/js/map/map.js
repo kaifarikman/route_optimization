@@ -1,14 +1,31 @@
 import { store } from '../state/store.js';
-import { renderPoints, clearMarkers } from './markers.js';
-import { drawRoute, clearRoute } from './routes.js';
-import { activeVisibleRoute, isRouteVisible, ROUTE_COLORS } from './route-visibility.js';
+import { renderPoints, clearMarkers } from './markers.js?v=20260530-map-styles-v2';
+import { drawRoute, clearRoute } from './routes.js?v=20260530-map-styles-v2';
+import { activeVisibleRoute, isRouteVisible, ROUTE_COLORS } from './route-visibility.js?v=20260530-map-styles-v2';
 import { addPointByCoordinates } from '../features/add-point.js';
 
-const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
+export const MAP_STYLES = Object.freeze({
+    streets: Object.freeze({
+        id: "streets",
+        label: "Light / Streets",
+        url: "https://tiles.openfreemap.org/styles/liberty",
+    }),
+    dark: Object.freeze({
+        id: "dark",
+        label: "Dark",
+        url: "https://tiles.openfreemap.org/styles/dark",
+    }),
+});
+
+export const DEFAULT_MAP_STYLE = "streets";
 
 let mapInstance = null;
 let lastFitRouteKey = null;
 let mapLoaded = false;
+
+function mapStyleConfig(styleId) {
+    return MAP_STYLES[styleId] || MAP_STYLES[DEFAULT_MAP_STYLE];
+}
 
 function routeBounds(route) {
     const routeLine = route?.geometry && route.geometry.length >= 2
@@ -63,11 +80,33 @@ function renderMapState(state) {
     }
 }
 
+function renderLoadedStyle() {
+    mapLoaded = true;
+    renderMapState(store.getState());
+}
+
+export function setMapStyle(styleId) {
+    const nextStyle = mapStyleConfig(styleId);
+    const state = store.getState();
+
+    if (state.mapStyle === nextStyle.id) return;
+
+    if (mapInstance) {
+        mapLoaded = false;
+        lastFitRouteKey = null;
+    }
+    store.setState({ mapStyle: nextStyle.id });
+
+    if (!mapInstance) return;
+
+    mapInstance.setStyle(nextStyle.url);
+}
+
 export function initMap() {
     if (mapInstance) return mapInstance;
     mapInstance = new maplibregl.Map({
         container: 'map',
-        style: MAP_STYLE_URL,
+        style: mapStyleConfig(store.getState().mapStyle).url,
         center: [37.62, 55.75],
         zoom: 10,
         pitch: 30,
@@ -84,10 +123,8 @@ export function initMap() {
         await addPointByCoordinates(lat, lng, "Точка добавлена кликом");
     });
 
-    mapInstance.on('load', () => {
-        mapLoaded = true;
-        renderMapState(store.getState());
-    });
+    mapInstance.on('load', renderLoadedStyle);
+    mapInstance.on('style.load', renderLoadedStyle);
 
     store.subscribe(renderMapState);
     return mapInstance;

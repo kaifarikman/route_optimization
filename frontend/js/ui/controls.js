@@ -3,7 +3,16 @@ import { buildRoute } from '../features/build-route.js';
 import { optimizeRoute } from '../features/optimize-route.js';
 import { updateMetrics, updateRouteOrder } from './metrics.js';
 import { notify } from './notifications.js';
-import { nextRouteToggleState, routeForMode, routeVisibilityState } from '../map/route-visibility.js';
+import { nextRouteToggleState, routeForMode, routeVisibilityState } from '../map/route-visibility.js?v=20260530-map-styles-v2';
+import { MAP_STYLES, setMapStyle } from '../map/map.js?v=20260530-map-styles-v2';
+
+function routeStateKey(route) {
+    if (!route) return null;
+    if (route.id) return `id:${route.id}`;
+    if (route.point_ids) return `points:${route.point_ids.join(',')}`;
+    if (route.points) return `points:${route.points.map(point => point.id || point).join(',')}`;
+    return `metrics:${route.distance_km}:${route.duration_minutes}`;
+}
 
 export function initControls() {
     const buildRouteBtn = document.getElementById('buildRouteBtn');
@@ -16,6 +25,7 @@ export function initControls() {
     const routeTogglePanel = document.getElementById('routeTogglePanel');
     const baseRouteToggle = document.getElementById('baseRouteToggle');
     const optimizedRouteToggle = document.getElementById('optimizedRouteToggle');
+    const mapStyleButtons = Array.from(document.querySelectorAll('[data-map-style]'));
 
     const step1 = document.getElementById('step-1');
     const step2 = document.getElementById('step-2');
@@ -23,6 +33,8 @@ export function initControls() {
     const exportSection = document.getElementById('export-section');
 
     const allButtons = [buildRouteBtn, optimizeRouteBtn, generateBtn, addPointBtn, mapClickAddBtn, clearPointsBtn, importPointsBtn].filter(Boolean);
+    let lastBaseRouteKey = null;
+    let lastOptimizedRouteKey = null;
 
     if (buildRouteBtn && !buildRouteBtn.dataset.bound) {
         buildRouteBtn.addEventListener('click', async () => {
@@ -110,6 +122,17 @@ export function initControls() {
     bindRouteToggle(baseRouteToggle, 'base');
     bindRouteToggle(optimizedRouteToggle, 'optimized');
 
+    mapStyleButtons.forEach((button) => {
+        if (button.dataset.bound) return;
+
+        button.addEventListener('click', () => {
+            const styleId = button.dataset.mapStyle;
+            if (!MAP_STYLES[styleId]) return;
+            setMapStyle(styleId);
+        });
+        button.dataset.bound = 'true';
+    });
+
     // Подписка на обновление реактивного состояния приложения
     store.subscribe((state) => {
         const hasPoints = state.points && state.points.length >= 2;
@@ -117,6 +140,29 @@ export function initControls() {
         const hasOptimizedRoute = !!state.optimizedRoute;
         const mutationsDisabled = state.isLoading || state.sharedView;
         const routeVisibility = routeVisibilityState(state.routeVisibility);
+        const baseRouteKey = routeStateKey(state.baseRoute);
+        const optimizedRouteKey = routeStateKey(state.optimizedRoute);
+
+        const visibilityUpdates = {};
+        if (baseRouteKey && baseRouteKey !== lastBaseRouteKey && !routeVisibility.base) {
+            visibilityUpdates.base = true;
+        }
+        if (optimizedRouteKey && optimizedRouteKey !== lastOptimizedRouteKey && !routeVisibility.optimized) {
+            visibilityUpdates.optimized = true;
+        }
+        lastBaseRouteKey = baseRouteKey;
+        lastOptimizedRouteKey = optimizedRouteKey;
+
+        if (Object.keys(visibilityUpdates).length > 0) {
+            store.setState({
+                routeVisibility: {
+                    ...routeVisibility,
+                    ...visibilityUpdates,
+                },
+                selectedRouteMode: visibilityUpdates.optimized ? 'optimized' : state.selectedRouteMode,
+            });
+            return;
+        }
 
         // ── Управление активностью шагов (UI) ──
         if (step1 && step2 && step3) {
@@ -197,6 +243,11 @@ export function initControls() {
             optimizedRouteToggle.disabled = state.isLoading || !hasOptimizedRoute;
             optimizedRouteToggle.setAttribute('aria-pressed', routeVisibility.optimized && hasOptimizedRoute ? 'true' : 'false');
         }
+
+        mapStyleButtons.forEach((button) => {
+            const isActive = button.dataset.mapStyle === (state.mapStyle || 'streets');
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
 
         // Текстовые индикаторы загрузки внутри кнопок
         allButtons.forEach(btn => {

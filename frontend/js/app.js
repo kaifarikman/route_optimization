@@ -6,8 +6,8 @@ import { clearPoints } from './features/clear-points.js';
 import { initExportControls } from './features/export-route.js';
 import { initImportControls } from './features/import-points.js';
 import { getShareTokenFromUrl, loadSharedRoute } from './features/load-shared-route.js';
-import { initMap } from './map/map.js';
-import { initControls } from './ui/controls.js';
+import { initMap } from './map/map.js?v=20260530-map-styles-v2';
+import { initControls } from './ui/controls.js?v=20260530-map-styles-v2';
 import { initSavingsDashboard } from './ui/metrics.js';
 import { notify } from './ui/notifications.js';
 

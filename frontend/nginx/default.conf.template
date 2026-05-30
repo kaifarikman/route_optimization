@@ -7,7 +7,13 @@ server {
 
     location = /js/env.js {
         default_type application/javascript;
+        add_header Cache-Control "no-store";
         return 200 'window.APP_CONFIG = { API_BASE_URL: "${FRONTEND_API_BASE_URL}" };';
+    }
+
+    location ~* \.(?:html|css|js)$ {
+        add_header Cache-Control "no-cache";
+        try_files $uri =404;
     }
 
     location /api/ {

@@ -62,18 +62,18 @@ Allowed statuses:
 ### B1 - Map style switcher
 
 - **Priority:** `P2`
-- **Status:** `TODO`
+- **Status:** `DONE`
 - **Goal:** Let the user switch map styles without introducing Mapbox token or authorization problems.
 - **Recommended slice:** Add light/streets and dark styles first. Add satellite only after confirming a stable no-key provider.
 - **Decision needed:** Confirm allowed style providers and whether satellite is required for the first implementation. Recommended default: ship light/dark only.
 - **Implementation notes:** The app already uses MapLibre GL JS and OpenFreeMap style URL. Keep MapLibre; do not add Mapbox GL JS or `api.mapbox.com` dependency.
 - **Acceptance checks:**
-  - [ ] User can switch between light/streets and dark styles.
-  - [ ] Existing points remain visible after style switch.
-  - [ ] Existing route layers are restored after style switch.
-  - [ ] No Mapbox token is required.
-  - [ ] Browser console has no Unauthorized errors from map providers.
-- **Current notes:** Not started.
+  - [x] User can switch between light/streets and dark styles.
+  - [x] Existing points remain visible after style switch.
+  - [x] Existing route layers are restored after style switch.
+  - [x] No Mapbox token is required.
+  - [x] Browser console has no Unauthorized errors from map providers.
+- **Current notes:** MVP complete with OpenFreeMap liberty/dark switcher; points and B4 base/optimized routes restore after style reload; pytest and browser verification passed with no map provider Unauthorized errors.
 - **Last updated:** 2026-05-30
 
 ### B2 - Addresses instead of coordinates

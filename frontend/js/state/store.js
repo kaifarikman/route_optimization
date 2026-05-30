@@ -6,6 +6,7 @@ const initialState = {
         base: false,
         optimized: false,
     },
+    mapStyle: 'streets',
     selectedRouteMode: 'base',
     sharedView: false,
     mapClickAddMode: false,

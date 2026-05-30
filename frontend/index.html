@@ -6,7 +6,7 @@
     <title>Система маршрутизации</title>
     <link rel="stylesheet" href="./vendor/maplibre/maplibre-gl.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css"/>
-    <link rel="stylesheet" href="./css/styles.css?v=20260530-route-toggles">
+    <link rel="stylesheet" href="./css/styles.css?v=20260530-map-styles-v2">
 </head>
 <body>
     <div class="app-layout">
@@ -172,11 +172,20 @@
                 </button>
             </div>
 
+            <div class="map-style-panel" aria-label="Стиль карты">
+                <button id="mapStyleStreets" class="map-style-toggle" type="button" data-map-style="streets" aria-pressed="true">
+                    Light
+                </button>
+                <button id="mapStyleDark" class="map-style-toggle" type="button" data-map-style="dark" aria-pressed="false">
+                    Dark
+                </button>
+            </div>
+
             <div class="status-badge" id="status-indicator">Готово</div>
         </main>
     </div>
 
     <script src="./vendor/maplibre/maplibre-gl.js"></script>
-    <script type="module" src="./js/app.js?v=20260530-route-toggles"></script>
+    <script type="module" src="./js/app.js?v=20260530-map-styles-v2"></script>
 </body>
 </html>

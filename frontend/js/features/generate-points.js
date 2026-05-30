@@ -3,6 +3,7 @@ import { store } from "../state/store.js";
 import { notify } from "../ui/notifications.js";
 import { resetMetrics } from "../ui/metrics.js";
 import { generatedPointsMessage } from "../utils/plural.js";
+import { resetRouteVisibility } from "../map/route-visibility.js";
 
 function clearErrors() {
     ['pointsInput', 'northInput', 'westInput', 'radInput'].forEach(id => {
@@ -70,6 +71,7 @@ export async function extractText() {
             loadingAction: null,
             baseRoute: null,
             optimizedRoute: null,
+            routeVisibility: resetRouteVisibility(),
             selectedRouteMode: 'base',
         });
         resetMetrics();

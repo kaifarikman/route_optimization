@@ -2,6 +2,7 @@ import api from "../api/client.js";
 import { store } from "../state/store.js";
 import { updateMetrics, resetMetrics } from "../ui/metrics.js";
 import { notify } from "../ui/notifications.js";
+import { routeVisibilityState } from "../map/route-visibility.js";
 
 export function getShareTokenFromUrl() {
     return new URLSearchParams(window.location.search).get("share");
@@ -20,6 +21,10 @@ export async function loadSharedRoute(token) {
             points: share.points || [],
             baseRoute: share.base_route || null,
             optimizedRoute: share.optimized_route || null,
+            routeVisibility: routeVisibilityState({
+                base: !!share.base_route,
+                optimized: !!share.optimized_route,
+            }),
             selectedRouteMode: "optimized",
             sharedView: true,
             status: "idle",

@@ -2,6 +2,7 @@ import api from "../api/client.js";
 import { store } from "../state/store.js";
 import { updateMetrics } from "../ui/metrics.js";
 import { notify } from "../ui/notifications.js";
+import { enableRouteVisibility } from "../map/route-visibility.js";
 
 export async function buildRoute() {
     const state = store.getState();
@@ -20,6 +21,7 @@ export async function buildRoute() {
 
         store.setState({
             baseRoute: result.route,
+            routeVisibility: enableRouteVisibility(store.getState().routeVisibility, "base"),
             selectedRouteMode: 'base',
             status: 'idle',
             isLoading: false,

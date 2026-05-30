@@ -1,6 +1,7 @@
 import { store } from '../state/store.js';
 import { renderPoints, clearMarkers } from './markers.js';
 import { drawRoute, clearRoute } from './routes.js';
+import { activeVisibleRoute, isRouteVisible, ROUTE_COLORS } from './route-visibility.js';
 import { addPointByCoordinates } from '../features/add-point.js';
 
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
@@ -20,18 +21,14 @@ function routeBounds(route) {
     return bounds;
 }
 
-function activeRoute(state) {
-    const isOptimized = state.selectedRouteMode === 'optimized';
-    return {
-        route: isOptimized ? state.optimizedRoute : state.baseRoute,
-        color: isOptimized ? '#4CAF50' : '#3388ff',
-    };
+function routeToFit(state) {
+    return activeVisibleRoute(state).route;
 }
 
 function renderMapState(state) {
     if (!mapLoaded) return;
 
-    const { route, color } = activeRoute(state);
+    const { route, color } = activeVisibleRoute(state);
     mapInstance.getCanvas().style.cursor = state.mapClickAddMode ? "crosshair" : "";
 
     if (state.points && state.points.length > 0) {
@@ -40,16 +37,28 @@ function renderMapState(state) {
         clearMarkers();
     }
 
-    if (route) {
-        drawRoute(mapInstance, route, { color });
-        const fitKey = `${state.selectedRouteMode}:${route.id || route.points?.join(',')}`;
-        const bounds = routeBounds(route);
+    if (isRouteVisible(state, 'base')) {
+        drawRoute(mapInstance, state.baseRoute, { kind: 'base', color: ROUTE_COLORS.base });
+    } else {
+        clearRoute(mapInstance, 'base');
+    }
+
+    if (isRouteVisible(state, 'optimized')) {
+        drawRoute(mapInstance, state.optimizedRoute, { kind: 'optimized', color: ROUTE_COLORS.optimized });
+    } else {
+        clearRoute(mapInstance, 'optimized');
+    }
+
+    const fitRoute = routeToFit(state);
+    if (fitRoute) {
+        const fitMode = fitRoute === state.optimizedRoute ? 'optimized' : 'base';
+        const fitKey = `${fitMode}:${fitRoute.id || fitRoute.points?.join(',')}`;
+        const bounds = routeBounds(fitRoute);
         if (bounds && fitKey !== lastFitRouteKey) {
             mapInstance.fitBounds(bounds, { padding: 50, maxZoom: 14 });
             lastFitRouteKey = fitKey;
         }
     } else {
-        clearRoute(mapInstance);
         lastFitRouteKey = null;
     }
 }

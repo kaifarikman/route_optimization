@@ -2,6 +2,10 @@ const initialState = {
     points: [],
     baseRoute: null,
     optimizedRoute: null,
+    routeVisibility: {
+        base: false,
+        optimized: false,
+    },
     selectedRouteMode: 'base',
     sharedView: false,
     mapClickAddMode: false,

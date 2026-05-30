@@ -2,6 +2,7 @@ import api from "../api/client.js";
 import { store } from "../state/store.js";
 import { notify } from "../ui/notifications.js";
 import { resetMetrics } from "../ui/metrics.js";
+import { resetRouteVisibility } from "../map/route-visibility.js";
 
 const MANUAL_INPUT_IDS = ["manualLatInput", "manualLonInput"];
 
@@ -70,6 +71,7 @@ export async function addPointByCoordinates(lat, lon, successMessage = "Точк
             loadingAction: null,
             baseRoute: null,
             optimizedRoute: null,
+            routeVisibility: resetRouteVisibility(),
             selectedRouteMode: "base",
         });
         clearManualErrors();

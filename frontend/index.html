@@ -6,7 +6,7 @@
     <title>Система маршрутизации</title>
     <link rel="stylesheet" href="./vendor/maplibre/maplibre-gl.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css"/>
-    <link rel="stylesheet" href="./css/styles.css?v=20260530-b3-savings">
+    <link rel="stylesheet" href="./css/styles.css?v=20260530-route-toggles">
 </head>
 <body>
     <div class="app-layout">
@@ -161,11 +161,22 @@
         <main class="map-container-wrapper">
             <div id="map"></div>
 
+            <div class="route-toggle-panel" id="routeTogglePanel" hidden>
+                <button id="baseRouteToggle" class="route-toggle route-toggle-base" type="button" aria-pressed="false" hidden>
+                    <span class="route-toggle-swatch"></span>
+                    <span>Базовый</span>
+                </button>
+                <button id="optimizedRouteToggle" class="route-toggle route-toggle-optimized" type="button" aria-pressed="false" hidden>
+                    <span class="route-toggle-swatch"></span>
+                    <span>Оптимизированный</span>
+                </button>
+            </div>
+
             <div class="status-badge" id="status-indicator">Готово</div>
         </main>
     </div>
 
     <script src="./vendor/maplibre/maplibre-gl.js"></script>
-    <script type="module" src="./js/app.js?v=20260530-b3-savings"></script>
+    <script type="module" src="./js/app.js?v=20260530-route-toggles"></script>
 </body>
 </html>

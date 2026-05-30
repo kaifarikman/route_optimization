@@ -45,18 +45,18 @@ Allowed statuses:
 ### B4 - Before/after route comparison
 
 - **Priority:** `P1`
-- **Status:** `TODO`
+- **Status:** `DONE`
 - **Goal:** Make the route improvement visually obvious on the map.
 - **Recommended slice:** Show base and optimized routes together: blue baseline route and green optimized route.
 - **Decision needed:** Confirm whether MVP should be always-on dual-route display or a toggle. Recommended default: always show both routes after optimization.
 - **Implementation notes:** Current map drawing has one active route layer. Add separate base and optimized route layers/sources rather than replacing the blue route when optimized route appears.
 - **Acceptance checks:**
-  - [ ] After building the base route, the blue route is visible.
-  - [ ] After optimization, both blue base route and green optimized route are visible.
-  - [ ] Switching metrics does not make either route disappear unexpectedly.
-  - [ ] Clearing or regenerating points removes both route layers.
-  - [ ] Fallback straight-line routes still render correctly.
-- **Current notes:** Not started.
+  - [x] After building the base route, the blue route is visible.
+  - [x] After optimization, both blue base route and green optimized route are visible.
+  - [x] Switching metrics does not make either route disappear unexpectedly.
+  - [x] Clearing or regenerating points removes both route layers.
+  - [x] Fallback straight-line routes still render correctly.
+- **Current notes:** Completed MVP with independent blue/green route layers and map overlay toggles for base/optimized visibility; pytest passed and browser flow verified.
 - **Last updated:** 2026-05-30
 
 ### B1 - Map style switcher

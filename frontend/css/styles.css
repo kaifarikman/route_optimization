@@ -470,6 +470,85 @@ html, body {
     font-weight: 500;
 }
 
+.route-toggle-panel {
+    position: absolute;
+    top: 18px;
+    left: 58px;
+    z-index: 1000;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: var(--shadow-md);
+}
+
+.route-toggle-panel[hidden] {
+    display: none;
+}
+
+.route-toggle {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+}
+
+.route-toggle[hidden] {
+    display: none;
+}
+
+.route-toggle:hover:not(:disabled) {
+    background: var(--surface-hover);
+}
+
+.route-toggle:disabled {
+    opacity: 0.48;
+    cursor: not-allowed;
+}
+
+.route-toggle[aria-pressed="true"] {
+    color: var(--text-primary);
+    border-color: currentColor;
+}
+
+.route-toggle-base[aria-pressed="true"] {
+    background: var(--blue-light);
+    color: var(--blue);
+}
+
+.route-toggle-optimized[aria-pressed="true"] {
+    background: var(--green-light);
+    color: var(--green);
+}
+
+.route-toggle-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.route-toggle-base {
+    color: var(--blue);
+}
+
+.route-toggle-optimized {
+    color: var(--green);
+}
+
 /* Раздел элементов поверх карты в frontend/css/styles.css */
 .status-badge {
     position: absolute;

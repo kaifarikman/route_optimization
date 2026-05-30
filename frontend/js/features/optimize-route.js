@@ -2,6 +2,7 @@ import api from "../api/client.js";
 import { store } from "../state/store.js";
 import { updateMetrics } from "../ui/metrics.js";
 import { notify } from "../ui/notifications.js";
+import { enableRouteVisibility } from "../map/route-visibility.js";
 
 export async function optimizeRoute() {
     const state = store.getState();
@@ -19,6 +20,7 @@ export async function optimizeRoute() {
 
         store.setState({
             optimizedRoute: result.route,
+            routeVisibility: enableRouteVisibility(store.getState().routeVisibility, "optimized"),
             selectedRouteMode: 'optimized',
             status: 'idle',
             isLoading: false,

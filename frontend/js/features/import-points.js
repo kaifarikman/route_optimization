@@ -3,6 +3,7 @@ import { store } from "../state/store.js";
 import { resetMetrics } from "../ui/metrics.js";
 import { notify } from "../ui/notifications.js";
 import { pointWord } from "../utils/plural.js";
+import { resetRouteVisibility } from "../map/route-visibility.js";
 
 const MAX_IMPORT_POINTS = 50;
 
@@ -133,6 +134,7 @@ async function importFile(file) {
             points: imported,
             baseRoute: null,
             optimizedRoute: null,
+            routeVisibility: resetRouteVisibility(),
             selectedRouteMode: "base",
             status: "idle",
             isLoading: false,

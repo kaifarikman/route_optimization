@@ -1,6 +1,7 @@
 import { store } from '../state/store.js';
 import { compareMetrics } from '../features/compare-metrics.js';
 import { estimateSavings } from '../features/savings-estimate.js';
+import { enableRouteVisibility } from '../map/route-visibility.js';
 
 function formatRouteMetrics(route) {
     const distance = `Длина: ${route.distance_km.toFixed(1)} км`;
@@ -61,6 +62,10 @@ export function updateMetrics(route, mode) {
     }
 
     // Рендерим порядок посещения
+    renderRouteOrderList(route);
+}
+
+export function updateRouteOrder(route) {
     renderRouteOrderList(route);
 }
 
@@ -207,6 +212,7 @@ function renderRouteOrderList(route) {
                 const result = await api.buildBaseRoute(newOrderedIds);
                 store.setState({
                     baseRoute: result.route,
+                    routeVisibility: enableRouteVisibility(store.getState().routeVisibility, 'base'),
                     selectedRouteMode: 'base',
                     status: 'idle',
                     isLoading: false,

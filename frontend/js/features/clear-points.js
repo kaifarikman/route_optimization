@@ -2,6 +2,7 @@ import api from "../api/client.js";
 import { store } from "../state/store.js";
 import { resetMetrics } from "../ui/metrics.js";
 import { notify } from "../ui/notifications.js";
+import { resetRouteVisibility } from "../map/route-visibility.js";
 
 function clearInputErrors() {
     [
@@ -29,6 +30,7 @@ export async function clearPoints() {
             points: [],
             baseRoute: null,
             optimizedRoute: null,
+            routeVisibility: resetRouteVisibility(),
             selectedRouteMode: 'base',
             sharedView: false,
             status: 'idle',

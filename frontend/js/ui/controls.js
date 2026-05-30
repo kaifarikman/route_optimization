@@ -1,8 +1,9 @@
 import { store } from '../state/store.js';
 import { buildRoute } from '../features/build-route.js';
 import { optimizeRoute } from '../features/optimize-route.js';
-import { updateMetrics } from './metrics.js';
+import { updateMetrics, updateRouteOrder } from './metrics.js';
 import { notify } from './notifications.js';
+import { nextRouteToggleState, routeForMode, routeVisibilityState } from '../map/route-visibility.js';
 
 export function initControls() {
     const buildRouteBtn = document.getElementById('buildRouteBtn');
@@ -12,6 +13,9 @@ export function initControls() {
     const mapClickAddBtn = document.getElementById('mapClickAddBtn');
     const clearPointsBtn = document.getElementById('clearPointsBtn');
     const importPointsBtn = document.getElementById('importPointsBtn');
+    const routeTogglePanel = document.getElementById('routeTogglePanel');
+    const baseRouteToggle = document.getElementById('baseRouteToggle');
+    const optimizedRouteToggle = document.getElementById('optimizedRouteToggle');
 
     const step1 = document.getElementById('step-1');
     const step2 = document.getElementById('step-2');
@@ -25,7 +29,11 @@ export function initControls() {
             const { baseRoute, isLoading, sharedView } = store.getState();
             if (isLoading || sharedView) return;
             if (baseRoute) {
-                store.setState({ selectedRouteMode: 'base' });
+                const visibility = routeVisibilityState(store.getState().routeVisibility);
+                store.setState({
+                    selectedRouteMode: 'base',
+                    routeVisibility: { ...visibility, base: true },
+                });
                 updateMetrics(baseRoute, 'base');
                 return;
             }
@@ -39,7 +47,11 @@ export function initControls() {
             const { optimizedRoute, isLoading, sharedView } = store.getState();
             if (isLoading || sharedView) return;
             if (optimizedRoute) {
-                store.setState({ selectedRouteMode: 'optimized' });
+                const visibility = routeVisibilityState(store.getState().routeVisibility);
+                store.setState({
+                    selectedRouteMode: 'optimized',
+                    routeVisibility: { ...visibility, optimized: true },
+                });
                 updateMetrics(optimizedRoute, 'optimized');
                 return;
             }
@@ -74,12 +86,37 @@ export function initControls() {
         document.body.dataset.mapClickEscapeBound = 'true';
     }
 
+    function bindRouteToggle(button, mode) {
+        if (!button || button.dataset.bound) return;
+
+        button.addEventListener('click', () => {
+            const state = store.getState();
+            const route = routeForMode(state, mode);
+            if (state.isLoading || !route) return;
+
+            const updates = nextRouteToggleState(state, mode);
+            if (!updates) return;
+            store.setState(updates);
+
+            if (updates.selectedRouteMode) {
+                updateMetrics(routeForMode(store.getState(), updates.selectedRouteMode), updates.selectedRouteMode);
+            } else {
+                updateRouteOrder(null);
+            }
+        });
+        button.dataset.bound = 'true';
+    }
+
+    bindRouteToggle(baseRouteToggle, 'base');
+    bindRouteToggle(optimizedRouteToggle, 'optimized');
+
     // Подписка на обновление реактивного состояния приложения
     store.subscribe((state) => {
         const hasPoints = state.points && state.points.length >= 2;
         const hasBaseRoute = !!state.baseRoute;
         const hasOptimizedRoute = !!state.optimizedRoute;
         const mutationsDisabled = state.isLoading || state.sharedView;
+        const routeVisibility = routeVisibilityState(state.routeVisibility);
 
         // ── Управление активностью шагов (UI) ──
         if (step1 && step2 && step3) {
@@ -145,6 +182,20 @@ export function initControls() {
         if (mapClickAddBtn) {
             mapClickAddBtn.classList.toggle('is-active', !!state.mapClickAddMode);
             mapClickAddBtn.setAttribute('aria-pressed', state.mapClickAddMode ? 'true' : 'false');
+        }
+
+        if (routeTogglePanel) {
+            routeTogglePanel.hidden = !(hasBaseRoute || hasOptimizedRoute);
+        }
+        if (baseRouteToggle) {
+            baseRouteToggle.hidden = !hasBaseRoute;
+            baseRouteToggle.disabled = state.isLoading || !hasBaseRoute;
+            baseRouteToggle.setAttribute('aria-pressed', routeVisibility.base && hasBaseRoute ? 'true' : 'false');
+        }
+        if (optimizedRouteToggle) {
+            optimizedRouteToggle.hidden = !hasOptimizedRoute;
+            optimizedRouteToggle.disabled = state.isLoading || !hasOptimizedRoute;
+            optimizedRouteToggle.setAttribute('aria-pressed', routeVisibility.optimized && hasOptimizedRoute ? 'true' : 'false');
         }
 
         // Текстовые индикаторы загрузки внутри кнопок

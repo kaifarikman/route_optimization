@@ -3,181 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Система маршрутизации</title>
+    <title>RouteOpt — Оптимизация маршрутов</title>
     <link rel="stylesheet" href="./vendor/maplibre/maplibre-gl.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css"/>
-    <link rel="stylesheet" href="./css/styles.css?v=20260530-b2-addresses-v3">
+    <link rel="stylesheet" href="./css/styles.css?v=20260530-redesign-v1">
 </head>
 <body>
     <div class="app-layout">
         <aside class="sidebar">
-            <div class="step-node active" id="step-1">
-                <div class="step-header">
-                    <div class="step-number">1</div>
-                    <div class="step-title">Параметры генерации</div>
+
+            <!-- Шапка -->
+            <div class="sidebar-header">
+                <div class="sidebar-logo">R</div>
+                <div>
+                    <span class="sidebar-brand">RouteOpt</span>
+                    <span class="sidebar-subtitle">Оптимизация маршрутов</span>
                 </div>
-                <div class="step-content">
-                    <div class="input-grid">
-                        <div class="field">
-                            <label for="pointsInput">Число точек</label>
-                            <input type="text" id="pointsInput" placeholder="5" value="5">
-                        </div>
-                        <div class="field">
-                            <label for="radInput">Радиус (км)</label>
-                            <input type="text" id="radInput" placeholder="5" value="5">
+            </div>
+
+            <!-- Прогресс -->
+            <div class="progress-steps" id="progress-steps">
+                <div class="progress-step active" data-step="1">
+                    <div class="progress-dot"><span>1</span></div>
+                    <span class="progress-label">Точки</span>
+                </div>
+                <div class="progress-connector" id="connector-1-2"></div>
+                <div class="progress-step" data-step="2">
+                    <div class="progress-dot"><span>2</span></div>
+                    <span class="progress-label">Маршрут</span>
+                </div>
+                <div class="progress-connector" id="connector-2-3"></div>
+                <div class="progress-step" data-step="3">
+                    <div class="progress-dot"><span>3</span></div>
+                    <span class="progress-label">Оптимизация</span>
+                </div>
+            </div>
+
+            <!-- Контент -->
+            <div class="sidebar-content">
+
+                <!-- ШАГ 1 -->
+                <div class="step-node active" id="step-1">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <div>
+                            <div class="step-title">Генерация точек</div>
+                            <div class="step-summary" id="step-1-summary"></div>
                         </div>
                     </div>
-                    <div class="input-grid">
-                        <div class="field field-wide">
-                            <label for="centerAddressInput">Адрес центра</label>
-                            <input type="text" id="centerAddressInput" placeholder="Москва, Красная площадь">
+                    <div class="step-content">
+                        <div class="empty-hint" id="step-1-hint">
+                            <span class="empty-hint-icon">💡</span>
+                            <div>
+                                <strong>Начните с добавления точек</strong>
+                                Укажите центр и радиус или добавьте вручную
+                            </div>
                         </div>
-                    </div>
-                    <div class="address-actions">
-                        <button id="centerGeocodeBtn" class="btn btn-secondary" type="button" aria-label="Найти центр">
-                            <i class="ti ti-search"></i> Найти центр
-                        </button>
-                    </div>
-                    <div id="centerGeocodeResults" class="geocode-results" hidden></div>
-                    <div class="input-grid">
-                        <div class="field">
-                            <label for="northInput">Центр (Широта)</label>
-                            <input type="text" id="northInput" placeholder="55.75" value="55.75">
+
+                        <div class="input-grid">
+                            <div class="field">
+                                <label for="pointsInput">Число точек</label>
+                                <input type="text" id="pointsInput" placeholder="5" value="5">
+                            </div>
+                            <div class="field">
+                                <label for="radInput">Радиус (км)</label>
+                                <input type="text" id="radInput" placeholder="5" value="5">
+                            </div>
                         </div>
-                        <div class="field">
-                            <label for="westInput">Долгота</label>
-                            <input type="text" id="westInput" placeholder="37.62" value="37.62">
-                        </div>
-                    </div>
-                    <div class="actions-row">
-                        <button id="generateBtn" class="btn btn-primary">
-                            <i class="ti ti-map-pin-plus"></i> Сгенерировать
-                        </button>
-                        <button id="clearPointsBtn" class="btn btn-secondary" title="Начать новый маршрут">
-                            <i class="ti ti-refresh"></i> Новый маршрут
-                        </button>
-                    </div>
-                    <div class="manual-entry">
+
                         <div class="input-grid">
                             <div class="field field-wide">
-                                <label for="manualAddressInput">Адрес точки</label>
-                                <input type="text" id="manualAddressInput" placeholder="Москва, Тверская 1">
+                                <label for="centerAddressInput">Адрес центра</label>
+                                <input type="text" id="centerAddressInput" placeholder="Москва, Красная площадь">
                             </div>
                         </div>
-                        <button id="manualGeocodeBtn" class="btn btn-secondary" type="button" aria-label="Найти и добавить">
-                            <i class="ti ti-search"></i> Найти и добавить
-                        </button>
-                        <div id="manualGeocodeResults" class="geocode-results" hidden></div>
+                        <div class="address-actions">
+                            <button id="centerGeocodeBtn" class="btn btn-secondary" type="button">
+                                <i class="ti ti-search"></i> Найти центр
+                            </button>
+                        </div>
+                        <div id="centerGeocodeResults" class="geocode-results" hidden></div>
+
                         <div class="input-grid">
                             <div class="field">
-                                <label for="manualLatInput">Широта</label>
-                                <input type="text" id="manualLatInput" placeholder="55.75">
+                                <label for="northInput">Широта центра</label>
+                                <input type="text" id="northInput" placeholder="55.75" value="55.75">
                             </div>
                             <div class="field">
-                                <label for="manualLonInput">Долгота</label>
-                                <input type="text" id="manualLonInput" placeholder="37.62">
+                                <label for="westInput">Долгота</label>
+                                <input type="text" id="westInput" placeholder="37.62" value="37.62">
                             </div>
                         </div>
-                        <button id="addPointBtn" class="btn btn-secondary">
-                            <i class="ti ti-map-pin-plus"></i> Добавить точку
-                        </button>
-                        <button id="mapClickAddBtn" class="btn btn-secondary" aria-pressed="false">
-                            <i class="ti ti-crosshair"></i> Клик по карте
-                        </button>
-                        <button id="importPointsBtn" class="btn btn-secondary">
-                            <i class="ti ti-upload"></i> Импорт точек
-                        </button>
-                        <input type="file" id="importFileInput" accept=".json,.csv" style="display: none;">
-                    </div>
-                </div>
-            </div>
 
-            <div class="step-node" id="step-2">
-                <div class="step-header">
-                    <div class="step-number">2</div>
-                    <div class="step-title">Базовый маршрут</div>
-                </div>
-                <div class="step-content">
-                    <button id="buildRouteBtn" class="btn btn-primary" disabled>
-                        <i class="ti ti-route"></i> Построить маршрут
-                    </button>
-                    <div id="baseMetrics" class="metrics-output">
+                        <div class="actions-row">
+                            <button id="generateBtn" class="btn btn-primary">
+                                <i class="ti ti-map-pin-plus"></i> Сгенерировать
+                            </button>
+                            <button id="clearPointsBtn" class="btn btn-secondary" title="Начать новый маршрут">
+                                <i class="ti ti-refresh"></i>
+                            </button>
                         </div>
-                </div>
-            </div>
 
-            <div class="step-node" id="step-3">
-                <div class="step-header">
-                    <div class="step-number">3</div>
-                    <div class="step-title">Оптимизация (TSP)</div>
-                </div>
-                <div class="step-content">
-                    <button id="optimizeRouteBtn" class="btn btn-accent" disabled>
-                        <i class="ti ti-bolt"></i> Оптимизировать
-                    </button>
-                    <div id="optimizedMetrics" class="metrics-output">
-                        </div>
-                    <div id="savingsDashboard" class="savings-dashboard" hidden>
-                        <div class="savings-header">
-                            <i class="ti ti-cash"></i>
-                            <span>Экономия в рублях</span>
-                        </div>
-                        <div class="savings-summary">
-                            <div class="savings-item">
-                                <span>Километры</span>
-                                <strong id="savingsDistance">0,0 км</strong>
+                        <!-- Кнопка-переключатель ручного ввода -->
+                        <button id="toggleManualEntryBtn" class="btn-toggle-manual" aria-expanded="false" type="button">
+                            <span class="btn-toggle-manual__left">
+                                <i class="ti ti-plus"></i>
+                                <span>Добавить точку вручную</span>
+                            </span>
+                            <i class="ti ti-chevron-down btn-toggle-manual__arrow"></i>
+                        </button>
+
+                        <!-- Раскрывающаяся панель -->
+                        <div id="manualEntryPanel" class="manual-entry-panel">
+                            <div class="manual-entry-inner">
+                                <div class="input-grid">
+                                    <div class="field field-wide">
+                                        <label for="manualAddressInput">Адрес точки</label>
+                                        <input type="text" id="manualAddressInput" placeholder="Москва, Тверская 1">
+                                    </div>
+                                </div>
+                                <button id="manualGeocodeBtn" class="btn btn-secondary" type="button">
+                                    <i class="ti ti-search"></i> Найти и добавить
+                                </button>
+                                <div id="manualGeocodeResults" class="geocode-results" hidden></div>
+
+                                <div class="input-grid">
+                                    <div class="field">
+                                        <label for="manualLatInput">Широта</label>
+                                        <input type="text" id="manualLatInput" placeholder="55.75">
+                                    </div>
+                                    <div class="field">
+                                        <label for="manualLonInput">Долгота</label>
+                                        <input type="text" id="manualLonInput" placeholder="37.62">
+                                    </div>
+                                </div>
+
+                                <button id="addPointBtn" class="btn btn-secondary">
+                                    <i class="ti ti-map-pin-plus"></i> Добавить точку
+                                </button>
+                                <div class="actions-row">
+                                    <button id="mapClickAddBtn" class="btn btn-secondary" aria-pressed="false">
+                                        <i class="ti ti-crosshair"></i> Клик по карте
+                                    </button>
+                                    <button id="importPointsBtn" class="btn btn-secondary">
+                                        <i class="ti ti-upload"></i> Импорт
+                                    </button>
+                                </div>
+                                <input type="file" id="importFileInput" accept=".json,.csv" style="display:none;">
                             </div>
-                            <div class="savings-item">
-                                <span>Минуты</span>
-                                <strong id="savingsTime">0 мин</strong>
-                            </div>
-                            <div class="savings-item savings-total">
-                                <span>Оценка</span>
-                                <strong id="savingsRubles">0 ₽</strong>
-                            </div>
-                        </div>
-                        <div class="savings-inputs">
-                            <label for="rubPerKmInput">
-                                ₽/км
-                                <input type="text" id="rubPerKmInput" inputmode="decimal" placeholder="стоимость 1 км" value="35">
-                            </label>
-                            <label for="rubPerMinuteInput">
-                                ₽/мин
-                                <input type="text" id="rubPerMinuteInput" inputmode="decimal" placeholder="стоимость 1 мин" value="8">
-                            </label>
-                        </div>
-                        <div id="savingsFormula" class="savings-formula">
-                            Расчет: 0,0 км × 35 ₽/км + 0 мин × 8 ₽/мин
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="step-node export-node" id="export-section">
-                <div class="step-header">
-                    <div class="step-number"><i class="ti ti-download"></i></div>
-                    <div class="step-title">Экспорт</div>
-                </div>
-                <div class="step-content">
-                    <button id="exportJsonBtn" class="btn btn-secondary" disabled>
-                        <i class="ti ti-file-type-json"></i> Скачать JSON
-                    </button>
-                    <button id="exportCsvBtn" class="btn btn-secondary" disabled>
-                        <i class="ti ti-file-spreadsheet"></i> Скачать CSV
-                    </button>
-                    <button id="shareRouteBtn" class="btn btn-secondary" disabled>
-                        <i class="ti ti-link"></i> Скопировать ссылку
-                    </button>
-                </div>
-            </div>
-
-            <div class="order-section" id="routeOrderCard" style="display: none;">
-                <div class="order-header">
-                    <i class="ti ti-list-numbers"></i> Порядок посещения точек
-                </div>
-                <div class="order-list" id="routeOrderList">
+                <!-- ШАГ 2 -->
+                <div class="step-node" id="step-2">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <div>
+                            <div class="step-title">Базовый маршрут</div>
+                            <div class="step-summary" id="step-2-summary"></div>
+                        </div>
                     </div>
-            </div>
+                    <div class="step-content">
+                        <button id="buildRouteBtn" class="btn btn-primary" disabled>
+                            <i class="ti ti-route"></i> Построить маршрут
+                        </button>
+                        <div id="baseMetrics" class="metrics-output"></div>
+                    </div>
+                </div>
+
+                <!-- ШАГ 3 -->
+                <div class="step-node" id="step-3">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <div>
+                            <div class="step-title">Оптимизация (TSP)</div>
+                            <div class="step-summary" id="step-3-summary"></div>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <button id="optimizeRouteBtn" class="btn btn-accent" disabled>
+                            <i class="ti ti-bolt"></i> Оптимизировать
+                        </button>
+                        <div id="optimizedMetrics" class="metrics-output"></div>
+                        <div id="savingsDashboard" class="savings-dashboard" hidden>
+                            <div class="savings-header">
+                                <i class="ti ti-cash"></i>
+                                <span>Экономия в рублях</span>
+                            </div>
+                            <div class="savings-summary">
+                                <div class="savings-item">
+                                    <span>Километры</span>
+                                    <strong id="savingsDistance">0,0 км</strong>
+                                </div>
+                                <div class="savings-item">
+                                    <span>Минуты</span>
+                                    <strong id="savingsTime">0 мин</strong>
+                                </div>
+                                <div class="savings-item savings-total">
+                                    <span>Оценка</span>
+                                    <strong id="savingsRubles">0 ₽</strong>
+                                </div>
+                            </div>
+                            <div class="savings-inputs">
+                                <label for="rubPerKmInput">
+                                    ₽/км
+                                    <input type="text" id="rubPerKmInput" inputmode="decimal" placeholder="стоимость 1 км" value="35">
+                                </label>
+                                <label for="rubPerMinuteInput">
+                                    ₽/мин
+                                    <input type="text" id="rubPerMinuteInput" inputmode="decimal" placeholder="стоимость 1 мин" value="8">
+                                </label>
+                            </div>
+                            <div id="savingsFormula" class="savings-formula">
+                                Расчёт: 0,0 км × 35 ₽/км + 0 мин × 8 ₽/мин
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ЭКСПОРТ -->
+                <div class="step-node export-node" id="export-section">
+                    <div class="step-header">
+                        <div class="step-number"><i class="ti ti-download"></i></div>
+                        <div class="step-title">Экспорт</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="actions-row">
+                            <button id="exportJsonBtn" class="btn btn-secondary" disabled>
+                                <i class="ti ti-file-type-json"></i> JSON
+                            </button>
+                            <button id="exportCsvBtn" class="btn btn-secondary" disabled>
+                                <i class="ti ti-file-spreadsheet"></i> CSV
+                            </button>
+                            <button id="shareRouteBtn" class="btn btn-secondary" disabled>
+                                <i class="ti ti-link"></i> Ссылка
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ПОРЯДОК ТОЧЕК -->
+                <div class="order-section" id="routeOrderCard" style="display:none;">
+                    <div class="order-header">
+                        <i class="ti ti-list-numbers"></i> Порядок посещения
+                    </div>
+                    <div class="order-list" id="routeOrderList"></div>
+                </div>
+
+            </div><!-- /sidebar-content -->
         </aside>
 
         <main class="map-container-wrapper">
@@ -194,20 +268,12 @@
                 </button>
             </div>
 
-            <div class="map-style-panel" aria-label="Стиль карты">
-                <button id="mapStyleStreets" class="map-style-toggle" type="button" data-map-style="streets" aria-pressed="true">
-                    Light
-                </button>
-                <button id="mapStyleDark" class="map-style-toggle" type="button" data-map-style="dark" aria-pressed="false">
-                    Dark
-                </button>
-            </div>
 
             <div class="status-badge" id="status-indicator">Готово</div>
         </main>
     </div>
 
     <script src="./vendor/maplibre/maplibre-gl.js"></script>
-    <script type="module" src="./js/app.js?v=20260530-b2-addresses-v3"></script>
+    <script type="module" src="./js/app.js?v=20260530-redesign-v1"></script>
 </body>
 </html>

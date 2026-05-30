@@ -14,6 +14,41 @@ function routeStateKey(route) {
     return `metrics:${route.distance_km}:${route.duration_minutes}`;
 }
 
+function updateStepSummary(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+}
+
+function updateProgressIndicator(hasPoints, hasBaseRoute, hasOptimizedRoute) {
+    const steps = document.querySelectorAll('.progress-step');
+    const connectors = document.querySelectorAll('.progress-connector');
+    if (!steps.length) return;
+
+    // Step 1
+    steps[0]?.classList.toggle('done', hasPoints);
+    steps[0]?.classList.toggle('active', !hasPoints);
+    const dot1 = steps[0]?.querySelector('.progress-dot span');
+    if (dot1) dot1.textContent = hasPoints ? '✓' : '1';
+
+    // Step 2
+    steps[1]?.classList.toggle('done', hasBaseRoute);
+    steps[1]?.classList.toggle('active', hasPoints && !hasBaseRoute);
+    steps[1]?.classList.toggle('locked-step', !hasPoints && !hasBaseRoute);
+    const dot2 = steps[1]?.querySelector('.progress-dot span');
+    if (dot2) dot2.textContent = hasBaseRoute ? '✓' : '2';
+
+    // Step 3
+    steps[2]?.classList.toggle('done', hasOptimizedRoute);
+    steps[2]?.classList.toggle('active', hasBaseRoute && !hasOptimizedRoute);
+    steps[2]?.classList.toggle('locked-step', !hasBaseRoute);
+    const dot3 = steps[2]?.querySelector('.progress-dot span');
+    if (dot3) dot3.textContent = hasOptimizedRoute ? '✓' : '3';
+
+    // Connectors
+    connectors[0]?.classList.toggle('active', hasPoints);
+    connectors[1]?.classList.toggle('active', hasBaseRoute);
+}
+
 export function initControls() {
     const buildRouteBtn = document.getElementById('buildRouteBtn');
     const optimizeRouteBtn = document.getElementById('optimizeRouteBtn');
@@ -72,6 +107,20 @@ export function initControls() {
             await optimizeRoute();
         });
         optimizeRouteBtn.dataset.bound = 'true';
+    }
+
+    // ── Коллапс секции ручного ввода ──
+    const toggleManualBtn = document.getElementById('toggleManualEntryBtn');
+    const manualEntryPanel = document.getElementById('manualEntryPanel');
+
+    if (toggleManualBtn && manualEntryPanel && !toggleManualBtn.dataset.bound) {
+        toggleManualBtn.addEventListener('click', () => {
+            const isOpen = manualEntryPanel.classList.toggle('is-open');
+            toggleManualBtn.setAttribute('aria-expanded', String(isOpen));
+            const icon = toggleManualBtn.querySelector('.btn-toggle-manual__left i');
+            if (icon) icon.className = isOpen ? 'ti ti-x' : 'ti ti-plus';
+        });
+        toggleManualBtn.dataset.bound = 'true';
     }
 
     if (mapClickAddBtn && !mapClickAddBtn.dataset.bound) {
@@ -168,23 +217,47 @@ export function initControls() {
 
         // ── Управление активностью шагов (UI) ──
         if (step1 && step2 && step3) {
-            // По умолчанию Шаг 1 активен всегда
+            // Шаг 1 — всегда активен
             step1.classList.add('active');
+            step1.classList.remove('locked');
+            // done когда уже есть маршрут (пользователь прошёл дальше)
+            step1.classList.toggle('done', hasPoints && hasBaseRoute);
+            updateStepSummary('step-1-summary', hasPoints && hasBaseRoute
+                ? `${state.points.length} точек добавлено` : '');
 
-            // Шаг 2 активен, если есть точки для маршрута
+            // Шаг 2
             if (hasPoints) {
                 step2.classList.add('active');
+                step2.classList.remove('locked');
+                step2.classList.toggle('done', hasBaseRoute && hasOptimizedRoute);
+                updateStepSummary('step-2-summary', hasBaseRoute
+                    ? `${state.baseRoute.distance_km.toFixed(1)} км · ${Math.round(state.baseRoute.duration_minutes)} мин` : '');
             } else {
-                step2.classList.remove('active');
+                step2.classList.remove('active', 'done');
+                step2.classList.add('locked');
+                updateStepSummary('step-2-summary', '');
             }
 
-            // Шаг 3 активен, если построен базовый маршрут
+            // Шаг 3
             if (hasBaseRoute) {
                 step3.classList.add('active');
+                step3.classList.remove('locked');
+                step3.classList.toggle('done', hasOptimizedRoute);
+                updateStepSummary('step-3-summary', hasOptimizedRoute
+                    ? `${state.optimizedRoute.distance_km.toFixed(1)} км · экономия` : '');
             } else {
-                step3.classList.remove('active');
+                step3.classList.remove('active', 'done');
+                step3.classList.add('locked');
+                updateStepSummary('step-3-summary', '');
             }
         }
+
+        // Прогресс-индикатор
+        updateProgressIndicator(hasPoints, hasBaseRoute, hasOptimizedRoute);
+
+        // Подсказка пустого состояния шага 1
+        const hint1 = document.getElementById('step-1-hint');
+        if (hint1) hint1.style.display = hasPoints ? 'none' : '';
 
         if (exportSection) {
             if (hasBaseRoute || hasOptimizedRoute) {
@@ -251,6 +324,11 @@ export function initControls() {
             button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
 
+        // Текст кнопки оптимизации — зелёная когда активна
+        if (optimizeRouteBtn && hasBaseRoute && !hasOptimizedRoute && !mutationsDisabled) {
+            optimizeRouteBtn.style.animation = '';
+        }
+
         // Текстовые индикаторы загрузки внутри кнопок
         allButtons.forEach(btn => {
             if (btn && state.isLoading) {
@@ -268,7 +346,7 @@ export function initControls() {
                 if (btn.id === 'addPointBtn') btn.innerHTML = '<i class="ti ti-map-pin-plus"></i> Добавить точку';
                 if (btn.id === 'manualGeocodeBtn') btn.innerHTML = '<i class="ti ti-search"></i> Найти и добавить';
                 if (btn.id === 'mapClickAddBtn') btn.innerHTML = '<i class="ti ti-crosshair"></i> Клик по карте';
-                if (btn.id === 'importPointsBtn') btn.innerHTML = '<i class="ti ti-upload"></i> Импорт точек';
+                if (btn.id === 'importPointsBtn') btn.innerHTML = '<i class="ti ti-upload"></i> Импорт';
                 if (btn.id === 'clearPointsBtn') btn.innerHTML = '<i class="ti ti-refresh"></i> Новый маршрут';
                 if (btn.id === 'buildRouteBtn') btn.innerHTML = '<i class="ti ti-route"></i> Построить маршрут';
                 if (btn.id === 'optimizeRouteBtn') btn.innerHTML = '<i class="ti ti-bolt"></i> Оптимизировать';

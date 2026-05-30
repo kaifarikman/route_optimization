@@ -35,26 +35,33 @@ export function pointOrderLabelHtml(point) {
 }
 
 function formatRouteMetrics(route) {
-    const distance = `Длина: ${route.distance_km.toFixed(1)} км`;
-    const duration = `Время: ${route.duration_minutes.toFixed(0)} мин`;
-    const provider = `Источник: ${route.provider}${route.is_fallback ? ' (запасной)' : ''}`;
-    const geometryLabels = {
-        'full': 'по дорогам',
-        'straight': 'прямые линии'
-    };
+    const geometryLabels = { 'full': 'по дорогам', 'straight': 'прямые линии' };
     const geometryText = geometryLabels[route.geometry_type] || route.geometry_type;
-    const geometry = `Геометрия: ${geometryText}`;
+    const providerText = route.provider + (route.is_fallback ? ' (запасной)' : '');
 
     let html = `
-        <div class="metric-row">${distance}</div>
-        <div class="metric-row">${duration}</div>
-        <div class="metric-row">${provider}</div>
-        <div class="metric-row">${geometry}</div>
+        <div class="metrics-card">
+            <div class="metrics-row-split">
+                <div class="metric-block">
+                    <div class="metric-label">Расстояние</div>
+                    <div class="metric-value">${route.distance_km.toFixed(1)} км</div>
+                </div>
+                <div class="metric-block">
+                    <div class="metric-label">Время в пути</div>
+                    <div class="metric-value">${route.duration_minutes.toFixed(0)} мин</div>
+                </div>
+            </div>
+            <div class="metrics-meta">
+                <span class="provider-badge">● ${escapeHtml(providerText)}</span>
+                <span>${escapeHtml(geometryText)}</span>
+            </div>
+        </div>
     `;
+
     if (route.is_fallback) {
         html += `
             <div class="fallback-warning">
-                Внимание: дорожный API недоступен, использован приближенный расчет.
+                ⚠ Дорожный API недоступен — использован приближённый расчёт.
             </div>
         `;
     }
@@ -84,7 +91,8 @@ export function updateMetrics(route, mode) {
         if (comparison && comparison.distancePercent > 0) {
             html += `
                 <div class="improvement-badge">
-                    <i class="ti ti-trending-down"></i> Эффективнее на ${comparison.distancePercent.toFixed(1)}% (−${comparison.timeSaved.toFixed(0)} мин)
+                    <span><i class="ti ti-trending-down"></i> Эффективнее на ${comparison.distancePercent.toFixed(1)}%</span>
+                    <span class="improvement-pct">−${comparison.timeSaved.toFixed(0)} мин</span>
                 </div>
             `;
         }

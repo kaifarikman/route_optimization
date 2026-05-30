@@ -17,6 +17,7 @@ cp .env.example .env
 - frontend ходит в API через `/api`;
 - база лежит в `data/database.db`;
 - маршруты строятся через OSRM с haversine fallback.
+- адреса ищутся через Nominatim-compatible geocoding proxy с cache и лимитом 1 request/sec.
 
 ## Запуск
 
@@ -57,6 +58,9 @@ curl -fsS http://localhost:8000/health
 curl -fsS http://localhost:8080/api/health
 curl -fsS http://localhost:8080/js/env.js
 curl -fsS http://localhost:8000/points
+curl -fsS -X POST http://localhost:8000/geocode \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"Москва, Красная площадь","limit":1}'
 ```
 
 Эти команды проверяют, что:
@@ -66,6 +70,7 @@ curl -fsS http://localhost:8000/points
 - runtime config frontend;
 - API proxy через frontend;
 - backend `/points`.
+- backend `/geocode`.
 
 ## Диагностика
 
@@ -140,6 +145,16 @@ docker compose logs --tail=100 frontend
 
 ```shell
 curl -fsS http://localhost:8000/config
+```
+
+### Geocoding отвечает 429
+
+Публичный Nominatim нельзя использовать как autocomplete или bulk-geocoding. Backend ограничивает исходящие запросы до 1 request/sec на приложение и возвращает `429`, если запросы идут слишком часто. Повтор одинакового адреса берется из SQLite cache.
+
+Проверьте настройки:
+
+```shell
+grep GEOCODING .env
 ```
 
 ### Нужно начать с чистых данных

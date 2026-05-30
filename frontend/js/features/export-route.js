@@ -71,6 +71,7 @@ function buildJsonExport() {
             index: index + 1,
             lat: point.lat,
             lng: point.lon,
+            address: point.address || null,
             label: `Точка ${index + 1}`,
         })),
         base_route: routeExport(state.baseRoute, indexById),
@@ -106,7 +107,7 @@ function buildCsvExport() {
     const orderedIds = routePointIds(route);
     const comparison = compareMetrics();
 
-    const lines = [csvLine(["Порядок", "Широта", "Долгота", "Тип"])];
+    const lines = [csvLine(["Порядок", "Адрес", "Широта", "Долгота", "Тип"])];
 
     orderedIds.forEach((id, index) => {
         const point = pointsById.get(id);
@@ -114,14 +115,15 @@ function buildCsvExport() {
         let type = "точка";
         if (index === 0) type = "старт";
         if (index === orderedIds.length - 1) type = "финиш";
-        lines.push(csvLine([index + 1, point.lat, point.lon, type]));
+        lines.push(csvLine([index + 1, point.address || "", point.lat, point.lon, type]));
     });
 
-    lines.push(csvLine(["", "", "", ""]));
+    lines.push(csvLine(["", "", "", "", ""]));
 
     if (state.baseRoute) {
         lines.push(csvLine([
             "Базовый маршрут",
+            "",
             `${round(state.baseRoute.distance_km)} км`,
             `${Math.round(state.baseRoute.duration_minutes)} мин`,
             "",
@@ -130,13 +132,14 @@ function buildCsvExport() {
     if (state.optimizedRoute) {
         lines.push(csvLine([
             "Оптимизированный",
+            "",
             `${round(state.optimizedRoute.distance_km)} км`,
             `${Math.round(state.optimizedRoute.duration_minutes)} мин`,
             "",
         ]));
     }
     if (comparison) {
-        lines.push(csvLine(["Улучшение", `${round(comparison.distancePercent)}%`, "", ""]));
+        lines.push(csvLine(["Улучшение", "", `${round(comparison.distancePercent)}%`, "", ""]));
     }
 
     return `\uFEFF${lines.join("\r\n")}`;

@@ -6,7 +6,7 @@
     <title>Система маршрутизации</title>
     <link rel="stylesheet" href="./vendor/maplibre/maplibre-gl.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css"/>
-    <link rel="stylesheet" href="./css/styles.css?v=20260530-map-styles-v2">
+    <link rel="stylesheet" href="./css/styles.css?v=20260530-b2-addresses-v2">
 </head>
 <body>
     <div class="app-layout">
@@ -28,6 +28,18 @@
                         </div>
                     </div>
                     <div class="input-grid">
+                        <div class="field field-wide">
+                            <label for="centerAddressInput">Адрес центра</label>
+                            <input type="text" id="centerAddressInput" placeholder="Москва, Красная площадь">
+                        </div>
+                    </div>
+                    <div class="address-actions">
+                        <button id="centerGeocodeBtn" class="btn btn-secondary" type="button" aria-label="Найти центр">
+                            <i class="ti ti-search"></i> Найти центр
+                        </button>
+                    </div>
+                    <div id="centerGeocodeResults" class="geocode-results" hidden></div>
+                    <div class="input-grid">
                         <div class="field">
                             <label for="northInput">Центр (Широта)</label>
                             <input type="text" id="northInput" placeholder="55.75" value="55.75">
@@ -46,6 +58,16 @@
                         </button>
                     </div>
                     <div class="manual-entry">
+                        <div class="input-grid">
+                            <div class="field field-wide">
+                                <label for="manualAddressInput">Адрес точки</label>
+                                <input type="text" id="manualAddressInput" placeholder="Москва, Тверская 1">
+                            </div>
+                        </div>
+                        <button id="manualGeocodeBtn" class="btn btn-secondary" type="button" aria-label="Найти и добавить">
+                            <i class="ti ti-search"></i> Найти и добавить
+                        </button>
+                        <div id="manualGeocodeResults" class="geocode-results" hidden></div>
                         <div class="input-grid">
                             <div class="field">
                                 <label for="manualLatInput">Широта</label>
@@ -186,6 +208,6 @@
     </div>
 
     <script src="./vendor/maplibre/maplibre-gl.js"></script>
-    <script type="module" src="./js/app.js?v=20260530-map-styles-v2"></script>
+    <script type="module" src="./js/app.js?v=20260530-b2-addresses-v2"></script>
 </body>
 </html>

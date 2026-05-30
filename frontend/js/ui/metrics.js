@@ -3,6 +3,32 @@ import { compareMetrics } from '../features/compare-metrics.js';
 import { estimateSavings } from '../features/savings-estimate.js';
 import { enableRouteVisibility } from '../map/route-visibility.js';
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+export function pointCoordinateLabel(point) {
+    return `${point.lat.toFixed(4)}, ${point.lon.toFixed(4)}`;
+}
+
+export function pointAddressLabel(point) {
+    return String(point?.address || '').trim();
+}
+
+export function pointOrderLabelHtml(point) {
+    const address = pointAddressLabel(point);
+    let html = `<div class="order-coordinates">${escapeHtml(pointCoordinateLabel(point))}</div>`;
+    if (address) {
+        html += `<div class="order-address">${escapeHtml(address)}</div>`;
+    }
+    return html;
+}
+
 function formatRouteMetrics(route) {
     const distance = `Длина: ${route.distance_km.toFixed(1)} км`;
     const duration = `Время: ${route.duration_minutes.toFixed(0)} мин`;
@@ -176,7 +202,7 @@ function renderRouteOrderList(route) {
 
         item.innerHTML = `
             <div class="order-num">${index + 1}</div>
-            <div class="order-coord">${pointObj.lat.toFixed(4)}, ${pointObj.lon.toFixed(4)}</div>
+            <div class="order-coord">${pointOrderLabelHtml(pointObj)}</div>
             <div class="order-dist">${routePosition}</div>
         `;
 

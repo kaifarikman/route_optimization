@@ -123,6 +123,9 @@ def create_route_share(base_route_id: int, optimized_route_id: int, uow: Abstrac
             "id": index_by_id[point_id],
             "lat": points_by_id[point_id].lat,
             "lon": points_by_id[point_id].lon,
+            "address": points_by_id[point_id].address,
+            "geocoding_provider": points_by_id[point_id].geocoding_provider,
+            "geocoding_place_id": points_by_id[point_id].geocoding_place_id,
         }
         for point_id in ordered_point_ids
     ]

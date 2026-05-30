@@ -12,8 +12,22 @@ class FakePointRepository:
         self._points = list(points or [])
         self._next_id = max([point.id for point in self._points], default=0) + 1
 
-    def add(self, lat: float, lon: float) -> Point:
-        point = Point(id=self._next_id, lat=lat, lon=lon)
+    def add(
+        self,
+        lat: float,
+        lon: float,
+        address: str | None = None,
+        geocoding_provider: str | None = None,
+        geocoding_place_id: str | None = None,
+    ) -> Point:
+        point = Point(
+            id=self._next_id,
+            lat=lat,
+            lon=lon,
+            address=address,
+            geocoding_provider=geocoding_provider,
+            geocoding_place_id=geocoding_place_id,
+        )
         self._next_id += 1
         self._points.append(point)
         return point
@@ -119,6 +133,39 @@ def test_add_point_endpoint_returns_point_and_clears_routes():
     assert holder["uow"].routes.items == []
     assert holder["uow"].routes.clear_count == 1
     assert holder["uow"].committed is True
+
+
+def test_add_point_endpoint_persists_address_metadata():
+    holder = {}
+    app.dependency_overrides[get_user_uow] = _override_uow(holder)
+
+    client = TestClient(app)
+    response = client.post(
+        "/points",
+        json={
+            "lat": 55.75,
+            "lon": 37.62,
+            "address": "Москва, Красная площадь",
+            "geocoding_provider": "nominatim",
+            "geocoding_place_id": "123",
+        },
+        headers=USER_HEADERS,
+    )
+    points_response = client.get("/points", headers=USER_HEADERS)
+
+    app.dependency_overrides.clear()
+
+    expected = {
+        "id": 1,
+        "lat": 55.75,
+        "lon": 37.62,
+        "address": "Москва, Красная площадь",
+        "geocoding_provider": "nominatim",
+        "geocoding_place_id": "123",
+    }
+    assert response.status_code == 200
+    assert response.json() == {"point": expected}
+    assert points_response.json() == {"points": [expected]}
 
 
 def test_add_point_endpoint_returns_validation_error_for_invalid_latitude():

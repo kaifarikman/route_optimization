@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.api import points, routes as routes_api, system
+from backend.api import geocode, points, routes as routes_api, system
 from backend.api.dependencies import UserIdHeaderRequired
 from backend.config import BACKEND_HOST, BACKEND_PORT, BACKEND_RELOAD, CORS_ALLOW_ORIGINS
 from backend.db.session import init_db
@@ -34,6 +34,7 @@ app.add_middleware(
 
 app.include_router(points.router, tags=["Points"])
 app.include_router(routes_api.router, tags=["Routes"])
+app.include_router(geocode.router, tags=["Geocoding"])
 app.include_router(system.router, tags=["System"])
 
 

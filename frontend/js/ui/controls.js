@@ -3,8 +3,8 @@ import { buildRoute } from '../features/build-route.js';
 import { optimizeRoute } from '../features/optimize-route.js';
 import { updateMetrics, updateRouteOrder } from './metrics.js';
 import { notify } from './notifications.js';
-import { nextRouteToggleState, routeForMode, routeVisibilityState } from '../map/route-visibility.js?v=20260530-map-styles-v2';
-import { MAP_STYLES, setMapStyle } from '../map/map.js?v=20260530-map-styles-v2';
+import { nextRouteToggleState, routeForMode, routeVisibilityState } from '../map/route-visibility.js?v=20260530-b2-addresses-v2';
+import { MAP_STYLES, setMapStyle } from '../map/map.js?v=20260530-b2-addresses-v2';
 
 function routeStateKey(route) {
     if (!route) return null;
@@ -18,7 +18,9 @@ export function initControls() {
     const buildRouteBtn = document.getElementById('buildRouteBtn');
     const optimizeRouteBtn = document.getElementById('optimizeRouteBtn');
     const generateBtn = document.getElementById('generateBtn');
+    const centerGeocodeBtn = document.getElementById('centerGeocodeBtn');
     const addPointBtn = document.getElementById('addPointBtn');
+    const manualGeocodeBtn = document.getElementById('manualGeocodeBtn');
     const mapClickAddBtn = document.getElementById('mapClickAddBtn');
     const clearPointsBtn = document.getElementById('clearPointsBtn');
     const importPointsBtn = document.getElementById('importPointsBtn');
@@ -32,7 +34,7 @@ export function initControls() {
     const step3 = document.getElementById('step-3');
     const exportSection = document.getElementById('export-section');
 
-    const allButtons = [buildRouteBtn, optimizeRouteBtn, generateBtn, addPointBtn, mapClickAddBtn, clearPointsBtn, importPointsBtn].filter(Boolean);
+    const allButtons = [buildRouteBtn, optimizeRouteBtn, generateBtn, centerGeocodeBtn, addPointBtn, manualGeocodeBtn, mapClickAddBtn, clearPointsBtn, importPointsBtn].filter(Boolean);
     let lastBaseRouteKey = null;
     let lastOptimizedRouteKey = null;
 
@@ -209,7 +211,7 @@ export function initControls() {
             }
         }
 
-        [generateBtn, addPointBtn, mapClickAddBtn, importPointsBtn].forEach(btn => {
+        [generateBtn, centerGeocodeBtn, addPointBtn, manualGeocodeBtn, mapClickAddBtn, importPointsBtn].forEach(btn => {
             if (!btn) return;
             if (mutationsDisabled) {
                 btn.setAttribute('disabled', 'true');
@@ -253,14 +255,18 @@ export function initControls() {
         allButtons.forEach(btn => {
             if (btn && state.isLoading) {
                 if (btn.id === 'generateBtn' && state.loadingAction === 'generate') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Генерация...';
+                if (btn.id === 'centerGeocodeBtn' && state.loadingAction === 'geocode') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Поиск...';
                 if (btn.id === 'addPointBtn' && state.loadingAction === 'add') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Добавление...';
+                if (btn.id === 'manualGeocodeBtn' && state.loadingAction === 'geocode') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Поиск...';
                 if (btn.id === 'importPointsBtn' && state.loadingAction === 'import') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Импорт...';
                 if (btn.id === 'clearPointsBtn' && state.loadingAction === 'clear') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Сброс...';
                 if (btn.id === 'buildRouteBtn' && state.loadingAction === 'build') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Построение...';
                 if (btn.id === 'optimizeRouteBtn' && state.loadingAction === 'optimize') btn.innerHTML = '<i class="ti ti-loader rotate"></i> Оптимизация...';
             } else if (btn) {
                 if (btn.id === 'generateBtn') btn.innerHTML = '<i class="ti ti-map-pin-plus"></i> Сгенерировать';
+                if (btn.id === 'centerGeocodeBtn') btn.innerHTML = '<i class="ti ti-search"></i> Найти центр';
                 if (btn.id === 'addPointBtn') btn.innerHTML = '<i class="ti ti-map-pin-plus"></i> Добавить точку';
+                if (btn.id === 'manualGeocodeBtn') btn.innerHTML = '<i class="ti ti-search"></i> Найти и добавить';
                 if (btn.id === 'mapClickAddBtn') btn.innerHTML = '<i class="ti ti-crosshair"></i> Клик по карте';
                 if (btn.id === 'importPointsBtn') btn.innerHTML = '<i class="ti ti-upload"></i> Импорт точек';
                 if (btn.id === 'clearPointsBtn') btn.innerHTML = '<i class="ti ti-refresh"></i> Новый маршрут';

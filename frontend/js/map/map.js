@@ -1,7 +1,7 @@
 import { store } from '../state/store.js';
-import { renderPoints, clearMarkers } from './markers.js?v=20260530-map-styles-v2';
-import { drawRoute, clearRoute } from './routes.js?v=20260530-map-styles-v2';
-import { activeVisibleRoute, isRouteVisible, ROUTE_COLORS } from './route-visibility.js?v=20260530-map-styles-v2';
+import { renderPoints, clearMarkers } from './markers.js?v=20260530-b2-addresses-v2';
+import { drawRoute, clearRoute } from './routes.js?v=20260530-b2-addresses-v2';
+import { activeVisibleRoute, isRouteVisible, ROUTE_COLORS } from './route-visibility.js?v=20260530-b2-addresses-v2';
 import { addPointByCoordinates } from '../features/add-point.js';
 
 export const MAP_STYLES = Object.freeze({

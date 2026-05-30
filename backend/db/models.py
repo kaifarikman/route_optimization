@@ -14,6 +14,9 @@ class PointModel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     lat: Mapped[float] = mapped_column(Float, nullable=False)
     lon: Mapped[float] = mapped_column(Float, nullable=False)
+    address: Mapped[str | None] = mapped_column(String, nullable=True)
+    geocoding_provider: Mapped[str | None] = mapped_column(String, nullable=True)
+    geocoding_place_id: Mapped[str | None] = mapped_column(String, nullable=True)
     user_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     last_accessed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
@@ -41,4 +44,14 @@ class RouteShareModel(Base):
     token: Mapped[str] = mapped_column(String, primary_key=True)
     owner_user_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     snapshot: Mapped[dict] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+
+class GeocodeCacheModel(Base):
+    __tablename__ = "geocode_cache"
+
+    cache_key: Mapped[str] = mapped_column(String, primary_key=True)
+    query: Mapped[str] = mapped_column(String, nullable=False)
+    provider: Mapped[str] = mapped_column(String, nullable=False)
+    results: Mapped[list[dict]] = mapped_column(JSON, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)

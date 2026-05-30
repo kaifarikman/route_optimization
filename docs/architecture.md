@@ -12,6 +12,7 @@ browser
         -> repositories
         -> SQLite
         -> routing provider
+        -> geocoding provider
 ```
 
 ## Frontend
@@ -24,11 +25,13 @@ Frontend лежит в `frontend/` и отдается nginx как статич
 - `frontend/css/styles.css` - стили интерфейса.
 - `frontend/js/app.js` - точка входа.
 - `frontend/js/api/client.js` - HTTP-клиент для backend API.
-- `frontend/js/features/` - действия пользователя: генерация, построение, оптимизация, очистка.
+- `frontend/js/features/` - действия пользователя: генерация, geocoding, построение, оптимизация, очистка.
 - `frontend/js/map/` - MapLibre-карта, маркеры и линии маршрутов.
 - `frontend/js/state/store.js` - простой общий state.
 
 Frontend ходит в API через `FRONTEND_API_BASE_URL`. В Docker это `/api`, а nginx проксирует запросы в backend.
+
+Адреса ищутся только по явному действию пользователя: отдельная кнопка для центра генерации и отдельная кнопка для ручной точки. Frontend не делает autocomplete и не геокодирует импортированные файлы пачкой. Если provider возвращает несколько кандидатов, пользователь выбирает один результат.
 
 ### Экономия в рублях
 
@@ -59,14 +62,17 @@ Backend лежит в `backend/` и запускается как FastAPI при
 
 База - SQLite. По умолчанию файл находится в `data/database.db`.
 
-В БД две основные таблицы:
+В БД основные таблицы:
 
-- `points` - точки с `id`, `lat`, `lon`.
+- `points` - точки с `id`, `lat`, `lon` и nullable address metadata.
 - `routes` - маршруты, порядок точек, координаты, метрики, geometry и информация о провайдере.
+- `geocode_cache` - cache ответов forward geocoding для повторных запросов.
 
 Генерация нового набора точек очищает старые точки и маршруты. Это сделано намеренно: приложение работает с одним текущим рабочим набором.
 
 Ручное добавление точки расширяет текущий набор, но очищает сохраненные маршруты. Уже построенные маршруты становятся неактуальными после изменения состава точек.
+
+Адреса хранятся в `points.address`, `points.geocoding_provider` и `points.geocoding_place_id`. Сгенерированные, импортированные и добавленные кликом точки могут не иметь адреса; UI тогда показывает координаты.
 
 ## Маршруты
 
@@ -98,6 +104,18 @@ Backend лежит в `backend/` и запускается как FastAPI при
 - время считается из фиксированной скорости 40 км/ч;
 - geometry становится прямой линией между точками;
 - в response выставляется `is_fallback=true`.
+
+## Geocoding provider
+
+Forward geocoding идет через backend endpoint `POST /geocode`, чтобы frontend не ходил напрямую во внешний сервис. По умолчанию используется Nominatim-compatible endpoint:
+
+- `GEOCODING_PROVIDER=nominatim`;
+- `GEOCODING_BASE_URL=https://nominatim.openstreetmap.org`;
+- `GEOCODING_TIMEOUT_SECONDS=10`;
+- `GEOCODING_USER_AGENT=route-optimization-demo/1.0`;
+- `GEOCODING_ACCEPT_LANGUAGE=ru,en`.
+
+Backend нормализует результаты, кеширует ответы в SQLite и ограничивает исходящие запросы к provider до 1 request/sec на приложение. Reverse geocoding не используется в MVP, чтобы не создавать bulk-запросы для генерации, импорта и map-click точек.
 
 ## Docker Compose
 

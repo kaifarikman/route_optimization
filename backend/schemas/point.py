@@ -7,6 +7,9 @@ class Point(BaseModel):
     id: int
     lat: float
     lon: float
+    address: str | None = None
+    geocoding_provider: str | None = None
+    geocoding_place_id: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -23,6 +26,9 @@ class PointCreateRequest(BaseModel):
     """Запрос на ручное добавление точки"""
     lat: float = Field(ge=-90, le=90)
     lon: float = Field(ge=-180, le=180)
+    address: str | None = Field(default=None, max_length=500)
+    geocoding_provider: str | None = Field(default=None, max_length=50)
+    geocoding_place_id: str | None = Field(default=None, max_length=100)
 
 
 class PointsImportRequest(BaseModel):

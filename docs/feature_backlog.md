@@ -79,16 +79,16 @@ Allowed statuses:
 ### B2 - Addresses instead of coordinates
 
 - **Priority:** `P3`
-- **Status:** `TODO`
+- **Status:** `DONE`
 - **Goal:** Allow users to work with addresses instead of raw latitude/longitude where appropriate.
 - **Recommended slice:** Create a separate planning task before implementation because provider, limits, ambiguity handling, and API shape must be chosen first.
 - **Decision needed:** Choose geocoding provider, request limits policy, UX for ambiguous results, and whether addresses are stored or only resolved transiently.
 - **Implementation notes:** Current app is coordinate-first and has no `/api/points/geocode` endpoint or address fields. Do not implement until product/API decisions are explicit.
 - **Acceptance checks:**
-  - [ ] Provider choice is documented before implementation starts.
-  - [ ] API shape is documented before implementation starts.
-  - [ ] UX for ambiguous or failed geocoding is documented before implementation starts.
-  - [ ] Rate-limit behavior is documented before implementation starts.
-  - [ ] Feature is not implemented until the decisions above are made.
-- **Current notes:** Not started.
+  - [x] Provider choice is documented before implementation starts.
+  - [x] API shape is documented before implementation starts.
+  - [x] UX for ambiguous or failed geocoding is documented before implementation starts.
+  - [x] Rate-limit behavior is documented before implementation starts.
+  - [x] Feature is not implemented until the decisions above are made.
+- **Current notes:** Implemented configurable Nominatim-compatible forward geocoding via `POST /geocode`; no reverse or address-only import in MVP; persisted optional point address metadata in SQLite; explicit search/selection UI, cache, 1 rps limit, and 429/provider errors covered by tests.
 - **Last updated:** 2026-05-30

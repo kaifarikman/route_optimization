@@ -54,14 +54,14 @@ function validateManualPoint(latStr, lonStr) {
     return null;
 }
 
-export async function addPointByCoordinates(lat, lon, successMessage = "Точка добавлена") {
+export async function addPointByCoordinates(lat, lon, successMessage = "Точка добавлена", metadata = {}) {
     const state = store.getState();
     if (state.isLoading) return;
 
     store.setState({ status: "loading", isLoading: true, loadingAction: "add" });
 
     try {
-        await api.addPoint(lat, lon);
+        await api.addPoint(lat, lon, metadata);
         const pointsResult = await api.getPoints();
 
         store.setState({

@@ -9,10 +9,35 @@ MAX_POINTS = 50
 
 
 def _point_to_dict(point: Point) -> Dict:
-    return {"id": point.id, "lat": float(point.lat), "lon": float(point.lon)}
+    data = {
+        "id": point.id,
+        "lat": float(point.lat),
+        "lon": float(point.lon),
+    }
+    if point.address is not None:
+        data["address"] = point.address
+    if point.geocoding_provider is not None:
+        data["geocoding_provider"] = point.geocoding_provider
+    if point.geocoding_place_id is not None:
+        data["geocoding_place_id"] = point.geocoding_place_id
+    return data
 
 
-def add_point(lat: float, lon: float, uow: AbstractUnitOfWork) -> Dict:
+def _clean_optional_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    value = str(value).strip()
+    return value or None
+
+
+def add_point(
+    lat: float,
+    lon: float,
+    uow: AbstractUnitOfWork,
+    address: str | None = None,
+    geocoding_provider: str | None = None,
+    geocoding_place_id: str | None = None,
+) -> Dict:
     if lat < -90 or lat > 90:
         raise ValueError("Широта: от -90 до 90")
     if lon < -180 or lon > 180:
@@ -21,7 +46,17 @@ def add_point(lat: float, lon: float, uow: AbstractUnitOfWork) -> Dict:
         raise ValueError(f"Количество точек: не больше {MAX_POINTS}")
 
     uow.routes.clear_all()
-    point = uow.points.add(float(lat), float(lon))
+    metadata = {
+        "address": _clean_optional_text(address),
+        "geocoding_provider": _clean_optional_text(geocoding_provider),
+        "geocoding_place_id": _clean_optional_text(geocoding_place_id),
+    }
+    metadata = {key: value for key, value in metadata.items() if value is not None}
+    point = uow.points.add(
+        float(lat),
+        float(lon),
+        **metadata,
+    )
     uow.commit()
     return _point_to_dict(point)
 
@@ -66,7 +101,13 @@ def import_points(points_data: List[Dict], uow: AbstractUnitOfWork) -> List[Dict
 
     points = []
     for item in points_data[:MAX_POINTS]:
-        point = uow.points.add(float(item["lat"]), float(item["lon"]))
+        metadata = {
+            "address": _clean_optional_text(item.get("address")),
+            "geocoding_provider": _clean_optional_text(item.get("geocoding_provider")),
+            "geocoding_place_id": _clean_optional_text(item.get("geocoding_place_id")),
+        }
+        metadata = {key: value for key, value in metadata.items() if value is not None}
+        point = uow.points.add(float(item["lat"]), float(item["lon"]), **metadata)
         points.append(_point_to_dict(point))
     uow.commit()
     return points

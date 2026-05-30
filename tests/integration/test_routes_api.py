@@ -106,7 +106,14 @@ def test_build_base_route_endpoint_returns_route():
     holder = {}
     app.dependency_overrides[get_user_uow] = _override_uow(
         [
-            Point(id=1, lat=55.75, lon=37.61),
+            Point(
+                id=1,
+                lat=55.75,
+                lon=37.61,
+                address="Москва, Красная площадь",
+                geocoding_provider="nominatim",
+                geocoding_place_id="123",
+            ),
             Point(id=2, lat=55.76, lon=37.62),
             Point(id=3, lat=55.77, lon=37.63),
         ],
@@ -169,7 +176,14 @@ def test_optimize_route_endpoint_returns_route():
     holder = {}
     app.dependency_overrides[get_user_uow] = _override_uow(
         [
-            Point(id=1, lat=55.75, lon=37.61),
+            Point(
+                id=1,
+                lat=55.75,
+                lon=37.61,
+                address="Москва, Красная площадь",
+                geocoding_provider="nominatim",
+                geocoding_place_id="123",
+            ),
             Point(id=2, lat=55.80, lon=37.80),
             Point(id=3, lat=55.751, lon=37.611),
             Point(id=4, lat=55.752, lon=37.612),
@@ -295,7 +309,14 @@ def test_create_route_share_returns_public_url(monkeypatch):
     holder = {}
     app.dependency_overrides[get_user_uow] = _override_uow(
         [
-            Point(id=1, lat=55.75, lon=37.61),
+            Point(
+                id=1,
+                lat=55.75,
+                lon=37.61,
+                address="Москва, Красная площадь",
+                geocoding_provider="nominatim",
+                geocoding_place_id="123",
+            ),
             Point(id=2, lat=55.76, lon=37.62),
             Point(id=3, lat=55.77, lon=37.63),
         ],
@@ -319,6 +340,9 @@ def test_create_route_share_returns_public_url(monkeypatch):
     assert response.json()["share_url"].endswith("/?share=share-token")
     snapshot = holder["uow"].shares.get("share-token")["snapshot"]
     assert [point["id"] for point in snapshot["points"]] == [1, 2, 3]
+    assert snapshot["points"][0]["address"] == "Москва, Красная площадь"
+    assert snapshot["points"][0]["geocoding_provider"] == "nominatim"
+    assert snapshot["points"][0]["geocoding_place_id"] == "123"
     assert snapshot["base_route"]["points"] == [1, 2, 3]
     assert sorted(snapshot["optimized_route"]["points"]) == [1, 2, 3]
 

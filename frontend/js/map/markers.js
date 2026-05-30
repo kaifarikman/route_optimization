@@ -16,6 +16,24 @@ function markerElement(label, color, ariaLabel) {
     return element;
 }
 
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function pointPopupHtml(point, orderText) {
+    const address = String(point.address || "").trim();
+    const coordinates = `<b>Широта:</b> ${point.lat.toFixed(5)}<br><b>Долгота:</b> ${point.lon.toFixed(5)}`;
+    if (!address) {
+        return `<b>${escapeHtml(orderText)}</b><br>${coordinates}`;
+    }
+    return `<b>${escapeHtml(orderText)}</b><br><b>Адрес:</b> ${escapeHtml(address)}<br>${coordinates}`;
+}
+
 export function renderPoints(mapInstance, points, currentRoute = null, pointColor = "#3388ff") {
     clearMarkers();
     let orderedIds = [];
@@ -47,9 +65,7 @@ export function renderPoints(mapInstance, points, currentRoute = null, pointColo
             }
         }
 
-        const popup = new maplibregl.Popup({ offset: 18 }).setHTML(
-            `<b>${orderText}</b><br><b>Широта:</b> ${point.lat.toFixed(5)}<br><b>Долгота:</b> ${point.lon.toFixed(5)}`
-        );
+        const popup = new maplibregl.Popup({ offset: 18 }).setHTML(pointPopupHtml(point, orderText));
         const marker = new maplibregl.Marker({
             element: markerElement(markerText, finalColor, orderText),
             anchor: "center",

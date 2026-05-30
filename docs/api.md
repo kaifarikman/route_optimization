@@ -32,9 +32,14 @@ Request и response body используют `application/json`.
 {
   "id": 1,
   "lat": 55.751244,
-  "lon": 37.618423
+  "lon": 37.618423,
+  "address": "Москва, Красная площадь",
+  "geocoding_provider": "nominatim",
+  "geocoding_place_id": "123"
 }
 ```
+
+Поля `address`, `geocoding_provider` и `geocoding_place_id` опциональны. У сгенерированных, импортированных и добавленных кликом точек они обычно отсутствуют.
 
 ### Route
 
@@ -100,6 +105,55 @@ Response:
   "database": "sqlite"
 }
 ```
+
+## Geocoding
+
+### `POST /geocode`
+
+Ищет координаты по адресу через backend proxy к Nominatim-compatible provider.
+
+Request:
+
+```json
+{
+  "query": "Москва, Красная площадь",
+  "limit": 5
+}
+```
+
+Ограничения:
+
+- `query`: от `3` до `300` символов.
+- `limit`: от `1` до `5`.
+
+Response:
+
+```json
+{
+  "results": [
+    {
+      "lat": 55.75393,
+      "lon": 37.6208,
+      "display_name": "Красная площадь, Тверской район, Москва, Россия",
+      "provider": "nominatim",
+      "place_id": "123",
+      "category": "place",
+      "type": "square",
+      "importance": 0.9
+    }
+  ]
+}
+```
+
+Если найдено несколько результатов, frontend показывает список кандидатов и не выбирает адрес за пользователя. Если ничего не найдено, `results` будет пустым.
+
+Provider errors:
+
+- `429 Too Many Requests` - локальный лимит 1 request/sec или upstream rate limit.
+- `502 Bad Gateway` - provider вернул некорректный ответ или недоступен.
+- `504 Gateway Timeout` - timeout provider.
+
+Reverse geocoding в MVP не реализован.
 
 ## Points
 
@@ -170,7 +224,10 @@ Request:
 ```json
 {
   "lat": 55.751244,
-  "lon": 37.618423
+  "lon": 37.618423,
+  "address": "Москва, Красная площадь",
+  "geocoding_provider": "nominatim",
+  "geocoding_place_id": "123"
 }
 ```
 
@@ -178,6 +235,7 @@ Request:
 
 - `lat`: от `-90` до `90`.
 - `lon`: от `-180` до `180`.
+- address metadata опциональна; coordinate-only request остается валидным.
 
 Response:
 
@@ -186,7 +244,10 @@ Response:
   "point": {
     "id": 2,
     "lat": 55.751244,
-    "lon": 37.618423
+    "lon": 37.618423,
+    "address": "Москва, Красная площадь",
+    "geocoding_provider": "nominatim",
+    "geocoding_place_id": "123"
   }
 }
 ```
@@ -369,3 +430,17 @@ OSRM_BASE_URL=https://router.project-osrm.org
 ```
 
 Если OSRM недоступен, backend автоматически строит маршрут через haversine. Такой маршрут возвращается с `is_fallback=true`, `provider="haversine"` и `geometry_type="straight"`.
+
+## Геокодинг и лимиты
+
+По умолчанию backend использует Nominatim-compatible provider:
+
+```env
+GEOCODING_PROVIDER=nominatim
+GEOCODING_BASE_URL=https://nominatim.openstreetmap.org
+GEOCODING_TIMEOUT_SECONDS=10
+GEOCODING_USER_AGENT=route-optimization-demo/1.0
+GEOCODING_ACCEPT_LANGUAGE=ru,en
+```
+
+Backend кеширует forward geocoding ответы в SQLite и ограничивает исходящие запросы до 1 request/sec на приложение. Это нужно для совместимости с public Nominatim policy. Frontend вызывает `/geocode` только по кнопке поиска адреса; autocomplete и address-only bulk import не используются.

@@ -15,7 +15,7 @@ from backend.services.point import add_point, clear_all_points, generate_points,
 router = APIRouter()
 
 
-@router.post("/points/generate", response_model=PointsResponse)
+@router.post("/points/generate", response_model=PointsResponse, response_model_exclude_none=True)
 async def generate_points_endpoint(
     request: PointGenerationRequest,
     uow: AbstractUnitOfWork = Depends(get_user_uow),
@@ -33,26 +33,42 @@ async def generate_points_endpoint(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/points", response_model=PointResponse)
+@router.post("/points", response_model=PointResponse, response_model_exclude_none=True)
 async def add_point_endpoint(
     request: PointCreateRequest,
     uow: AbstractUnitOfWork = Depends(get_user_uow),
 ):
     try:
-        point = add_point(lat=request.lat, lon=request.lon, uow=uow)
+        point = add_point(
+            lat=request.lat,
+            lon=request.lon,
+            uow=uow,
+            address=request.address,
+            geocoding_provider=request.geocoding_provider,
+            geocoding_place_id=request.geocoding_place_id,
+        )
         return {"point": point}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/points/import", response_model=PointsResponse)
+@router.post("/points/import", response_model=PointsResponse, response_model_exclude_none=True)
 async def import_points_endpoint(
     request: PointsImportRequest,
     uow: AbstractUnitOfWork = Depends(get_user_uow),
 ):
     try:
         points = import_points(
-            [{"lat": point.lat, "lon": point.lon} for point in request.points],
+            [
+                {
+                    "lat": point.lat,
+                    "lon": point.lon,
+                    "address": point.address,
+                    "geocoding_provider": point.geocoding_provider,
+                    "geocoding_place_id": point.geocoding_place_id,
+                }
+                for point in request.points
+            ],
             uow=uow,
         )
         return {"points": points}
@@ -60,7 +76,7 @@ async def import_points_endpoint(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/points", response_model=PointsResponse)
+@router.get("/points", response_model=PointsResponse, response_model_exclude_none=True)
 async def get_points_endpoint(uow: AbstractUnitOfWork = Depends(get_user_uow)):
     try:
         points = get_points(uow=uow)

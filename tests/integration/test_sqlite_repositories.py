@@ -25,8 +25,11 @@ def test_init_db_removes_legacy_tables(monkeypatch, tmp_path: Path):
     init_db()
 
     table_names = sorted(inspect(engine).get_table_names())
-    assert table_names == ["points", "route_shares", "routes"]
+    assert table_names == ["geocode_cache", "points", "route_shares", "routes"]
     assert {"user_id", "last_accessed_at"}.issubset(
+        {column["name"] for column in inspect(engine).get_columns("points")}
+    )
+    assert {"address", "geocoding_provider", "geocoding_place_id"}.issubset(
         {column["name"] for column in inspect(engine).get_columns("points")}
     )
     assert {"user_id", "last_accessed_at"}.issubset(
@@ -43,7 +46,13 @@ def test_sqlite_repositories_roundtrip(tmp_path: Path):
     points = PointRepository(session)
     routes = RouteRepository(session)
 
-    first = points.add(55.75, 37.61)
+    first = points.add(
+        55.75,
+        37.61,
+        address="Москва, Красная площадь",
+        geocoding_provider="nominatim",
+        geocoding_place_id="123",
+    )
     second = points.add(55.76, 37.62)
     route = routes.add(
         points=[first.id, second.id],
@@ -62,6 +71,9 @@ def test_sqlite_repositories_roundtrip(tmp_path: Path):
     stored_points = points.list()
 
     assert [point.id for point in stored_points] == [first.id, second.id]
+    assert stored_points[0].address == "Москва, Красная площадь"
+    assert stored_points[0].geocoding_provider == "nominatim"
+    assert stored_points[0].geocoding_place_id == "123"
     assert points.count() == 2
     assert stored_route is not None
     assert stored_route.points == [first.id, second.id]

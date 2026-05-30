@@ -49,10 +49,11 @@ export class ApiClient {
         });
     }
 
-    async addPoint(lat, lon) {
+    async addPoint(lat, lon, metadata = {}) {
         return this.request('POST', '/points', {
             lat: lat,
-            lon: lon
+            lon: lon,
+            ...metadata
         });
     }
     async getPoints() {
@@ -65,6 +66,10 @@ export class ApiClient {
 
     async importPoints(points) {
         return this.request('POST', '/points/import', { points });
+    }
+
+    async geocode(query, limit = 5) {
+        return this.request('POST', '/geocode', { query, limit });
     }
 
     async buildBaseRoute(pointIds) {

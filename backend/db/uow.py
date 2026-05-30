@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from backend.db.models import PointModel, RouteModel
 from backend.db.session import SessionLocal
+from backend.repositories.geocode_cache import GeocodeCacheRepository
 from backend.repositories.point import PointRepository
 from backend.repositories.route import RouteRepository
 from backend.repositories.share import RouteShareRepository
@@ -16,6 +17,7 @@ class AbstractUnitOfWork(ABC):
     points: PointRepository
     routes: RouteRepository
     shares: RouteShareRepository
+    geocode_cache: GeocodeCacheRepository
 
     def __enter__(self):
         return self
@@ -47,6 +49,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         self.points = PointRepository(self.session, user_id=self.user_id)
         self.routes = RouteRepository(self.session, user_id=self.user_id)
         self.shares = RouteShareRepository(self.session, owner_user_id=self.user_id)
+        self.geocode_cache = GeocodeCacheRepository(self.session)
         return super().__enter__()
 
     def __exit__(self, exc_type, exc, tb):

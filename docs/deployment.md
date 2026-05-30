@@ -51,7 +51,21 @@ Docker images:
 - `backend` - FastAPI, volume `./data:/app/data`, healthcheck `/health`.
 - `frontend` - nginx, зависит от healthy backend, отдает UI и проксирует `/api`.
 
-Публичный frontend порт сейчас `8080`. Это отражено в env и README, потому что порт `80` в текущей инфраструктуре не используется.
+Публичный доступ идет через системный Caddy на `80/443` с TLS (Let's Encrypt). Frontend-контейнер слушает только `127.0.0.1:8080`, наружу он не публикуется.
+
+Production URL: <https://route-optimization.ru/>
+
+## Reverse proxy (Caddy)
+
+Caddy - серверная инфраструктура вне Docker Compose. Конфиг: `/etc/caddy/Caddyfile`.
+
+```text
+route-optimization.ru {
+    reverse_proxy 127.0.0.1:8080
+}
+```
+
+Caddy автоматически получает и обновляет TLS-сертификат, редиректит HTTP на HTTPS и проксирует запросы в frontend-контейнер. После `docker compose pull && docker compose up -d` Caddy перенастраивать не нужно.
 
 ## Health checks
 
@@ -89,9 +103,9 @@ docker compose -f compose.yaml logs --tail=100 backend
 docker compose -f compose.yaml logs --tail=100 frontend
 ```
 
-Для проверки публичного домена или IP:
+Для проверки публичного домена:
 
 ```shell
-curl -fsSI http://111.88.157.91:8080
-curl -fsS http://111.88.157.91:8080/api/health
+curl -fsSI http://route-optimization.ru
+curl -fsS https://route-optimization.ru/api/health
 ```

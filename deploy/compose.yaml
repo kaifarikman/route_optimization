@@ -23,7 +23,7 @@ services:
       backend:
         condition: service_healthy
     ports:
-      - "${FRONTEND_PORT:-8080}:80"
+      - "127.0.0.1:${FRONTEND_PORT:-8080}:80"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/js/env.js >/dev/null 2>&1 || exit 1"]
       interval: 15s

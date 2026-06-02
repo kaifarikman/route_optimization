@@ -751,13 +751,13 @@ html, body {
 /* ── Переключатели маршрутов ─────────────────────────────────────────────── */
 .route-toggle-panel {
     position: absolute;
-    top: 16px;
-    left: 16px;
+    top: 10px;
+    right: 16px;
     z-index: 1000;
     display: flex;
-    gap: 6px;
+    gap: 4px;
     align-items: center;
-    padding: 5px;
+    padding: 4px;
     border: 1px solid rgba(255,255,255,.2);
     border-radius: 10px;
     background: rgba(15,23,42,.75);
@@ -768,11 +768,11 @@ html, body {
 .route-toggle-panel[hidden] { display: none; }
 
 .route-toggle {
-    min-height: 32px;
+    min-height: 28px;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    padding: 6px 12px;
+    gap: 6px;
+    padding: 5px 10px;
     border: 1px solid transparent;
     border-radius: 7px;
     background: transparent;
@@ -832,33 +832,7 @@ html, body {
     color: var(--blue);
 }
 
-/* ── Статус-бейдж ────────────────────────────────────────────────────────── */
-.status-badge {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    z-index: 1000;
-    background: rgba(255,255,255,.96);
-    backdrop-filter: blur(8px);
-    color: var(--text-primary);
-    padding: 8px 16px;
-    border-radius: 30px;
-    font-size: 12px;
-    font-weight: 600;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-md);
-    transition: all 0.2s ease;
-}
-
-.status-badge.is-hidden {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(6px);
-}
-
 /* ── Маркеры точек ───────────────────────────────────────────────────────── */
-/* Обёртку позиционирует MapLibre (inline transform каждый кадр). */
-/* НЕ добавлять transition на transform здесь — иначе маркеры "летают" при панораме карты. */
 .route-marker-wrapper {
     line-height: 0;
 }
@@ -969,14 +943,9 @@ html, body {
         overscroll-behavior: contain;
     }
 
-    /* Карта-оверлеи приподнимаем над свёрнутой шторкой */
-    .status-badge {
-        bottom: 110px;
-    }
-
     .route-toggle-panel {
-        top: 12px;
-        left: 12px;
+        top: 10px;
+        right: 12px;
     }
 
     /* Чуть крупнее тач-цели */

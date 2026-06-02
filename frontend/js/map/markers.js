@@ -6,14 +6,10 @@ export function clearMarkers() {
 }
 
 function markerElement(label, color, ariaLabel) {
-    // Внешняя обёртка позиционируется MapLibre (inline transform на каждом кадре).
-    // Её transform НЕ должен иметь CSS-transition, иначе маркеры "летают" при панораме.
     const wrapper = document.createElement("div");
     wrapper.className = "route-marker-wrapper";
-    // Не даём клику по маркеру дойти до карты (например, в режиме добавления точки кликом)
     wrapper.addEventListener("click", (event) => event.stopPropagation());
 
-    // Внутренний элемент несёт визуальный стиль и hover-анимацию (transform: scale).
     const inner = document.createElement("button");
     inner.type = "button";
     inner.className = "route-marker";

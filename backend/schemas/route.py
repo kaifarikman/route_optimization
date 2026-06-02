@@ -4,6 +4,7 @@ from typing import Any, List, Tuple
 class RouteRequest(BaseModel):
     """Запрос на построение маршрута"""
     point_ids: List[int] = Field(min_length=2, max_length=50)
+    algorithm: str = Field(default="nearest_neighbor", pattern="^(nearest_neighbor|two_opt)$")
 
 class Route(BaseModel):
     """Модель маршрута"""

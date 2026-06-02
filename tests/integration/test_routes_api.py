@@ -217,6 +217,53 @@ def test_optimize_route_endpoint_returns_route():
     assert holder["uow"].committed is True
 
 
+def test_optimize_route_endpoint_accepts_two_opt_algorithm():
+    holder = {}
+    app.dependency_overrides[get_user_uow] = _override_uow(
+        [
+            Point(id=1, lat=55.75, lon=37.61),
+            Point(id=2, lat=55.80, lon=37.80),
+            Point(id=3, lat=55.751, lon=37.611),
+            Point(id=4, lat=55.752, lon=37.612),
+        ],
+        holder,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/routes/optimize",
+        json={"point_ids": [1, 2, 3, 4], "algorithm": "two_opt"},
+        headers=USER_HEADERS,
+    )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    data = response.json()["route"]
+    assert data["points"][0] == 1
+    assert sorted(data["points"]) == [1, 2, 3, 4]
+    assert data["distance_km"] > 0
+
+
+def test_optimize_route_rejects_unknown_algorithm():
+    holder = {}
+    app.dependency_overrides[get_user_uow] = _override_uow(
+        [Point(id=1, lat=55.75, lon=37.61), Point(id=2, lat=55.76, lon=37.62)],
+        holder,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/routes/optimize",
+        json={"point_ids": [1, 2], "algorithm": "genetic"},
+        headers=USER_HEADERS,
+    )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 422
+
+
 def test_optimize_route_rejects_too_few_points():
     holder = {}
     app.dependency_overrides[get_user_uow] = _override_uow(

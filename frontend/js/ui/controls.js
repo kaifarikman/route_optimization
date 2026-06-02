@@ -62,11 +62,21 @@ export function initControls() {
         buildRouteBtn.dataset.bound = 'true';
     }
 
+    const optimizationMethodSelect = document.getElementById('optimizationMethodSelect');
+    if (optimizationMethodSelect && !optimizationMethodSelect.dataset.bound) {
+        optimizationMethodSelect.value = store.getState().selectedOptimizationMethod || 'nearest_neighbor';
+        optimizationMethodSelect.addEventListener('change', (event) => {
+            store.setState({ selectedOptimizationMethod: event.target.value });
+        });
+        optimizationMethodSelect.dataset.bound = 'true';
+    }
+
     if (optimizeRouteBtn && !optimizeRouteBtn.dataset.bound) {
         optimizeRouteBtn.addEventListener('click', async () => {
-            const { optimizedRoute, isLoading, sharedView } = store.getState();
+            const { optimizedRoute, optimizedMethod, selectedOptimizationMethod, isLoading, sharedView } = store.getState();
             if (isLoading || sharedView) return;
-            if (optimizedRoute) {
+            const method = selectedOptimizationMethod || 'nearest_neighbor';
+            if (optimizedRoute && optimizedMethod === method) {
                 const visibility = routeVisibilityState(store.getState().routeVisibility);
                 store.setState({
                     selectedRouteMode: 'optimized',
@@ -246,6 +256,14 @@ export function initControls() {
                 optimizeRouteBtn.setAttribute('disabled', 'true');
             } else {
                 optimizeRouteBtn.removeAttribute('disabled');
+            }
+        }
+
+        if (optimizationMethodSelect) {
+            if (!hasBaseRoute || mutationsDisabled) {
+                optimizationMethodSelect.setAttribute('disabled', 'true');
+            } else {
+                optimizationMethodSelect.removeAttribute('disabled');
             }
         }
 

@@ -5,7 +5,7 @@ from backend.db.uow import AbstractUnitOfWork
 from backend.domain.route import Route
 from backend.domain.point import Point
 from backend.services.routing_providers.factory import get_routing_provider
-from backend.services.routing_service import build_nearest_neighbor_route
+from backend.services.routing_service import optimize_points
 
 
 def _get_points_in_requested_order(point_ids: list[int], uow: AbstractUnitOfWork) -> list[Point]:
@@ -44,9 +44,13 @@ def build_base_route(point_ids: list[int], uow: AbstractUnitOfWork) -> Route:
     return route
 
 
-def optimize_route(point_ids: List[int], uow: AbstractUnitOfWork) -> Route:
+def optimize_route(
+    point_ids: List[int],
+    uow: AbstractUnitOfWork,
+    algorithm: str = "nearest_neighbor",
+) -> Route:
     """
-    Оптимизирует маршрут из заданных точек
+    Оптимизирует маршрут из заданных точек выбранным алгоритмом
     """
     points = uow.points.get_by_ids(point_ids)
     points_by_id = {point.id: point for point in points}
@@ -56,7 +60,7 @@ def optimize_route(point_ids: List[int], uow: AbstractUnitOfWork) -> Route:
         raise ValueError(f"Точки не найдены: {missing_ids}")
 
     ordered_points = [points_by_id[point_id] for point_id in point_ids]
-    optimized_points = build_nearest_neighbor_route(ordered_points)
+    optimized_points = optimize_points(ordered_points, algorithm)
 
     provider = get_routing_provider()
 

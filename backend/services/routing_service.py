@@ -26,5 +26,62 @@ def build_nearest_neighbor_route(points: list[Point]):
     return optimized_route
 
 
+def _route_length(route: list[Point]) -> float:
+    return sum(
+        _distance_between(route[i], route[i + 1])
+        for i in range(len(route) - 1)
+    )
+
+
+def build_two_opt_route(points: list[Point]):
+    """
+    Улучшает порядок обхода методом 2-opt.
+
+    Стартует с маршрута nearest-neighbor, затем итеративно разворачивает
+    сегменты пути, пока это уменьшает суммарную длину. Стартовая точка
+    (индекс 0) фиксируется, путь открытый (без возврата в начало).
+    Длины рёбер считаются через haversine (без обращений к провайдеру).
+    """
+    if len(points) <= 3:
+        return build_nearest_neighbor_route(points)
+
+    epsilon = 1e-9
+    route = build_nearest_neighbor_route(points)
+
+    improved = True
+    while improved:
+        improved = False
+        for i in range(1, len(route) - 1):
+            for j in range(i + 1, len(route)):
+                a, b = route[i - 1], route[i]
+                c = route[j]
+                d = route[j + 1] if j + 1 < len(route) else None
+
+                before = _distance_between(a, b)
+                after = _distance_between(a, c)
+                if d is not None:
+                    before += _distance_between(c, d)
+                    after += _distance_between(b, d)
+
+                if after + epsilon < before:
+                    route[i:j + 1] = reversed(route[i:j + 1])
+                    improved = True
+
+    return route
+
+
+OPTIMIZERS = {
+    "nearest_neighbor": build_nearest_neighbor_route,
+    "two_opt": build_two_opt_route,
+}
+
+
+def optimize_points(points: list[Point], algorithm: str = "nearest_neighbor"):
+    optimizer = OPTIMIZERS.get(algorithm)
+    if optimizer is None:
+        raise ValueError(f"Неизвестный алгоритм оптимизации: {algorithm}")
+    return optimizer(points)
+
+
 def get_route_geometry(*args, **kwargs):
     raise NotImplementedError()

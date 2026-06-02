@@ -2,6 +2,8 @@ const initialState = {
     points: [],
     baseRoute: null,
     optimizedRoute: null,
+    selectedOptimizationMethod: 'nearest_neighbor',
+    optimizedMethod: null,
     routeVisibility: {
         base: false,
         optimized: false,

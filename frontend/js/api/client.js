@@ -82,9 +82,10 @@ export class ApiClient {
         });
     }
 
-    async optimizeRoute(pointIds) {
+    async optimizeRoute(pointIds, algorithm = 'nearest_neighbor') {
         return this.request('POST', '/routes/optimize', {
-            point_ids: pointIds
+            point_ids: pointIds,
+            algorithm: algorithm
         });
     }
 

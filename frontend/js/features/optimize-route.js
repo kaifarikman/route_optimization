@@ -15,11 +15,13 @@ export async function optimizeRoute() {
     store.setState({ status: 'loading', isLoading: true, loadingAction: 'optimize' });
 
     try {
+        const method = state.selectedOptimizationMethod || 'nearest_neighbor';
         const pointIds = state.points.map(p => p.id);
-        const result = await api.optimizeRoute(pointIds);
+        const result = await api.optimizeRoute(pointIds, method);
 
         store.setState({
             optimizedRoute: result.route,
+            optimizedMethod: method,
             routeVisibility: enableRouteVisibility(store.getState().routeVisibility, "optimized"),
             selectedRouteMode: 'optimized',
             status: 'idle',

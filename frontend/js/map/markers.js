@@ -6,14 +6,23 @@ export function clearMarkers() {
 }
 
 function markerElement(label, color, ariaLabel) {
-    const element = document.createElement("button");
-    element.type = "button";
-    element.className = "route-marker";
-    element.textContent = label;
-    element.style.setProperty("--marker-color", color);
-    element.setAttribute("aria-label", `Точка маршрута ${ariaLabel}`);
-    element.addEventListener("click", (event) => event.stopPropagation());
-    return element;
+    // Внешняя обёртка позиционируется MapLibre (inline transform на каждом кадре).
+    // Её transform НЕ должен иметь CSS-transition, иначе маркеры "летают" при панораме.
+    const wrapper = document.createElement("div");
+    wrapper.className = "route-marker-wrapper";
+    // Не даём клику по маркеру дойти до карты (например, в режиме добавления точки кликом)
+    wrapper.addEventListener("click", (event) => event.stopPropagation());
+
+    // Внутренний элемент несёт визуальный стиль и hover-анимацию (transform: scale).
+    const inner = document.createElement("button");
+    inner.type = "button";
+    inner.className = "route-marker";
+    inner.textContent = label;
+    inner.style.setProperty("--marker-color", color);
+    inner.setAttribute("aria-label", `Точка маршрута ${ariaLabel}`);
+    wrapper.appendChild(inner);
+
+    return wrapper;
 }
 
 function escapeHtml(value) {

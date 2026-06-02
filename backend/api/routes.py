@@ -40,7 +40,7 @@ async def optimize_route_endpoint(
     uow: AbstractUnitOfWork = Depends(get_user_uow),
 ):
     try:
-        optimized_route = optimize_route(request.point_ids, uow=uow)
+        optimized_route = optimize_route(request.point_ids, uow=uow, algorithm=request.algorithm)
         return {"route": optimized_route}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

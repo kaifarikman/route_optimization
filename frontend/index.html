@@ -152,6 +152,13 @@
                         </div>
                     </div>
                     <div class="step-content">
+                        <div class="field">
+                            <label for="optimizationMethodSelect">Метод оптимизации</label>
+                            <select id="optimizationMethodSelect">
+                                <option value="nearest_neighbor" selected>Ближайший сосед</option>
+                                <option value="two_opt">2-opt</option>
+                            </select>
+                        </div>
                         <button id="optimizeRouteBtn" class="btn btn-accent" disabled>
                             <i class="ti ti-bolt"></i> Оптимизировать
                         </button>

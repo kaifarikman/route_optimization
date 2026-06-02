@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -15,7 +15,7 @@ class RouteShareRepository:
             token=token,
             owner_user_id=self.owner_user_id,
             snapshot=snapshot,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
         )
         self.session.add(model)
         self.session.flush()

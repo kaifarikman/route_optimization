@@ -1,15 +1,14 @@
 from dataclasses import dataclass
-from typing import List, Tuple
 
 
 @dataclass
 class Route:
     id: int
-    points: List[int]
+    points: list[int]
     distance_km: float
     duration_minutes: float
-    coordinates: List[Tuple[float, float]]
-    geometry: List[Tuple[float, float]]
+    coordinates: list[tuple[float, float]]
+    geometry: list[tuple[float, float]]
     provider: str
     is_fallback:bool
     geometry_type:str

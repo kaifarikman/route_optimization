@@ -1,5 +1,4 @@
 from pydantic import BaseModel, ConfigDict, Field
-from typing import List
 
 
 class Point(BaseModel):
@@ -33,7 +32,7 @@ class PointCreateRequest(BaseModel):
 
 class PointsImportRequest(BaseModel):
     """Запрос на импорт набора точек"""
-    points: List[PointCreateRequest]
+    points: list[PointCreateRequest]
 
 
 class PointResponse(BaseModel):
@@ -43,7 +42,7 @@ class PointResponse(BaseModel):
 
 class PointsResponse(BaseModel):
     """Ответ со списком точек"""
-    points: List[Point]
+    points: list[Point]
 
 
 class ClearResponse(BaseModel):

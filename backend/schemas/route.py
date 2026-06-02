@@ -1,19 +1,19 @@
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Any, List, Tuple
+from typing import Any
 
 class RouteRequest(BaseModel):
     """Запрос на построение маршрута"""
-    point_ids: List[int] = Field(min_length=2, max_length=50)
+    point_ids: list[int] = Field(min_length=2, max_length=50)
     algorithm: str = Field(default="nearest_neighbor", pattern="^(nearest_neighbor|two_opt)$")
 
 class Route(BaseModel):
     """Модель маршрута"""
     id: int
-    points: List[int]  # список ID точек в порядке маршрута
+    points: list[int]  # список ID точек в порядке маршрута
     distance_km: float
     duration_minutes: float
-    coordinates: List[Tuple[float, float]]  # [[lat,lon], ...]
-    geometry: List[Tuple[float, float]]
+    coordinates: list[tuple[float, float]]  # [[lat,lon], ...]
+    geometry: list[tuple[float, float]]
     provider: str
     is_fallback:bool
     geometry_type:str
@@ -27,7 +27,7 @@ class RouteResponse(BaseModel):
 
 class RoutesResponse(BaseModel):
     """Ответ со списком маршрутов"""
-    routes: List[Route]
+    routes: list[Route]
     total: int
 
 class RouteShareRequest(BaseModel):

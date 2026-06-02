@@ -35,12 +35,8 @@ def _route_length(route: list[Point]) -> float:
 
 def build_two_opt_route(points: list[Point]):
     """
-    Улучшает порядок обхода методом 2-opt.
-
-    Стартует с маршрута nearest-neighbor, затем итеративно разворачивает
-    сегменты пути, пока это уменьшает суммарную длину. Стартовая точка
-    (индекс 0) фиксируется, путь открытый (без возврата в начало).
-    Длины рёбер считаются через haversine (без обращений к провайдеру).
+    Улучшает маршрут разворотом сегментов, если так путь становится короче.
+    Стартовая точка фиксируется, возврата в начало нет.
     """
     if len(points) <= 3:
         return build_nearest_neighbor_route(points)
@@ -81,7 +77,3 @@ def optimize_points(points: list[Point], algorithm: str = "nearest_neighbor"):
     if optimizer is None:
         raise ValueError(f"Неизвестный алгоритм оптимизации: {algorithm}")
     return optimizer(points)
-
-
-def get_route_geometry(*args, **kwargs):
-    raise NotImplementedError()

@@ -1,13 +1,12 @@
 import math
 import requests
-from typing import List
 from backend.config import OSRM_BASE_URL, ROUTING_TIMEOUT_SECONDS
 from backend.domain.point import Point
 from backend.services.routing_providers.base import RoutingResult
 from backend.services.routing_providers.exceptions import RoutingProviderError
 
 
-def _has_distinct_points(points: List[Point]) -> bool:
+def _has_distinct_points(points: list[Point]) -> bool:
     return len({(point.lat, point.lon) for point in points}) > 1
 
 
@@ -16,7 +15,7 @@ def _valid_number(value) -> bool:
 
 
 class OSRMRoutingProvider:
-    def build_route(self, points: List[Point], transport_type: str = "driving") -> RoutingResult:
+    def build_route(self, points: list[Point], transport_type: str = "driving") -> RoutingResult:
         coords = ";".join(f"{p.lon},{p.lat}" for p in points)
         url = f"{OSRM_BASE_URL}/route/v1/{transport_type}/{coords}?geometries=geojson&overview=full"
 
@@ -58,7 +57,3 @@ class OSRMRoutingProvider:
             transport_type=transport_type,
             is_fallback=False,
         )
-
-
-# Alias для обратной совместимости
-OsrmRoutingProvider = OSRMRoutingProvider

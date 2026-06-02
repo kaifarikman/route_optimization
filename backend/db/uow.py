@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Callable
 
 from sqlalchemy.orm import Session
@@ -72,7 +72,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def cleanup_expired_users(self, ttl_hours: int = 24):
         if self.session is None:
             raise RuntimeError("Unit of work session is not initialized")
-        cutoff = datetime.utcnow() - timedelta(hours=ttl_hours)
+        cutoff = datetime.now(UTC) - timedelta(hours=ttl_hours)
         for model in (RouteModel, PointModel):
             self.session.query(model).filter(
                 model.user_id.isnot(None),
@@ -85,7 +85,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
             raise RuntimeError("Unit of work session is not initialized")
         if self.user_id is None:
             return
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         for model in (PointModel, RouteModel):
             self.session.query(model).filter(model.user_id == self.user_id).update(
                 {"last_accessed_at": now},

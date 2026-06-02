@@ -1,6 +1,5 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from sqlalchemy.orm import Session
-from typing import List
 
 from backend.db.models import PointModel
 from backend.domain.point import Point
@@ -32,7 +31,7 @@ class PointRepository:
             geocoding_provider=geocoding_provider,
             geocoding_place_id=geocoding_place_id,
             user_id=self.user_id,
-            last_accessed_at=datetime.utcnow(),
+            last_accessed_at=datetime.now(UTC),
         )
         self.session.add(model)
         self.session.flush()
@@ -54,7 +53,7 @@ class PointRepository:
             return None
         return self._to_domain(row)
 
-    def get_by_ids(self, point_ids: List[int]) -> List[Point]:
+    def get_by_ids(self, point_ids: list[int]) -> list[Point]:
         rows = self._query().filter(PointModel.id.in_(point_ids)).all()
         rows_by_id = {
             row.id: self._to_domain(row)
@@ -62,7 +61,7 @@ class PointRepository:
         }
         return [rows_by_id[point_id] for point_id in point_ids if point_id in rows_by_id]
 
-    def list(self) -> List[Point]:
+    def list(self) -> list[Point]:
         rows = self._query().all()
         return [self._to_domain(row) for row in rows]
 

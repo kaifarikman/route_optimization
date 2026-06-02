@@ -1,5 +1,4 @@
 import secrets
-from typing import Dict, List
 
 from backend.db.uow import AbstractUnitOfWork
 from backend.domain.route import Route
@@ -45,7 +44,7 @@ def build_base_route(point_ids: list[int], uow: AbstractUnitOfWork) -> Route:
 
 
 def optimize_route(
-    point_ids: List[int],
+    point_ids: list[int],
     uow: AbstractUnitOfWork,
     algorithm: str = "nearest_neighbor",
 ) -> Route:
@@ -83,7 +82,7 @@ def optimize_route(
     return route
 
 
-def _route_to_dict(route: Route) -> Dict:
+def _route_to_dict(route: Route) -> dict:
     return {
         "id": route.id,
         "points": route.points,
@@ -98,7 +97,7 @@ def _route_to_dict(route: Route) -> Dict:
     }
 
 
-def _route_to_share_dict(route: Route, index_by_id: dict[int, int]) -> Dict:
+def _route_to_share_dict(route: Route, index_by_id: dict[int, int]) -> dict:
     route_data = _route_to_dict(route)
     route_data["points"] = [index_by_id[point_id] for point_id in route.points if point_id in index_by_id]
     return route_data
@@ -147,15 +146,15 @@ def create_route_share(base_route_id: int, optimized_route_id: int, uow: Abstrac
     return {"token": token, "share": snapshot}
 
 
-def get_route_share(token: str, uow: AbstractUnitOfWork) -> Dict | None:
+def get_route_share(token: str, uow: AbstractUnitOfWork) -> dict | None:
     share = uow.shares.get(token)
     return share["snapshot"] if share else None
 
 
-def get_route_by_id(route_id: int, uow: AbstractUnitOfWork) -> Dict | None:
+def get_route_by_id(route_id: int, uow: AbstractUnitOfWork) -> dict | None:
     route = uow.routes.get(route_id)
     return _route_to_dict(route) if route else None
 
 
-def get_all_routes(uow: AbstractUnitOfWork) -> List[Dict]:
+def get_all_routes(uow: AbstractUnitOfWork) -> list[dict]:
     return [_route_to_dict(route) for route in uow.routes.list()]

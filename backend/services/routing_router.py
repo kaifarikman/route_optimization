@@ -10,11 +10,3 @@ class RoutingRouter:
             result = self._fallback.build_route(points, transport_type)
             result.is_fallback = True
             return result
-
-    def get_route(self, points: list[dict], transport_type: str = "driving") -> dict:
-        try:
-            return self._primary.calculate_route(points, transport_type)
-        except Exception:
-            result = self._fallback.calculate_route(points, transport_type)
-            result["is_fallback"] = True
-            return result

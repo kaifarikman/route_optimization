@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -29,13 +29,13 @@ class GeocodeCacheRepository:
                 query=query,
                 provider=provider,
                 results=results,
-                created_at=datetime.utcnow(),
+                created_at=datetime.now(UTC),
             )
             self.session.add(row)
         else:
             row.query = query
             row.provider = provider
             row.results = results
-            row.created_at = datetime.utcnow()
+            row.created_at = datetime.now(UTC)
         self.session.flush()
         return self.get(cache_key)

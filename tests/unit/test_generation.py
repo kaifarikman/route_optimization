@@ -1,9 +1,8 @@
+import math
 import os
 import sys
 import unittest
 from unittest.mock import Mock
-
-import numpy as np
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
@@ -182,10 +181,10 @@ class TestPoints(unittest.TestCase):
 
     def calculate_distance(self, lat1, lon1, lat2, lon2):
         radius = 6371
-        lat1, lon1 = np.radians(lat1), np.radians(lon1)
-        lat2, lon2 = np.radians(lat2), np.radians(lon2)
+        lat1, lon1 = math.radians(lat1), math.radians(lon1)
+        lat2, lon2 = math.radians(lat2), math.radians(lon2)
         dlat = lat2 - lat1
         dlon = lon2 - lon1
-        a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
-        c = 2 * np.arcsin(np.sqrt(a))
+        a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+        c = 2 * math.asin(math.sqrt(a))
         return radius * c

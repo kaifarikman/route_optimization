@@ -1,26 +1,9 @@
-import math
 from backend.domain.point import Point
 from backend.services.routing_providers.base import RoutingResult
+from backend.utils.geo import calculate_distance
+
 
 class HaversineRoutingProvider:
-    def calculate_distance(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-        """
-        Расчитывает кратчайшее расстояние между 2 точками по формуле гаверсинусов
-        """
-        R_earth  = 6371.0
-
-        delta_lat = math.radians(lat2 - lat1)
-        delta_lon = math.radians(lon2 - lon1)
-
-        a = math.sin(delta_lat / 2)**2 + \
-            math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * \
-            math.sin(delta_lon / 2)**2
-        
-        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
-        return R_earth * c
-    
-
     def calculate_route_distance(self, points: list[Point]) -> float:
         """
         Рассчитывает длину пути через заданные точки 
@@ -31,7 +14,7 @@ class HaversineRoutingProvider:
             lat1, lon1 = point1.lat, point1.lon
             lat2, lon2 = point2.lat, point2.lon
 
-            path_length += self.calculate_distance(lat1, lon1, lat2, lon2)
+            path_length += calculate_distance(lat1, lon1, lat2, lon2)
 
         return path_length
 
@@ -59,17 +42,3 @@ class HaversineRoutingProvider:
             geometry_type="straight",
             transport_type=transport_type,
         )
-
-    def calculate_route(self, points: list[dict], transport_type: str = "driving") -> dict:
-        """Dict-based interface: points are {"lat": ..., "lon": ...}."""
-        point_objects = [Point(id=i + 1, lat=p["lat"], lon=p["lon"]) for i, p in enumerate(points)]
-        result = self.build_route(point_objects, transport_type)
-        return {
-            "provider": result.provider,
-            "distance_km": result.distance_km,
-            "duration_sec": result.duration_minutes * 60,
-            "geometry": result.geometry,
-            "geometry_type": result.geometry_type,
-            "transport_type": result.transport_type,
-            "is_fallback": result.is_fallback,
-        }

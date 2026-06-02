@@ -1,5 +1,5 @@
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import sessionmaker
@@ -126,8 +126,8 @@ def test_unit_of_work_cleanup_removes_stale_user_records(tmp_path: Path):
     engine = create_engine(f"sqlite:///{db_path}", future=True)
     Base.metadata.create_all(bind=engine)
     session_factory = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
-    old_time = datetime.utcnow() - timedelta(hours=25)
-    fresh_time = datetime.utcnow()
+    old_time = datetime.now(UTC) - timedelta(hours=25)
+    fresh_time = datetime.now(UTC)
 
     session = session_factory()
     session.add_all(

@@ -1,6 +1,5 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from sqlalchemy.orm import Session
-from typing import List, Tuple
 
 from backend.db.models import RouteModel
 from backend.domain.route import Route
@@ -19,7 +18,7 @@ class RouteRepository:
 
     def add(
             self, points: list[int], coordinates: list[list[float]], distance_km: float, duration_minutes: float,
-            geometry: List[Tuple[float, float]], provider: str, is_fallback: bool, geometry_type: str, transport_type: str
+            geometry: list[list[float]], provider: str, is_fallback: bool, geometry_type: str, transport_type: str
             ) -> Route:
         model = RouteModel(
             points=points,
@@ -32,7 +31,7 @@ class RouteRepository:
             geometry_type=geometry_type,
             transport_type=transport_type,
             user_id=self.user_id,
-            last_accessed_at=datetime.utcnow(),
+            last_accessed_at=datetime.now(UTC),
         )
         self.session.add(model)
         self.session.flush()

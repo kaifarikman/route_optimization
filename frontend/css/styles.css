@@ -617,7 +617,19 @@ html, body {
     overflow-wrap: anywhere;
 }
 
-.savings-total strong { color: var(--green-dark); }
+/* Итоговая плитка «Оценка» — выделяем как главный результат */
+.savings-total {
+    background: var(--green);
+    border-color: var(--green);
+}
+.savings-total span { color: rgba(255, 255, 255, .85); }
+.savings-total strong { color: #fff; }
+
+/* Подсветка изменения: и «лучше», и «хуже» — обычный цвет текста экономии */
+.savings-item strong.is-better,
+.savings-item strong.is-worse  { color: var(--green-dark); }
+.savings-total strong.is-better,
+.savings-total strong.is-worse { color: #fff; }
 
 .savings-inputs {
     display: grid;

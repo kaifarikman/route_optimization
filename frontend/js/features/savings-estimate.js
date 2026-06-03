@@ -13,16 +13,23 @@ export function parseSavingsCoefficient(value) {
 export function estimateSavings(comparison, coefficients = {}) {
     if (!comparison) return null;
 
-    const distanceSavedKm = Math.max(Number(comparison.distanceSaved) || 0, 0);
-    const timeSavedMinutes = Math.max(Number(comparison.timeSaved) || 0, 0);
+    // Реальные (знаковые) изменения для отображения: плюс — лучше, минус — хуже.
+    const distanceSavedKm = Number(comparison.distanceSaved) || 0;
+    const timeSavedMinutes = Number(comparison.timeSaved) || 0;
     const rubPerKm = parseSavingsCoefficient(coefficients.rubPerKm);
     const rubPerMinute = parseSavingsCoefficient(coefficients.rubPerMinute);
+
+    // В рубли идёт только реальная экономия каждого показателя: если маршрут
+    // где-то стал хуже, этот минус не вычитается из суммы (деньги не уходят в минус).
+    const rubles =
+        Math.max(distanceSavedKm, 0) * rubPerKm +
+        Math.max(timeSavedMinutes, 0) * rubPerMinute;
 
     return {
         distanceSavedKm,
         timeSavedMinutes,
         rubPerKm,
         rubPerMinute,
-        rubles: distanceSavedKm * rubPerKm + timeSavedMinutes * rubPerMinute,
+        rubles,
     };
 }

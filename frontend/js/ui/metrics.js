@@ -77,8 +77,8 @@ export function updateMetrics(route, mode) {
         if (comparison && comparison.distancePercent > 0) {
             html += `
                 <div class="improvement-badge">
-                    <span><i class="ti ti-trending-down"></i> Эффективнее на ${comparison.distancePercent.toFixed(1)}%</span>
-                    <span class="improvement-pct">−${comparison.timeSaved.toFixed(0)} мин</span>
+                    <span><i class="ti ti-trending-down"></i> Короче на ${comparison.distancePercent.toFixed(1)}%</span>
+                    <span class="improvement-pct">${formatTimeDelta(comparison.timeSaved)}</span>
                 </div>
             `;
         }
@@ -120,8 +120,16 @@ function formatDistance(value) {
     return `${value.toFixed(1).replace('.', ',')} км`;
 }
 
-function formatMinutes(value) {
-    return `${Math.round(value)} мин`;
+function formatTimeDelta(savedMinutes) {
+    const rounded = Math.round(savedMinutes);
+    if (rounded > 0) return `−${rounded} мин`;      // время сэкономлено
+    if (rounded < 0) return `+${Math.abs(rounded)} мин`;  // маршрут стал дольше
+    return `0 мин`;
+}
+
+function applyDeltaClass(element, savedAmount) {
+    element.classList.toggle('is-better', savedAmount > 0.05);
+    element.classList.toggle('is-worse', savedAmount < -0.05);
 }
 
 function formatRubles(value) {
@@ -215,12 +223,21 @@ function updateSavingsDashboard() {
         return;
     }
 
-    document.getElementById('savingsDistance').textContent = formatDistance(estimate.distanceSavedKm);
-    document.getElementById('savingsTime').textContent = formatMinutes(estimate.timeSavedMinutes);
+    const distanceEl = document.getElementById('savingsDistance');
+    const timeEl = document.getElementById('savingsTime');
+    distanceEl.textContent = formatDistance(estimate.distanceSavedKm);
+    timeEl.textContent = formatTimeDelta(estimate.timeSavedMinutes);
+    applyDeltaClass(distanceEl, estimate.distanceSavedKm);
+    applyDeltaClass(timeEl, estimate.timeSavedMinutes);
+
     document.getElementById('savingsRubles').textContent = formatRubles(estimate.rubles);
+
+    // В формулу идут только реально сэкономленные значения (минус не учитываем).
+    const moneyKm = Math.max(estimate.distanceSavedKm, 0);
+    const moneyMinutes = Math.max(estimate.timeSavedMinutes, 0);
     document.getElementById('savingsFormula').textContent =
-        `Расчет: ${formatDistance(estimate.distanceSavedKm)} × ${formatCoefficient(estimate.rubPerKm)} ₽/км + ` +
-        `${formatMinutes(estimate.timeSavedMinutes)} × ${formatCoefficient(estimate.rubPerMinute)} ₽/мин`;
+        `Расчёт: ${formatDistance(moneyKm)} × ${formatCoefficient(estimate.rubPerKm)} ₽/км + ` +
+        `${Math.round(moneyMinutes)} мин × ${formatCoefficient(estimate.rubPerMinute)} ₽/мин`;
 
     dashboard.hidden = false;
 }

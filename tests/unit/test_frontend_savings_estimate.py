@@ -62,7 +62,7 @@ def test_savings_estimate_treats_empty_invalid_and_negative_coefficients_as_zero
     assert parsed["invalid"]["rubPerMinute"] == 0
 
 
-def test_savings_estimate_does_not_return_negative_savings_when_route_is_worse():
+def test_savings_estimate_keeps_rubles_at_zero_when_route_is_worse():
     module_url = (Path(__file__).resolve().parents[2] / "frontend/js/features/savings-estimate.js").as_uri()
     script = f"""
         import {{ estimateSavings }} from {json.dumps(module_url)};
@@ -81,6 +81,8 @@ def test_savings_estimate_does_not_return_negative_savings_when_route_is_worse()
     )
 
     parsed = json.loads(result.stdout)
-    assert parsed["distanceSavedKm"] == 0
-    assert parsed["timeSavedMinutes"] == 0
+    # Реальные изменения отдаём со знаком (для честного отображения),
+    # но деньги никогда не уходят в минус.
+    assert parsed["distanceSavedKm"] == -3
+    assert parsed["timeSavedMinutes"] == -7
     assert parsed["rubles"] == 0

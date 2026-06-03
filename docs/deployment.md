@@ -1,63 +1,53 @@
 # Деплой
 
-Production deploy настроен через GitHub Actions и Docker Compose на сервере.
+Боевой деплой собран на GitHub Actions и Docker Compose на сервере. Ниже — что происходит при пуше, как устроен сервер и как откатиться, если что-то пошло не так.
 
 ## Что происходит при push в main
 
-Workflow `.github/workflows/deploy.yml` запускается на каждый push в `main`.
-
-Порядок такой:
+Workflow `.github/workflows/deploy.yml` срабатывает на каждый push в `main` и идёт по порядку:
 
 ```text
-tests
-  -> build backend image
-  -> build frontend image
-  -> push images to Docker Hub
-  -> upload deploy/compose.yaml to server
+тесты
+  -> сборка образа бэкенда
+  -> сборка образа фронтенда
+  -> пуш образов в Docker Hub
+  -> загрузка deploy/compose.yaml на сервер
   -> docker compose pull
   -> docker compose up -d --remove-orphans
-  -> health checks
+  -> health-проверки
 ```
 
-Docker images:
+Образы:
 
 - `kaifarikmann/route-optimization-backend`
 - `kaifarikmann/route-optimization-frontend`
 
-Каждый deploy пушит images с тегом commit SHA и обновляет `latest`.
+Каждый деплой пушит образы с тегом по SHA коммита и заодно обновляет `latest`.
 
 ## Сервер
 
-На сервере используется директория:
+На сервере всё лежит в `~/route_optimization`. Там должны быть:
 
-```text
-~/route_optimization
-```
+- `compose.yaml` — боевой compose;
+- `.env` — серверные переменные окружения;
+- `data/` — каталог под базу SQLite.
 
-Там должны быть:
+Серверный `.env` в git не хранится; за основу можно взять `deploy/server.env.example`.
 
-- `compose.yaml` - production compose;
-- `.env` - серверные переменные окружения;
-- `data/` - директория для SQLite базы;
+## Боевой compose
 
-Серверный `.env` не хранится в git. За основу можно взять `deploy/server.env.example`.
+`deploy/compose.yaml` ничего не собирает на сервере — он берёт готовые образы из Docker Hub. Сервисы те же два:
 
-## Production compose
+- `backend` — FastAPI, том `./data:/app/data`, health-проверка по `/health`;
+- `frontend` — nginx, поднимается после здорового бэкенда, отдаёт интерфейс и проксирует `/api`.
 
-Файл `deploy/compose.yaml` не собирает images на сервере. Он использует готовые images из Docker Hub.
+Наружу всё смотрит через системный Caddy на `80/443` с TLS от Let's Encrypt. Контейнер фронтенда слушает только `127.0.0.1:8080` и напрямую наружу не публикуется.
 
-Сервисы:
-
-- `backend` - FastAPI, volume `./data:/app/data`, healthcheck `/health`.
-- `frontend` - nginx, зависит от healthy backend, отдает UI и проксирует `/api`.
-
-Публичный доступ идет через системный Caddy на `80/443` с TLS (Let's Encrypt). Frontend-контейнер слушает только `127.0.0.1:8080`, наружу он не публикуется.
-
-Production URL: <https://route-optimization.ru/>
+Боевой адрес: <https://route-optimization.ru/>
 
 ## Reverse proxy (Caddy)
 
-Caddy - серверная инфраструктура вне Docker Compose. Конфиг: `/etc/caddy/Caddyfile`.
+Caddy — это серверная инфраструктура вне Docker Compose, конфиг лежит в `/etc/caddy/Caddyfile`:
 
 ```text
 route-optimization.ru {
@@ -65,34 +55,32 @@ route-optimization.ru {
 }
 ```
 
-Caddy автоматически получает и обновляет TLS-сертификат, редиректит HTTP на HTTPS и проксирует запросы в frontend-контейнер. После `docker compose pull && docker compose up -d` Caddy перенастраивать не нужно.
+Caddy сам получает и обновляет TLS-сертификат, редиректит HTTP на HTTPS и проксирует запросы в контейнер фронтенда. После `docker compose pull && docker compose up -d` его перенастраивать не нужно.
 
-## Health checks
+## Health-проверки
 
-После запуска deploy проверяет:
+После деплоя workflow проверяет:
 
-- backend health: `http://127.0.0.1:${BACKEND_PORT}/health`;
-- frontend env: `http://127.0.0.1:${FRONTEND_PORT}/js/env.js`;
-- frontend API proxy: `http://127.0.0.1:${FRONTEND_PORT}/api/health`.
+- health бэкенда: `http://127.0.0.1:${BACKEND_PORT}/health`;
+- конфиг фронтенда: `http://127.0.0.1:${FRONTEND_PORT}/js/env.js`;
+- прокси API через фронтенд: `http://127.0.0.1:${FRONTEND_PORT}/api/health`.
 
-Если один из checks не проходит, workflow считает deploy неуспешным.
+Если хоть одна не прошла, деплой считается неуспешным.
 
-## Rollback
+## Откат
 
-Перед загрузкой нового compose workflow сохраняет старый файл как `compose.yaml.prev`.
-
-Если deploy падает, SSH-скрипт:
+Перед загрузкой нового compose workflow сохраняет старый файл как `compose.yaml.prev`. Если деплой падает, SSH-скрипт:
 
 - печатает состояние compose;
-- печатает последние логи backend и frontend;
+- печатает свежие логи бэкенда и фронтенда;
 - возвращает `compose.yaml.prev`, если он есть;
-- пытается поднять предыдущую версию через Docker Compose.
+- пытается поднять предыдущую версию.
 
-Это rollback на уровне compose-файла и Docker images. База данных при этом не удаляется.
+Это откат на уровне compose-файла и образов — база при этом не трогается.
 
 ## Ручная проверка на сервере
 
-На сервере можно проверить сервисы обычными командами:
+Обычными командами:
 
 ```shell
 cd ~/route_optimization
@@ -103,7 +91,7 @@ docker compose -f compose.yaml logs --tail=100 backend
 docker compose -f compose.yaml logs --tail=100 frontend
 ```
 
-Для проверки публичного домена:
+Проверить публичный домен:
 
 ```shell
 curl -fsSI http://route-optimization.ru

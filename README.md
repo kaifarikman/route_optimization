@@ -1,30 +1,36 @@
 # Route Optimization
 
-Route Optimization - небольшое веб-приложение для построения и сравнения маршрутов доставки.
+Небольшое веб-приложение, которое показывает, насколько можно сократить маршрут доставки, если объехать точки в другом порядке.
 
-Сценарий простой: пользователь задает центр, радиус и количество точек, приложение генерирует точки на карте, строит маршрут в исходном порядке и затем показывает оптимизированный порядок обхода. В интерфейсе видно, сколько километров, минут и примерных рублей удалось сэкономить.
+Идея простая. Пользователь задаёт центр, радиус и число точек — приложение раскидывает точки по карте, строит маршрут в исходном порядке, а потом перестраивает его «по уму». Рядом видно, сколько километров, минут и примерно рублей экономит оптимизация.
 
-Проект сделан как цельное демо: frontend, backend, база, маршрутизация, тесты, Docker Compose и production deploy.
+Это учебное демо, но собранное целиком: фронтенд, бэкенд, база, реальная маршрутизация по дорогам, тесты, Docker Compose и автодеплой на сервер.
 
-Production: <http://111.88.157.91:8080/>
+Боевая версия: <https://route-optimization.ru/>
+
+## Демо
+
+![Демо работы приложения](docs/demo.gif)
+
+Запись основного сценария: генерация точек, базовый маршрут, оптимизация и сравнение (воспроизведение ускорено). Живая версия — <https://route-optimization.ru/>.
 
 ## Быстрый запуск
 
-Нужны Docker и Docker Compose.
+Понадобятся Docker и Docker Compose.
 
 ```shell
 cp .env.example .env
 docker compose up --build -d
 ```
 
-После запуска:
+Дальше всё доступно локально:
 
-- frontend: <http://localhost:8080>
-- backend: <http://localhost:8000>
-- Swagger UI: <http://localhost:8000/docs>
-- API через frontend proxy: <http://localhost:8080/api/health>
+- фронтенд — <http://localhost:8080>
+- бэкенд — <http://localhost:8000>
+- Swagger — <http://localhost:8000/docs>
+- проверка API через фронтенд — <http://localhost:8080/api/health>
 
-Проверить, что все поднялось:
+Убедиться, что всё поднялось:
 
 ```shell
 docker compose ps
@@ -32,82 +38,92 @@ curl -fsS http://localhost:8000/health
 curl -fsS http://localhost:8080/api/health
 ```
 
-Остановить контейнеры:
+Остановить:
 
 ```shell
 docker compose down
 ```
 
-## Что умеет приложение
+## Что умеет
 
-- Генерирует точки доставки вокруг заданных координат или найденного адреса центра.
-- Показывает точки на карте MapLibre/OpenFreeMap.
-- Позволяет найти адрес через backend geocoding proxy и добавить точку по найденному адресу.
+- Генерирует точки доставки вокруг заданных координат или найденного адреса.
+- Рисует точки на карте (MapLibre со стилем OpenFreeMap).
+- Ищет адрес через бэкенд и добавляет точку по нему; умеет и обратное — подписывает координаты адресом.
 - Строит базовый маршрут в текущем порядке точек.
-- Оптимизирует порядок обхода через алгоритм ближайшего соседа.
-- Сравнивает базовый и оптимизированный маршруты по расстоянию и времени.
-- Показывает примерную экономию в рублях на основе сохраненных километров, минут и настраиваемых коэффициентов `₽/км` и `₽/мин`.
-- Рисует маршрут по реальным дорогам через OSRM.
-- Если OSRM недоступен, считает приближенный маршрут по haversine и явно помечает fallback.
-- Позволяет сбросить текущие точки и маршруты.
+- Оптимизирует порядок обхода: ближайшим соседом или методом 2-opt.
+- Показывает базовый и оптимизированный маршруты рядом и считает разницу в расстоянии, времени и проценте улучшения.
+- Прикидывает экономию в рублях по сохранённым километрам и минутам — коэффициенты `₽/км` и `₽/мин` меняются прямо в интерфейсе.
+- Строит маршрут по настоящим дорогам через OSRM, а если OSRM недоступен — считает приближённо по прямой и честно помечает это как резервный расчёт.
+- Позволяет экспортировать маршрут (JSON/CSV) и поделиться им по ссылке.
 
-## Как пользоваться
+## Руководство пользователя
 
-1. Откройте frontend на <http://localhost:8080>.
-2. Укажите широту/долготу или найдите адрес центра, затем задайте радиус и количество точек.
-3. Нажмите генерацию точек.
+1. Откройте фронтенд на <http://localhost:8080>.
+2. Укажите координаты центра или найдите его по адресу, задайте радиус и количество точек.
+3. Сгенерируйте точки.
 4. Постройте базовый маршрут.
-5. Постройте оптимизированный маршрут.
-6. Сравните карточки с расстоянием, временем, процентом улучшения и примерной экономией в рублях.
+5. Постройте оптимизированный.
+6. Сравните карточки: расстояние, время, процент улучшения и примерная экономия в рублях.
 
-Блок экономии в рублях появляется после сравнения базового и оптимизированного маршрутов. По умолчанию используются коэффициенты `35 ₽/км` и `8 ₽/мин`, их можно поменять прямо в интерфейсе.
+Блок экономии появляется после того, как построены оба маршрута. По умолчанию считается по `35 ₽/км` и `8 ₽/мин` — обе цифры редактируются на месте.
 
-Адреса поддерживаются для поиска центра генерации и ручного добавления точки. Импорт остается координатным, чтобы не делать bulk-geocoding.
+Поиск по адресу работает для центра генерации и для ручного добавления точки. Импорт остаётся координатным: массово геокодировать адреса приложение специально не умеет, чтобы не упираться в лимиты Nominatim.
 
-## Архитектура коротко
+## Стек технологий
+
+- **Бэкенд:** Python 3.12, FastAPI, SQLAlchemy 2.0, Pydantic, SQLite.
+- **Фронтенд:** ванильные HTML/CSS и ES-модули без сборщика, карта MapLibre GL (стиль OpenFreeMap), nginx как раздача статики и прокси.
+- **Маршрутизация:** OSRM, с резервным расчётом по прямой (haversine).
+- **Геокодинг:** Nominatim-совместимый сервис с кэшем в SQLite.
+- **Инфраструктура:** Docker и Docker Compose, GitHub Actions (тесты + автодеплой), Caddy с TLS на сервере.
+- **Тесты:** pytest (unit, integration и e2e-чеклист).
+
+Подробный разбор по слоям — в [docs/architecture.md](docs/architecture.md).
+
+## Как это устроено
 
 ```text
-browser
-  -> nginx frontend
-    -> static HTML/CSS/JS + MapLibre
-    -> /api proxy
-      -> FastAPI backend
-        -> services
-        -> repositories
-        -> SQLite database
-        -> OSRM or haversine fallback
+браузер
+  -> nginx (фронтенд)
+    -> статика HTML/CSS/JS + MapLibre
+    -> прокси /api
+      -> FastAPI
+        -> сервисы
+        -> репозитории
+        -> SQLite
+        -> OSRM, иначе резервный расчёт по прямой
 ```
 
-Backend написан на FastAPI и SQLAlchemy. Frontend - обычные HTML/CSS/ES modules без сборщика. SQLite лежит в `data/database.db` и монтируется в Docker-контейнер backend.
+Бэкенд — FastAPI и SQLAlchemy. Фронтенд — обычные HTML/CSS и ES-модули без сборщика. База лежит в `data/database.db` и монтируется в контейнер бэкенда.
 
-Подробности: [docs/architecture.md](docs/architecture.md).
+Подробнее — в [docs/architecture.md](docs/architecture.md).
 
 ## Структура проекта
 
 ```text
-backend/          FastAPI, сервисы, репозитории, модели БД
-frontend/         nginx static frontend, Leaflet-карта, UI-логика
-data/             SQLite database и локальные данные
-deploy/           production compose и пример server env
-docs/             техническая документация
-tests/            unit и integration тесты
+backend/    FastAPI: API, сервисы, репозитории, модели БД
+frontend/   статика под nginx, карта MapLibre, логика интерфейса
+data/       база SQLite и локальные данные
+deploy/     боевой compose и пример серверного .env
+docs/       техническая документация
+tests/      unit- и integration-тесты
 ```
 
 ## Проверки
 
-Запустить тесты:
+Прогнать тесты:
 
 ```shell
 python3 -m pytest tests/ -q
 ```
 
-Проверить Docker Compose конфигурацию:
+Проверить конфигурацию Docker Compose:
 
 ```shell
 docker compose -f docker-compose.yml config
 ```
 
-Проверить поднятое приложение:
+Проверить уже запущенное приложение:
 
 ```shell
 docker compose ps
@@ -116,76 +132,67 @@ curl -fsS http://localhost:8080/api/health
 curl -fsS http://localhost:8080/js/env.js
 ```
 
-Если что-то не работает, начать с диагностики:
+Если что-то не отвечает, начинать стоит с логов:
 
 ```shell
 docker compose logs --tail=100 backend
 docker compose logs --tail=100 frontend
 ```
 
-Больше команд для локальной разработки: [docs/development.md](docs/development.md).
+Больше команд для локальной работы — в [docs/development.md](docs/development.md).
 
 ## API
 
-Основной backend API:
+Основные ручки бэкенда:
 
-- `GET /health`
-- `GET /config`
-- `POST /geocode`
-- `POST /points/generate`
-- `POST /points`
-- `GET /points`
-- `DELETE /points`
-- `POST /routes/base`
-- `POST /routes/optimize`
-- `GET /routes/{route_id}`
-- `GET /routes`
+- `GET /health`, `GET /config`
+- `POST /geocode`, `POST /geocode/reverse`
+- `POST /points/generate`, `POST /points`, `POST /points/import`, `GET /points`, `DELETE /points`
+- `POST /routes/base`, `POST /routes/optimize` (`nearest_neighbor` или `two_opt`)
+- `GET /routes/{route_id}`, `GET /routes`
+- `POST /routes/share`, `GET /routes/share/{token}`
 
-Подробный контракт с примерами: [docs/api.md](docs/api.md).
+Полный контракт с примерами — в [docs/api.md](docs/api.md).
 
-## Production deploy
+## Деплой
 
-Деплой идет через GitHub Actions при push в `main`:
+Деплой едет автоматически при push в `main`:
 
 ```text
-push to main
-  -> tests
-  -> Docker image build and push
-  -> upload production compose to server
+push в main
+  -> тесты
+  -> сборка и пуш Docker-образов
+  -> загрузка боевого compose на сервер
   -> docker compose pull && docker compose up -d
-  -> health checks
+  -> health-проверки
 ```
 
-Production compose использует готовые Docker Hub images и лежит в `deploy/compose.yaml`. Серверный `.env` не хранится в git, пример находится в `deploy/server.env.example`.
+Боевой compose использует готовые образы из Docker Hub и лежит в `deploy/compose.yaml`. Серверный `.env` в git не хранится, пример — в `deploy/server.env.example`.
 
-Подробности: [docs/deployment.md](docs/deployment.md).
+Подробнее — в [docs/deployment.md](docs/deployment.md).
 
-## Основные настройки
+## Настройки
 
-Настройки берутся из `.env`. Для локального запуска достаточно скопировать `.env.example`.
+Все настройки берутся из `.env`. Для локального запуска достаточно скопировать `.env.example` — менять ничего не нужно.
 
-Самые важные переменные:
+Самое важное:
 
-- `BACKEND_PORT` - порт FastAPI, по умолчанию `8000`.
-- `FRONTEND_PORT` - порт nginx frontend, по умолчанию `8080`.
-- `DATABASE_URL` - путь к SQLite базе.
-- `ROUTING_PROVIDER` - основной провайдер маршрутов, по умолчанию `osrm`.
-- `OSRM_BASE_URL` - endpoint OSRM.
-- `ROUTING_TIMEOUT_SECONDS` - timeout внешнего routing API.
-- `GEOCODING_PROVIDER` - geocoding provider, по умолчанию `nominatim`.
-- `GEOCODING_BASE_URL` - Nominatim-compatible endpoint.
-- `GEOCODING_TIMEOUT_SECONDS` - timeout внешнего geocoding API.
-- `GEOCODING_USER_AGENT` - User-Agent для geocoding-запросов.
-- `GEOCODING_ACCEPT_LANGUAGE` - предпочтительные языки geocoding-ответов.
-- `FRONTEND_API_BASE_URL` - base URL для frontend API client.
-- `CORS_ALLOW_ORIGINS` - разрешенные browser origins.
+- `BACKEND_PORT` — порт бэкенда, по умолчанию `8000`.
+- `FRONTEND_PORT` — порт фронтенда, по умолчанию `8080`.
+- `DATABASE_URL` — путь к базе SQLite.
+- `ROUTING_PROVIDER` / `OSRM_BASE_URL` — провайдер маршрутов и адрес OSRM.
+- `ROUTING_TIMEOUT_SECONDS` — таймаут внешнего маршрутного API.
+- `GEOCODING_PROVIDER` / `GEOCODING_BASE_URL` — провайдер геокодинга (по умолчанию Nominatim).
+- `GEOCODING_TIMEOUT_SECONDS`, `GEOCODING_USER_AGENT`, `GEOCODING_ACCEPT_LANGUAGE` — таймаут, User-Agent и языки ответов геокодера.
+- `FRONTEND_API_BASE_URL` — базовый URL API для фронтенда.
+- `CORS_ALLOW_ORIGINS` — разрешённые источники для браузера.
 
-## Ограничения
+## Чего приложение не делает
 
-- Нет авторизации и разделения пользователей.
-- Адреса поддерживаются только для явного поиска центра и ручного добавления точки; reverse geocode и address-only import не реализованы.
-- SQLite подходит для демо и одного пользователя, но не для конкурентной нагрузки.
-- Оптимизация использует nearest neighbor heuristic и не гарантирует глобальный оптимум.
-- Публичный OSRM может быть недоступен или отвечать медленно; для этого есть haversine fallback.
-- Публичный Nominatim ограничивает использование: не больше 1 geocoding request/sec на приложение, без autocomplete и bulk-geocoding.
-- История маршрутов хранится в БД и доступна через API, но UI ориентирован на текущий рабочий сценарий.
+- Нет авторизации; заголовок `X-User-Id` нужен только чтобы разделять рабочие наборы в демо.
+- Геокодинг по адресу работает для центра генерации и ручной точки; массового импорта по адресам нет.
+- SQLite хватает для демо и одного пользователя, но не для конкурентной нагрузки.
+- Оптимизация — это эвристики (ближайший сосед и 2-opt), глобальный оптимум они не гарантируют.
+- Публичный OSRM может тормозить или быть недоступен — на этот случай есть резервный расчёт по прямой.
+- Публичный Nominatim ограничивает нагрузку: не больше одного запроса в секунду, без автодополнения и пакетного геокодинга.
+- История маршрутов хранится в базе и доступна через API, но интерфейс заточен под текущий рабочий сценарий.

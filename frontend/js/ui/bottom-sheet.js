@@ -12,9 +12,22 @@ function isMobile() {
     return window.innerWidth <= MOBILE_BREAKPOINT;
 }
 
-function snapOffsets() {
-    const vh = window.innerHeight;
-    const sheetH = vh * SHEET_HEIGHT_RATIO;
+// Реально видимая высота вьюпорта. visualViewport корректно учитывает динамические
+// панели браузера на всех современных движках (WebKit/Blink/Gecko); innerHeight — фолбэк.
+function viewportH() {
+    return window.visualViewport?.height ?? window.innerHeight;
+}
+
+// Фактическая высота шторки берётся из DOM (что реально отрендерил браузер по 88dvh/88vh),
+// чтобы расчёты в JS не расходились с CSS-единицами. Фолбэк — vh-математика.
+function sheetHeight(sheet) {
+    const measured = sheet?.getBoundingClientRect().height || 0;
+    return measured || viewportH() * SHEET_HEIGHT_RATIO;
+}
+
+function snapOffsets(sheet) {
+    const vh = viewportH();
+    const sheetH = sheetHeight(sheet);
     return {
         full: 0,                       // раскрыт полностью
         half: sheetH - vh * 0.5,       // примерно половина экрана
@@ -38,15 +51,18 @@ export function initBottomSheet() {
             if (content) content.style.height = '';
             return;
         }
-        const offsets = snapOffsets();
+        const offsets = snapOffsets(sheet);
         const offset = offsets[state];
         sheet.style.transform = `translateY(${offset}px)`;
-        // Высота видимого контента = видимая часть шторки минус ручка.
-        // Так нижние элементы (список точек) доступны прокруткой.
+        // Высота видимого контента считается так, чтобы её низ совпал с низом видимой
+        // области экрана (над панелью браузера). Всё в измеренных пикселях — без vh-догадок.
         if (content) {
-            const sheetH = window.innerHeight * SHEET_HEIGHT_RATIO;
+            const vh = viewportH();
+            const sheetH = sheetHeight(sheet);
             const handleH = handle.offsetHeight || 28;
-            const visible = Math.max(0, sheetH - offset - handleH);
+            // Целевое положение верха шторки в координатах видимой области.
+            const sheetTop = vh - sheetH + offset;
+            const visible = Math.max(0, vh - sheetTop - handleH);
             content.style.height = `${visible}px`;
         }
     }
@@ -71,7 +87,7 @@ export function initBottomSheet() {
         dragging = true;
         moved = false;
         startY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
-        const offsets = snapOffsets();
+        const offsets = snapOffsets(sheet);
         startOffset = offsets[state];
         currentOffset = startOffset;
         sheet.classList.add('is-dragging');
@@ -84,7 +100,7 @@ export function initBottomSheet() {
         const delta = y - startY;
         if (Math.abs(delta) > 4) moved = true;
 
-        const offsets = snapOffsets();
+        const offsets = snapOffsets(sheet);
         // ограничиваем в пределах [full, collapsed]
         currentOffset = Math.min(
             offsets.collapsed,
@@ -105,7 +121,7 @@ export function initBottomSheet() {
         }
 
         // Снап к ближайшей позиции
-        const offsets = snapOffsets();
+        const offsets = snapOffsets(sheet);
         const entries = Object.entries(offsets);
         let nearest = entries[0];
         for (const entry of entries) {
@@ -128,8 +144,14 @@ export function initBottomSheet() {
         }
     }, { passive: false });
 
-    // Пересчёт при ресайзе / повороте
-    window.addEventListener('resize', () => applyState(state));
+    // Пересчёт при любом изменении видимой области.
+    const recalc = () => applyState(state);
+    window.addEventListener('resize', recalc);            // ресайз / поворот
+    window.addEventListener('orientationchange', recalc); // поворот (старые браузеры)
+    // Показ/скрытие динамических панелей браузера: iOS Safari (resize),
+    // Android Chrome двигает visualViewport при сворачивании URL-бара (scroll).
+    window.visualViewport?.addEventListener('resize', recalc);
+    window.visualViewport?.addEventListener('scroll', recalc);
 
     // Автоматически приподнимаем шторку при важных событиях
     // (например, после построения маршрута пользователь хочет видеть метрики)
@@ -137,6 +159,8 @@ export function initBottomSheet() {
         if (isMobile() && state === 'collapsed') applyState('half');
     });
 
-    // Инициализация
+    // Инициализация. Повторяем в rAF: на первом кадре мобильные браузеры часто ещё
+    // не устаканили геометрию вьюпорта, и измерение шторки было бы неточным.
     applyState('collapsed');
+    requestAnimationFrame(() => applyState(state));
 }

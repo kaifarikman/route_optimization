@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="700" viewBox="0 0 1000 700" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#5b6470"/>
+    </marker>
+  </defs>
+  <style>
+    .person { fill:#08427b; }
+    .cont   { fill:#438dd5; }
+    .db     { fill:#438dd5; }
+    .ext    { fill:#8a8a8a; }
+    .bound  { fill:none; stroke:#7f8a99; stroke-width:1.5; stroke-dasharray:6 5; }
+    .t      { fill:#ffffff; font-size:14px; font-weight:bold; }
+    .s      { fill:#e6eef7; font-size:10.5px; }
+    .se     { fill:#eeeeee; font-size:10.5px; }
+    .cap    { fill:#2b3138; font-size:18px; font-weight:bold; }
+    .bnd    { fill:#5b6470; font-size:12px; font-weight:bold; }
+    .lk     { stroke:#5b6470; stroke-width:2; fill:none; }
+    .lt     { fill:#41474f; font-size:10.5px; }
+    .lbg    { fill:#ffffff; }
+  </style>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text class="cap" x="30" y="38">C2 — Контейнеры</text>
+
+  <!-- Person -->
+  <rect class="person" x="60" y="70" width="180" height="66" rx="8"/>
+  <text class="t" x="150" y="100" text-anchor="middle">Пользователь</text>
+  <text class="s" x="150" y="119" text-anchor="middle">Браузер</text>
+
+  <!-- Boundary -->
+  <rect class="bound" x="40" y="170" width="640" height="500" rx="12"/>
+  <text class="bnd" x="60" y="196">Route Optimization</text>
+
+  <!-- SPA -->
+  <rect class="cont" x="70" y="220" width="260" height="84" rx="8"/>
+  <text class="t" x="200" y="252" text-anchor="middle">Веб-интерфейс (SPA)</text>
+  <text class="s" x="200" y="271" text-anchor="middle">JavaScript, MapLibre GL</text>
+  <text class="s" x="200" y="287" text-anchor="middle">карта, точки, маршруты, метрики</text>
+
+  <!-- nginx -->
+  <rect class="cont" x="70" y="346" width="260" height="76" rx="8"/>
+  <text class="t" x="200" y="376" text-anchor="middle">Веб-сервер</text>
+  <text class="s" x="200" y="395" text-anchor="middle">nginx — статика + прокси /api</text>
+
+  <!-- FastAPI -->
+  <rect class="cont" x="70" y="464" width="260" height="84" rx="8"/>
+  <text class="t" x="200" y="496" text-anchor="middle">API-приложение</text>
+  <text class="s" x="200" y="515" text-anchor="middle">Python, FastAPI</text>
+  <text class="s" x="200" y="531" text-anchor="middle">точки · маршруты · геокодинг-прокси</text>
+
+  <!-- DB (cylinder-ish) -->
+  <rect class="db" x="400" y="470" width="240" height="78" rx="8"/>
+  <text class="t" x="520" y="500" text-anchor="middle">База данных</text>
+  <text class="s" x="520" y="519" text-anchor="middle">SQLite — точки, маршруты,</text>
+  <text class="s" x="520" y="535" text-anchor="middle">ссылки, кэш геокодинга</text>
+
+  <!-- External -->
+  <rect class="ext" x="760" y="240" width="200" height="74" rx="8"/>
+  <text class="t" x="860" y="272" text-anchor="middle">OSRM</text>
+  <text class="se" x="860" y="291" text-anchor="middle">маршруты по дорогам</text>
+
+  <rect class="ext" x="760" y="470" width="200" height="74" rx="8"/>
+  <text class="t" x="860" y="502" text-anchor="middle">Nominatim</text>
+  <text class="se" x="860" y="521" text-anchor="middle">геокодинг</text>
+
+  <!-- Links -->
+  <path class="lk" d="M150,136 L150,218" marker-end="url(#arrow)"/>
+  <rect class="lbg" x="156" y="168" width="80" height="16"/>
+  <text class="lt" x="160" y="180">HTTPS</text>
+
+  <path class="lk" d="M200,304 L200,344" marker-end="url(#arrow)"/>
+  <rect class="lbg" x="206" y="316" width="150" height="16"/>
+  <text class="lt" x="210" y="328">статика + /api · HTTPS/JSON</text>
+
+  <path class="lk" d="M200,422 L200,462" marker-end="url(#arrow)"/>
+  <rect class="lbg" x="206" y="434" width="120" height="16"/>
+  <text class="lt" x="210" y="446">проксирует /api · HTTP</text>
+
+  <path class="lk" d="M330,506 L398,508" marker-end="url(#arrow)"/>
+  <rect class="lbg" x="338" y="486" width="70" height="16"/>
+  <text class="lt" x="342" y="498">SQLAlchemy</text>
+
+  <path class="lk" d="M330,486 C520,400 640,330 758,290" marker-end="url(#arrow)"/>
+  <rect class="lbg" x="556" y="356" width="120" height="16"/>
+  <text class="lt" x="560" y="368">маршрут · HTTP</text>
+
+  <path class="lk" d="M330,520 C520,540 640,520 758,512" marker-end="url(#arrow)"/>
+  <rect class="lbg" x="556" y="556" width="120" height="16"/>
+  <text class="lt" x="560" y="568">геокодинг · HTTP</text>
+</svg>

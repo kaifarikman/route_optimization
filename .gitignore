@@ -38,4 +38,6 @@ data/*.sqlite3
 docs/*
 !docs/*.md
 !docs/wireframe.pdf
+!docs/*.png
+!docs/*.svg
 !docs/demo.gif
